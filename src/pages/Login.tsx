@@ -1,17 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Eye, EyeOff, GraduationCap, BookOpen, Building2 } from 'lucide-react'
+import { Eye, EyeOff, GraduationCap, BookOpen, Building2, Landmark } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import ThemeToggle from '../components/shared/ThemeToggle'
 import FloatingOrbs from '../components/shared/FloatingOrbs'
 
-type RoleTab = 'student' | 'teacher' | 'admin'
+type RoleTab = 'student' | 'teacher' | 'admin' | 'dean'
 
 const CREDENTIALS: Record<RoleTab, { email: string; password: string; label: string }> = {
   student: { email: 'student@pui.dz', password: 'student123', label: 'Mabrouk Benali — Étudiant L3' },
   teacher: { email: 'teacher@pui.dz', password: 'teacher123', label: 'Dr. Karim Meziani — Enseignant' },
   admin: { email: 'admin@pui.dz', password: 'admin123', label: 'Prof. Amina Hadj — Administration' },
+  dean: { email: 'dean@pui.dz', password: 'dean123', label: 'Pr. Samia Belkacem — Doyen' },
 }
 
 export default function Login() {
@@ -30,6 +31,7 @@ export default function Login() {
         student: '/student/dashboard',
         teacher: '/teacher/dashboard',
         admin: '/admin/dashboard',
+        dean: '/dean/dashboard',
       }
       navigate(map[user.role] || '/')
     }
@@ -58,6 +60,7 @@ export default function Login() {
     { role: 'student', icon: <GraduationCap size={16} />, label: 'Étudiant' },
     { role: 'teacher', icon: <BookOpen size={16} />, label: 'Enseignant' },
     { role: 'admin', icon: <Building2 size={16} />, label: 'Administration' },
+    { role: 'dean', icon: <Landmark size={16} />, label: 'Doyen' },
   ]
 
   return (

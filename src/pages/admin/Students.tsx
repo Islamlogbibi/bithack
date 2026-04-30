@@ -37,6 +37,8 @@ export default function AdminStudents() {
         id: newId,
         name: `Nouvel étudiant ${newId}`,
         matricule: `NEW${newId}`,
+        faculty: 'Faculté des Sciences et Technologies',
+        department: 'Informatique',
         speciality: 'Informatique',
         module: 'Algorithmique',
         level: 'L3',

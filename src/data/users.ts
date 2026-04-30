@@ -1,4 +1,4 @@
-export type Role = 'student' | 'teacher' | 'admin'
+export type Role = 'student' | 'teacher' | 'admin' | 'dean'
 
 export interface Grade {
   subject: string
@@ -71,7 +71,16 @@ export interface AdminUser {
   }
 }
 
-export type AppUser = StudentUser | TeacherUser | AdminUser
+export interface DeanUser {
+  id: number
+  name: string
+  email: string
+  password: string
+  role: 'dean'
+  faculty: string
+}
+
+export type AppUser = StudentUser | TeacherUser | AdminUser | DeanUser
 
 export interface ValidationStudentGrade {
   student: string
@@ -154,6 +163,14 @@ export const TEST_USERS: AppUser[] = [
       avgAttendance: 87,
       publishedResources: 156,
     },
+  },
+  {
+    id: 4,
+    name: 'Pr. Samia Belkacem',
+    email: 'dean@pui.dz',
+    password: 'dean123',
+    role: 'dean',
+    faculty: 'Faculté des Sciences et Technologies',
   },
 ]
 
@@ -308,18 +325,21 @@ export const WORKLOAD_DATA = [
 ]
 
 export const PROFESSORS = [
-  { id: 1, name: 'Dr. Karim Meziani', department: 'Informatique', email: 'k.meziani@pui.dz', phone: '+213 555 10 20 30', profile: 'Spécialiste en algorithmique et IA appliquée.', cv: 'Docteur en informatique, 12 ans d’enseignement, 24 publications.', plannedHours: 96, completedHours: 72 },
-  { id: 2, name: 'Dr. Boualem', department: 'Informatique', email: 'boualem@pui.dz', phone: '+213 555 21 30 40', profile: 'Responsable du module Réseaux et sécurité.', cv: 'PhD réseaux, ex-architecte télécom, 10 ans d’expérience.', plannedHours: 84, completedHours: 84 },
-  { id: 3, name: 'Mme. Rahmani', department: 'Informatique', email: 'rahmani@pui.dz', phone: '+213 555 34 45 56', profile: 'Enseignante BDD et systèmes d’information.', cv: 'Master SI, certification Oracle, 8 ans en université.', plannedHours: 72, completedHours: 60 },
-  { id: 4, name: 'Dr. Laadj', department: 'Mathématiques', email: 'laadj@pui.dz', phone: '+213 555 67 78 89', profile: 'Mathématiques appliquées et probabilités.', cv: 'Docteur en probabilités, 15 ans d’enseignement supérieur.', plannedHours: 96, completedHours: 88 },
+  { id: 1, name: 'Dr. Karim Meziani', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', courses: ['Algorithmique', 'Structures de Données'], email: 'k.meziani@pui.dz', phone: '+213 555 10 20 30', profile: 'Spécialiste en algorithmique et IA appliquée.', cv: 'Docteur en informatique, 12 ans d’enseignement, 24 publications.', plannedHours: 96, completedHours: 72 },
+  { id: 2, name: 'Dr. Boualem', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', courses: ['Réseaux', 'Sécurité des Réseaux'], email: 'boualem@pui.dz', phone: '+213 555 21 30 40', profile: 'Responsable du module Réseaux et sécurité.', cv: 'PhD réseaux, ex-architecte télécom, 10 ans d’expérience.', plannedHours: 84, completedHours: 84 },
+  { id: 3, name: 'Mme. Rahmani', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', courses: ['Base de Données', 'Systèmes d’Information'], email: 'rahmani@pui.dz', phone: '+213 555 34 45 56', profile: 'Enseignante BDD et systèmes d’information.', cv: 'Master SI, certification Oracle, 8 ans en université.', plannedHours: 72, completedHours: 60 },
+  { id: 4, name: 'Dr. Laadj', faculty: 'Faculté des Sciences et Technologies', department: 'Mathématiques', courses: ['Mathématiques', 'Probabilités'], email: 'laadj@pui.dz', phone: '+213 555 67 78 89', profile: 'Mathématiques appliquées et probabilités.', cv: 'Docteur en probabilités, 15 ans d’enseignement supérieur.', plannedHours: 96, completedHours: 88 },
+  { id: 5, name: 'Mme. Benali', faculty: 'Faculté des Sciences et Technologies', department: 'Physique', courses: ['Physique Générale', 'Mécanique'], email: 'm.benali@pui.dz', phone: '+213 555 71 44 88', profile: 'Enseignante en physique fondamentale.', cv: 'Doctorat en physique, 9 ans en enseignement supérieur.', plannedHours: 70, completedHours: 58 },
 ]
 
 export const STUDENTS_DIRECTORY = [
-  { id: 1, name: 'Mabrouk Benali', matricule: '202012345', speciality: 'Informatique', module: 'Algorithmique', level: 'L3', section: 'A', group: 'G2', average: 14.7, absences: 4, notes: [14.2, 14.8, 11.4, 16.4], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 14.2 }, { year: '2024-2025', semester: 'S2', gpa: 14.7 }] },
-  { id: 2, name: 'Khalil Bouzid', matricule: '202012201', speciality: 'Informatique', module: 'Mathématiques', level: 'L3', section: 'A', group: 'G1', average: 10.9, absences: 5, notes: [8.3, 11.7, 12.2, 11.4], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 10.5 }, { year: '2024-2025', semester: 'S2', gpa: 10.9 }] },
-  { id: 3, name: 'Rania Slimani', matricule: '202012202', speciality: 'Informatique', module: 'Réseaux', level: 'L3', section: 'B', group: 'G3', average: 11.8, absences: 5, notes: [9.5, 12.8, 13.1, 11.7], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 11.2 }, { year: '2024-2025', semester: 'S2', gpa: 11.8 }] },
-  { id: 4, name: 'Ahmed Bouali', matricule: '202012301', speciality: 'Informatique', module: 'Base de Données', level: 'L2', section: 'A', group: 'G1', average: 13.9, absences: 2, notes: [15.5, 14.3, 12.7, 13.1], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 13.4 }, { year: '2024-2025', semester: 'S2', gpa: 13.9 }] },
-  { id: 5, name: 'Sara Mansouri', matricule: '202012302', speciality: 'Informatique', module: 'Algorithmique', level: 'L2', section: 'A', group: 'G1', average: 14.5, absences: 1, notes: [14.8, 15.1, 13.9, 14.2], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 14.1 }, { year: '2024-2025', semester: 'S2', gpa: 14.5 }] },
+  { id: 1, name: 'Mabrouk Benali', matricule: '202012345', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', speciality: 'Informatique', module: 'Algorithmique', level: 'L3', section: 'A', group: 'G2', average: 14.7, absences: 4, notes: [14.2, 14.8, 11.4, 16.4], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 14.2 }, { year: '2024-2025', semester: 'S2', gpa: 14.7 }] },
+  { id: 2, name: 'Khalil Bouzid', matricule: '202012201', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', speciality: 'Informatique', module: 'Mathématiques', level: 'L3', section: 'A', group: 'G1', average: 10.9, absences: 5, notes: [8.3, 11.7, 12.2, 11.4], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 10.5 }, { year: '2024-2025', semester: 'S2', gpa: 10.9 }] },
+  { id: 3, name: 'Rania Slimani', matricule: '202012202', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', speciality: 'Informatique', module: 'Réseaux', level: 'L3', section: 'B', group: 'G3', average: 11.8, absences: 5, notes: [9.5, 12.8, 13.1, 11.7], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 11.2 }, { year: '2024-2025', semester: 'S2', gpa: 11.8 }] },
+  { id: 4, name: 'Ahmed Bouali', matricule: '202012301', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', speciality: 'Informatique', module: 'Base de Données', level: 'L2', section: 'A', group: 'G1', average: 13.9, absences: 2, notes: [15.5, 14.3, 12.7, 13.1], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 13.4 }, { year: '2024-2025', semester: 'S2', gpa: 13.9 }] },
+  { id: 5, name: 'Sara Mansouri', matricule: '202012302', faculty: 'Faculté des Sciences et Technologies', department: 'Informatique', speciality: 'Informatique', module: 'Algorithmique', level: 'L2', section: 'A', group: 'G1', average: 14.5, absences: 1, notes: [14.8, 15.1, 13.9, 14.2], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 14.1 }, { year: '2024-2025', semester: 'S2', gpa: 14.5 }] },
+  { id: 6, name: 'Nour El Houda Kacem', matricule: '202112410', faculty: 'Faculté des Sciences et Technologies', department: 'Mathématiques', speciality: 'Mathématiques Appliquées', module: 'Analyse', level: 'M1', section: 'A', group: 'G1', average: 15.3, absences: 1, notes: [15.8, 14.7, 15.5], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 15.1 }, { year: '2024-2025', semester: 'S2', gpa: 15.3 }] },
+  { id: 7, name: 'Amine Bouzid', matricule: '202212520', faculty: 'Faculté des Sciences et Technologies', department: 'Physique', speciality: 'Physique Fondamentale', module: 'Mécanique', level: 'L1', section: 'A', group: 'G2', average: 12.6, absences: 2, notes: [13.2, 11.8, 12.9], gpaByPeriod: [{ year: '2024-2025', semester: 'S1', gpa: 12.4 }, { year: '2024-2025', semester: 'S2', gpa: 12.6 }] },
 ]
 
 export const SPECIALITIES_TREE = [

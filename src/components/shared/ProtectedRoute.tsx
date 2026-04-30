@@ -11,6 +11,7 @@ const DEFAULT_ROUTES: Record<Role, string> = {
   student: '/student/dashboard',
   teacher: '/teacher/dashboard',
   admin: '/admin/dashboard',
+  dean: '/dean/dashboard',
 }
 
 export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {

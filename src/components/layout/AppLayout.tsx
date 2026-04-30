@@ -24,6 +24,9 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/students': 'Students',
   '/admin/specialities': 'Specialities',
   '/admin/justifications': 'Justifications',
+  '/dean/dashboard': 'Espace Doyen',
+  '/dean/schedule': 'Emploi du Temps',
+  '/dean/justifications': 'Justifications',
 }
 
 export default function AppLayout() {

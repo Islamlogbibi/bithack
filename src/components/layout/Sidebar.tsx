@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Calendar, BookOpen, Users, FileText,
   Bot, QrCode, ClipboardList, Clock, LogOut, ChevronLeft,
   ChevronRight, GraduationCap, ShieldCheck, BarChart2, AlertTriangle,
-  UserRound, Network, FileCheck2, ScanLine, User, MessageSquare, FileUp
+  UserRound, Network, FileCheck2, ScanLine, MessageSquare, FileUp, Building2
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -50,6 +50,12 @@ const adminNav: NavItem[] = [
   { label: 'Justifications', path: '/admin/justifications', icon: <FileUp size={20} /> },
 ]
 
+const deanNav: NavItem[] = [
+  { label: 'Tableau de bord', path: '/dean/dashboard', icon: <LayoutDashboard size={20} /> },
+  { label: 'Emploi du Temps', path: '/dean/schedule', icon: <Calendar size={20} /> },
+  { label: 'Justifications', path: '/dean/justifications', icon: <FileUp size={20} /> },
+]
+
 export default function Sidebar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -57,13 +63,18 @@ export default function Sidebar() {
 
   const nav = user?.role === 'student' ? studentNav
     : user?.role === 'teacher' ? teacherNav
-    : adminNav
+      : user?.role === 'dean' ? deanNav
+        : adminNav
 
   const roleLabel = user?.role === 'student' ? 'Étudiant'
-    : user?.role === 'teacher' ? 'Enseignant' : 'Administration'
+    : user?.role === 'teacher' ? 'Enseignant'
+      : user?.role === 'dean' ? 'Doyen'
+        : 'Administration'
 
   const RoleIcon = user?.role === 'student' ? GraduationCap
-    : user?.role === 'teacher' ? BarChart2 : ShieldCheck
+    : user?.role === 'teacher' ? BarChart2
+      : user?.role === 'dean' ? Building2
+        : ShieldCheck
 
   const handleLogout = () => {
     logout()

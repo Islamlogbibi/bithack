@@ -36,6 +36,9 @@ import AdminProfessors from "./pages/admin/Professors";
 import AdminStudents from "./pages/admin/Students";
 import AdminSpecialities from "./pages/admin/Specialities";
 import AdminJustifications from "./pages/admin/Justifications";
+import DeanDashboard from "./pages/dean/Dashboard";
+import DeanSchedule from "./pages/dean/Schedule";
+import DeanJustifications from "./pages/dean/Justifications";
 
 export default function App() {
   return (
@@ -103,6 +106,21 @@ export default function App() {
               <Route path="students" element={<AdminStudents />} />
               <Route path="specialities" element={<AdminSpecialities />} />
               <Route path="justifications" element={<AdminJustifications />} />
+            </Route>
+
+            {/* Dean routes */}
+            <Route
+              path="/dean"
+              element={
+                <ProtectedRoute allowedRoles={["dean"]}>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<DeanDashboard />} />
+              <Route path="schedule" element={<DeanSchedule />} />
+              <Route path="justifications" element={<DeanJustifications />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" replace />} />
