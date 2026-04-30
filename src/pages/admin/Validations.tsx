@@ -37,6 +37,7 @@ export default function AdminValidations() {
     [...ADMIN_PENDING_VALIDATIONS].sort((a, b) => a.slaHours - b.slaHours)
   )
   const [validated, setValidated] = useState<typeof ADMIN_PENDING_VALIDATIONS[0][]>([])
+  const [selectedValidation, setSelectedValidation] = useState<typeof ADMIN_PENDING_VALIDATIONS[number] | null>(null)
 
   const handleValidate = (id: number) => {
     const item = pending.find((v) => v.id === id)
@@ -101,8 +102,10 @@ export default function AdminValidations() {
                       {v.teacher.charAt(v.teacher.indexOf(' ') + 1)}
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground">{v.teacher}</p>
-                      <p className="text-sm text-muted-foreground">{v.module} · {v.group} · {v.count} étudiant(s)</p>
+                      <button onClick={() => setSelectedValidation(v)} className="font-semibold text-foreground hover:text-primary transition-colors">
+                        {v.teacher}
+                      </button>
+                      <p className="text-sm text-muted-foreground">{v.speciality} · {v.module} · {v.level} · Section {v.section} · {v.group} · {v.count} étudiant(s)</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         Soumis le {new Date(v.submitted).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
                       </p>
@@ -188,6 +191,31 @@ export default function AdminValidations() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {selectedValidation && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground">{selectedValidation.teacher} — notes saisies</h3>
+              <button onClick={() => setSelectedValidation(null)} className="text-sm text-muted-foreground hover:text-foreground">Fermer</button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              {selectedValidation.speciality} · {selectedValidation.module} · {selectedValidation.level} · Section {selectedValidation.section} · {selectedValidation.group}
+            </p>
+            <div className="space-y-2">
+              {selectedValidation.studentGrades.map((student) => (
+                <div key={student.matricule} className="flex items-center justify-between p-3 rounded-xl bg-secondary">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{student.student}</p>
+                    <p className="text-xs text-muted-foreground">{student.matricule}</p>
+                  </div>
+                  <p className="text-sm font-bold text-primary">{student.grade.toFixed(1)}/20</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

@@ -18,6 +18,7 @@ export default function AdminDashboard() {
   const { user } = useAuth()
   const admin = user as AdminUser
   const [validations, setValidations] = useState(ADMIN_PENDING_VALIDATIONS.slice(0, 3))
+  const [selectedValidation, setSelectedValidation] = useState<typeof ADMIN_PENDING_VALIDATIONS[number] | null>(null)
 
   const handleValidate = (id: number) => {
     setValidations((prev) => prev.filter((v) => v.id !== id))
@@ -88,8 +89,10 @@ export default function AdminDashboard() {
                 className="flex items-center justify-between p-3 bg-secondary rounded-xl"
               >
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{v.teacher}</p>
-                  <p className="text-xs text-muted-foreground">{v.module} · {v.group} · {v.count} étudiant(s)</p>
+                  <button onClick={() => setSelectedValidation(v)} className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
+                    {v.teacher}
+                  </button>
+                  <p className="text-xs text-muted-foreground">{v.speciality} · {v.module} · {v.level} · Section {v.section} · {v.group} · {v.count} étudiant(s)</p>
                   <p className={`text-xs font-semibold mt-0.5 ${v.slaHours <= 2 ? 'text-red-500' : v.slaHours <= 8 ? 'text-amber-500' : 'text-muted-foreground'}`}>
                     {v.slaHours <= 0 ? 'SLA dépassé !' : `SLA: ${v.slaHours}h restant(es)`}
                   </p>
@@ -215,6 +218,31 @@ export default function AdminDashboard() {
           ))}
         </div>
       </motion.div>
+
+      {selectedValidation && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-card border border-border rounded-xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-foreground">{selectedValidation.teacher} — notes saisies</h3>
+              <button onClick={() => setSelectedValidation(null)} className="text-sm text-muted-foreground hover:text-foreground">Fermer</button>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4">
+              {selectedValidation.speciality} · {selectedValidation.module} · {selectedValidation.level} · Section {selectedValidation.section} · {selectedValidation.group}
+            </p>
+            <div className="space-y-2">
+              {selectedValidation.studentGrades.map((student) => (
+                <div key={student.matricule} className="flex items-center justify-between p-3 rounded-xl bg-secondary">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{student.student}</p>
+                    <p className="text-xs text-muted-foreground">{student.matricule}</p>
+                  </div>
+                  <p className="text-sm font-bold text-primary">{student.grade.toFixed(1)}/20</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

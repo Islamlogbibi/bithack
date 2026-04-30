@@ -35,6 +35,7 @@ import AdminAlerts from "./pages/admin/Alerts";
 import AdminProfessors from "./pages/admin/Professors";
 import AdminStudents from "./pages/admin/Students";
 import AdminSpecialities from "./pages/admin/Specialities";
+import AdminJustifications from "./pages/admin/Justifications";
 
 export default function App() {
   return (
@@ -101,6 +102,7 @@ export default function App() {
               <Route path="professors" element={<AdminProfessors />} />
               <Route path="students" element={<AdminStudents />} />
               <Route path="specialities" element={<AdminSpecialities />} />
+              <Route path="justifications" element={<AdminJustifications />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" replace />} />

@@ -45,6 +45,12 @@ export default function AdminProfessors() {
             <div className="mt-4 space-y-2 text-sm">
               <p className="text-foreground"><span className="text-muted-foreground">Profil:</span> {prof.profile}</p>
               <p className="text-foreground"><span className="text-muted-foreground">CV:</span> {prof.cv}</p>
+              <p className="text-foreground">
+                <span className="text-muted-foreground">Heures:</span> {prof.completedHours}h faites / {prof.plannedHours}h prévues
+              </p>
+              <div className="h-2 w-full bg-border rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${Math.min(100, (prof.completedHours / prof.plannedHours) * 100)}%` }} />
+              </div>
               <p className="text-muted-foreground">{prof.email} · {prof.phone}</p>
             </div>
           </motion.div>

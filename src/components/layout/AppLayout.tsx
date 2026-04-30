@@ -23,6 +23,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/professors': 'Professors',
   '/admin/students': 'Students',
   '/admin/specialities': 'Specialities',
+  '/admin/justifications': 'Justifications',
 }
 
 export default function AppLayout() {

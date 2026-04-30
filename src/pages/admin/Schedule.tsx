@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Calendar } from 'lucide-react'
 import { useMemo, useState } from 'react'
-const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi']
+const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Samedi']
 const TIMES = ['08:00', '10:00', '12:00', '14:00', '16:00']
 
 const ALL_SESSIONS = [
@@ -17,6 +17,7 @@ const ALL_SESSIONS = [
   { day: 'Mercredi', time: '10:00', subject: 'Base de Données', room: 'A12', teacher: 'Mme. Rahmani', group: 'G3', type: 'Cours' },
   { day: 'Jeudi', time: '08:00', subject: 'Probabilités', room: 'A10', teacher: 'Dr. Laadj', group: 'G1', type: 'TD' },
   { day: 'Jeudi', time: '14:00', subject: 'Algorithmique', room: 'A12', teacher: 'Dr. Meziani', group: 'G3', type: 'Cours' },
+  { day: 'Samedi', time: '10:00', subject: 'Projet tutoré', room: 'Labo P2', teacher: 'Dr. Meziani', group: 'G1', type: 'TP' },
 ]
 
 const TYPE_STYLE: Record<string, string> = {
@@ -27,7 +28,6 @@ const TYPE_STYLE: Record<string, string> = {
 
 export default function AdminSchedule() {
   const [filters, setFilters] = useState({
-    department: 'Informatique',
     speciality: 'Informatique',
     level: 'L3',
     section: 'A',
@@ -58,7 +58,7 @@ export default function AdminSchedule() {
 
   const exportPdf = () => {
     const lines = [
-      `Emploi du temps - ${filters.department} / ${filters.speciality} / ${filters.level} / ${filters.section} / ${filters.group}`,
+      `Emploi du temps - ${filters.speciality} / ${filters.level} / ${filters.section} / ${filters.group}`,
       '',
       ...filteredSessions.map((s) => `${s.day} ${s.time} | ${s.subject} (${s.type}) | ${s.room} | ${s.teacher}`),
     ]
@@ -103,10 +103,7 @@ export default function AdminSchedule() {
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
-        <select value={filters.department} onChange={(e) => updateFilter('department', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          <option>Informatique</option>
-        </select>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
         <select value={filters.speciality} onChange={(e) => updateFilter('speciality', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
           <option>Informatique</option>
         </select>
@@ -132,7 +129,7 @@ export default function AdminSchedule() {
         className="bg-card border border-border rounded-xl overflow-hidden"
       >
         {/* Header */}
-        <div className="grid grid-cols-6 border-b border-border bg-secondary/50">
+        <div className="grid grid-cols-7 border-b border-border bg-secondary/50">
           <div className="p-3 text-xs font-semibold text-muted-foreground border-r border-border" />
           {DAYS.map((day) => (
             <div key={day} className="p-3 text-xs font-semibold text-center text-foreground border-r border-border last:border-0">{day}</div>
@@ -140,7 +137,7 @@ export default function AdminSchedule() {
         </div>
         {/* Rows */}
         {TIMES.map((time) => (
-          <div key={time} className="grid grid-cols-6 border-b border-border last:border-0">
+          <div key={time} className="grid grid-cols-7 border-b border-border last:border-0">
             <div className="p-3 text-xs text-muted-foreground border-r border-border flex items-start pt-3">{time}</div>
             {DAYS.map((day) => {
               const sessions = getSession(day, time)

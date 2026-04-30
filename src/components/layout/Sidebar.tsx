@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Calendar, BookOpen, Users, FileText,
   Bot, QrCode, ClipboardList, Clock, LogOut, ChevronLeft,
   ChevronRight, GraduationCap, ShieldCheck, BarChart2, AlertTriangle,
-  UserRound, Network, FileCheck2, ScanLine, User, MessageSquare
+  UserRound, Network, FileCheck2, ScanLine, User, MessageSquare, FileUp
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -47,6 +47,7 @@ const adminNav: NavItem[] = [
   { label: 'Professors', path: '/admin/professors', icon: <UserRound size={20} /> },
   { label: 'Students', path: '/admin/students', icon: <Users size={20} /> },
   { label: 'Specialities', path: '/admin/specialities', icon: <Network size={20} /> },
+  { label: 'Justifications', path: '/admin/justifications', icon: <FileUp size={20} /> },
 ]
 
 export default function Sidebar() {
