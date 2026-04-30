@@ -43,7 +43,7 @@ export default function StudentGrades() {
   const student = user as StudentUser
 
   const totalCredits = student.grades.reduce((a, g) => a + g.credits, 0)
-  const validatedCredits = student.grades.filter((g) => g.status === 'Validé').reduce((a, g) => a + g.credits, 0)
+  const validatedCredits = student.gpa >= 10 ? totalCredits : student.grades.filter((g) => g.status === 'Validé').reduce((a, g) => a + g.credits, 0)
 
   const chartData = student.grades.map((g) => ({
     name: g.subject.split(' ')[0],
