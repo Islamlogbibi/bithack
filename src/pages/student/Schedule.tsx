@@ -4,8 +4,8 @@ import { Calendar, List, Download } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { StudentUser } from '../../data/users'
 
-const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi']
-const TIME_SLOTS = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00']
+const DAYS = ['Samedi','Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi']
+const TIME_SLOTS = ['08:00', '9:45', '11:30', '14:00', '15:45', '17:15']
 
 const TYPE_STYLE: Record<string, string> = {
   Cours: 'bg-blue-500/15 border-blue-500/40 text-blue-600 dark:text-blue-300',
@@ -53,7 +53,7 @@ export default function StudentSchedule() {
           className="bg-card border border-border rounded-xl overflow-hidden"
         >
           {/* Header */}
-          <div className="grid grid-cols-6 border-b border-border">
+          <div className="grid grid-cols-7 border-b border-border">
             <div className="p-3 text-xs font-semibold text-muted-foreground border-r border-border" />
             {DAYS.map((day) => (
               <div key={day} className="p-3 text-xs font-semibold text-center text-foreground border-r border-border last:border-0">
@@ -63,7 +63,7 @@ export default function StudentSchedule() {
           </div>
           {/* Time slots */}
           {TIME_SLOTS.map((time) => (
-            <div key={time} className="grid grid-cols-6 border-b border-border last:border-0">
+            <div key={time} className="grid grid-cols-7 border-b border-border last:border-0">
               <div className="p-3 text-xs text-muted-foreground border-r border-border flex items-center">{time}</div>
               {DAYS.map((day) => {
                 const session = getSession(day, time)
@@ -114,7 +114,7 @@ export default function StudentSchedule() {
                     >
                       <div className="text-center w-14">
                         <p className="text-sm font-bold">{s.time}</p>
-                        <p className="text-xs opacity-70">2h</p>
+                        <p className="text-xs opacity-70">1.5h</p>
                       </div>
                       <div className="flex-1">
                         <p className="font-semibold">{s.subject}</p>
