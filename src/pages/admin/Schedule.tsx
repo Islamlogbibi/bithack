@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { Calendar } from 'lucide-react'
+import { useMemo, useState } from 'react'
 const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi']
 const TIMES = ['08:00', '10:00', '12:00', '14:00', '16:00']
 
@@ -25,8 +26,62 @@ const TYPE_STYLE: Record<string, string> = {
 }
 
 export default function AdminSchedule() {
+  const [filters, setFilters] = useState({
+    department: 'Informatique',
+    speciality: 'Informatique',
+    level: 'L3',
+    section: 'A',
+    group: 'G1',
+  })
+
+  const filteredSessions = useMemo(
+    () => ALL_SESSIONS.filter((session) => session.group === filters.group),
+    [filters.group]
+  )
+
   const getSession = (day: string, time: string) =>
-    ALL_SESSIONS.filter((s) => s.day === day && s.time === time)
+    filteredSessions.filter((s) => s.day === day && s.time === time)
+
+  const updateFilter = (key: keyof typeof filters, value: string) => {
+    setFilters((prev) => ({ ...prev, [key]: value }))
+  }
+
+  const downloadFile = (name: string, content: string, mimeType: string) => {
+    const blob = new Blob([content], { type: mimeType })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = name
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const exportPdf = () => {
+    const lines = [
+      `Emploi du temps - ${filters.department} / ${filters.speciality} / ${filters.level} / ${filters.section} / ${filters.group}`,
+      '',
+      ...filteredSessions.map((s) => `${s.day} ${s.time} | ${s.subject} (${s.type}) | ${s.room} | ${s.teacher}`),
+    ]
+    downloadFile(`schedule-${filters.group}.pdf`, lines.join('\n'), 'application/pdf')
+  }
+
+  const exportIcal = () => {
+    const icalContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//PUI Smart Campus//Schedule//FR',
+      ...filteredSessions.map((s, index) => [
+        'BEGIN:VEVENT',
+        `UID:${filters.group}-${index}@pui-smart-campus`,
+        `SUMMARY:${s.subject} - ${s.type}`,
+        `DESCRIPTION:${s.teacher} - ${s.room}`,
+        `LOCATION:${s.room}`,
+        'END:VEVENT',
+      ].join('\n')),
+      'END:VCALENDAR',
+    ].join('\n')
+    downloadFile(`schedule-${filters.group}.ics`, icalContent, 'text/calendar')
+  }
 
   return (
     <>
@@ -36,11 +91,39 @@ export default function AdminSchedule() {
         className="mb-6 flex items-center justify-between"
       >
         <p className="text-sm text-muted-foreground">Vue globale de toutes les sessions — Semestre 2 · 2024/2025</p>
-        <button className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors">
-          <Calendar size={16} />
-          Exporter PDF
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={exportPdf} className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            <Calendar size={16} />
+            Exporter PDF
+          </button>
+          <button onClick={exportIcal} className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors">
+            <Calendar size={16} />
+            Exporter iCal
+          </button>
+        </div>
       </motion.div>
+
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
+        <select value={filters.department} onChange={(e) => updateFilter('department', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
+          <option>Informatique</option>
+        </select>
+        <select value={filters.speciality} onChange={(e) => updateFilter('speciality', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
+          <option>Informatique</option>
+        </select>
+        <select value={filters.level} onChange={(e) => updateFilter('level', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
+          <option>L2</option>
+          <option>L3</option>
+        </select>
+        <select value={filters.section} onChange={(e) => updateFilter('section', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
+          <option>A</option>
+          <option>B</option>
+        </select>
+        <select value={filters.group} onChange={(e) => updateFilter('group', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
+          <option>G1</option>
+          <option>G2</option>
+          <option>G3</option>
+        </select>
+      </div>
 
       <motion.div
         initial={{ opacity: 0 }}

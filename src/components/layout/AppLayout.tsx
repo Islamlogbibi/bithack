@@ -10,6 +10,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/student/attendance': 'Mes Présences',
   '/student/resources': 'Ressources Pédagogiques',
   '/student/ai-assistant': 'Assistant IA',
+  '/student/justification': 'Justification',
   '/teacher/dashboard': 'Tableau de bord',
   '/teacher/qr-attendance': 'Appel par QR Code',
   '/teacher/grades': 'Saisie des Notes',
@@ -19,6 +20,9 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/validations': 'Validations en attente',
   '/admin/schedule': 'Emploi du Temps Global',
   '/admin/alerts': 'Alertes Absences',
+  '/admin/professors': 'Professors',
+  '/admin/students': 'Students',
+  '/admin/specialities': 'Specialities',
 }
 
 export default function AppLayout() {

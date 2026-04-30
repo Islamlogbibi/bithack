@@ -73,6 +73,23 @@ export interface AdminUser {
 
 export type AppUser = StudentUser | TeacherUser | AdminUser
 
+export interface ValidationStudentGrade {
+  student: string
+  matricule: string
+  grade: number
+}
+
+export interface AdminPendingValidation {
+  id: number
+  teacher: string
+  module: string
+  group: string
+  count: number
+  submitted: string
+  slaHours: number
+  studentGrades: ValidationStudentGrade[]
+}
+
 export const TEST_USERS: AppUser[] = [
   {
     id: 1,
@@ -148,14 +165,105 @@ export const RESOURCES = [
   { id: 8, title: 'TD Anglais Technique N°3', subject: 'Anglais Technique', type: 'TD', fileType: 'DOC', size: '0.4 MB', date: '2024-12-15', teacher: 'Mme. Ferhat', isNew: false },
 ]
 
-export const ADMIN_PENDING_VALIDATIONS = [
-  { id: 1, teacher: 'Dr. Karim Meziani', module: 'Algorithmique', group: 'G1', count: 28, submitted: '2025-01-10T09:30:00', slaHours: 18 },
-  { id: 2, teacher: 'Dr. Karim Meziani', module: 'Algorithmique', group: 'G2', count: 30, submitted: '2025-01-10T10:15:00', slaHours: 16 },
-  { id: 3, teacher: 'Mme. Rahmani', module: 'Base de Données', group: 'G1', count: 27, submitted: '2025-01-09T14:00:00', slaHours: 6 },
-  { id: 4, teacher: 'Dr. Boualem', module: 'Réseaux', group: 'G3', count: 25, submitted: '2025-01-09T16:30:00', slaHours: 8 },
-  { id: 5, teacher: 'Dr. Laadj', module: 'Mathématiques', group: 'G2', count: 29, submitted: '2025-01-08T11:00:00', slaHours: 2 },
-  { id: 6, teacher: 'Mme. Ferhat', module: 'Anglais Technique', group: 'G1', count: 26, submitted: '2025-01-08T15:00:00', slaHours: 4 },
-  { id: 7, teacher: 'Dr. Messaoud', module: 'Structures de Données', group: 'G3', count: 28, submitted: '2025-01-07T09:00:00', slaHours: 0 },
+export const ADMIN_PENDING_VALIDATIONS: AdminPendingValidation[] = [
+  {
+    id: 1,
+    teacher: 'Dr. Karim Meziani',
+    module: 'Algorithmique',
+    group: 'G1',
+    count: 28,
+    submitted: '2025-01-10T09:30:00',
+    slaHours: 18,
+    studentGrades: [
+      { student: 'Ahmed Bouali', matricule: '202012301', grade: 15.5 },
+      { student: 'Sara Mansouri', matricule: '202012302', grade: 14.8 },
+      { student: 'Nadia Cherif', matricule: '202012304', grade: 13.4 },
+    ],
+  },
+  {
+    id: 2,
+    teacher: 'Dr. Karim Meziani',
+    module: 'Algorithmique',
+    group: 'G2',
+    count: 30,
+    submitted: '2025-01-10T10:15:00',
+    slaHours: 16,
+    studentGrades: [
+      { student: 'Mabrouk Benali', matricule: '202012345', grade: 14.2 },
+      { student: 'Lina Sadoud', matricule: '202012322', grade: 16.1 },
+      { student: 'Farid Bousselah', matricule: '202012325', grade: 11.7 },
+    ],
+  },
+  {
+    id: 3,
+    teacher: 'Mme. Rahmani',
+    module: 'Base de Données',
+    group: 'G1',
+    count: 27,
+    submitted: '2025-01-09T14:00:00',
+    slaHours: 6,
+    studentGrades: [
+      { student: 'Yasmine Ounissi', matricule: '202012317', grade: 12.9 },
+      { student: 'Fares Taleb', matricule: '202012203', grade: 10.4 },
+      { student: 'Ines Hamidi', matricule: '202012319', grade: 13.7 },
+    ],
+  },
+  {
+    id: 4,
+    teacher: 'Dr. Boualem',
+    module: 'Réseaux',
+    group: 'G3',
+    count: 25,
+    submitted: '2025-01-09T16:30:00',
+    slaHours: 8,
+    studentGrades: [
+      { student: 'Aymen Ghali', matricule: '202012330', grade: 11.2 },
+      { student: 'Rania Slimani', matricule: '202012202', grade: 9.5 },
+      { student: 'Ilyes Benaissa', matricule: '202012329', grade: 14.1 },
+    ],
+  },
+  {
+    id: 5,
+    teacher: 'Dr. Laadj',
+    module: 'Mathématiques',
+    group: 'G2',
+    count: 29,
+    submitted: '2025-01-08T11:00:00',
+    slaHours: 2,
+    studentGrades: [
+      { student: 'Khalil Bouzid', matricule: '202012201', grade: 8.3 },
+      { student: 'Houda Amrani', matricule: '202012204', grade: 13.6 },
+      { student: 'Sonia Bellal', matricule: '202012340', grade: 12.8 },
+    ],
+  },
+  {
+    id: 6,
+    teacher: 'Mme. Ferhat',
+    module: 'Anglais Technique',
+    group: 'G1',
+    count: 26,
+    submitted: '2025-01-08T15:00:00',
+    slaHours: 4,
+    studentGrades: [
+      { student: 'Nourhane Rebbah', matricule: '202012335', grade: 15.9 },
+      { student: 'Omar Bensalem', matricule: '202012305', grade: 10.7 },
+      { student: 'Lamia Djeffal', matricule: '202012338', grade: 14.2 },
+    ],
+  },
+  {
+    id: 7,
+    teacher: 'Dr. Messaoud',
+    module: 'Structures de Données',
+    group: 'G3',
+    count: 28,
+    submitted: '2025-01-07T09:00:00',
+    slaHours: 0,
+    studentGrades: [
+      { student: 'Walid Bensaci', matricule: '202012346', grade: 12.4 },
+      { student: 'Kenza Rezig', matricule: '202012347', grade: 14.9 },
+      { student: 'Samir Zouaoui', matricule: '202012348', grade: 9.8 },
+    ],
+  },
 ]
 
 export const ABSENCE_ALERTS = [
@@ -173,4 +281,76 @@ export const WORKLOAD_DATA = [
   { teacher: 'Dr. Laadj', planned: 96, completed: 88 },
   { teacher: 'Mme. Ferhat', planned: 60, completed: 52 },
   { teacher: 'Dr. Messaoud', planned: 84, completed: 70 },
+]
+
+export const PROFESSORS = [
+  { id: 1, name: 'Dr. Karim Meziani', department: 'Informatique', email: 'k.meziani@pui.dz', phone: '+213 555 10 20 30', profile: 'Spécialiste en algorithmique et IA appliquée.', cv: 'Docteur en informatique, 12 ans d’enseignement, 24 publications.' },
+  { id: 2, name: 'Dr. Boualem', department: 'Informatique', email: 'boualem@pui.dz', phone: '+213 555 21 30 40', profile: 'Responsable du module Réseaux et sécurité.', cv: 'PhD réseaux, ex-architecte télécom, 10 ans d’expérience.' },
+  { id: 3, name: 'Mme. Rahmani', department: 'Informatique', email: 'rahmani@pui.dz', phone: '+213 555 34 45 56', profile: 'Enseignante BDD et systèmes d’information.', cv: 'Master SI, certification Oracle, 8 ans en université.' },
+  { id: 4, name: 'Dr. Laadj', department: 'Mathématiques', email: 'laadj@pui.dz', phone: '+213 555 67 78 89', profile: 'Mathématiques appliquées et probabilités.', cv: 'Docteur en probabilités, 15 ans d’enseignement supérieur.' },
+]
+
+export const STUDENTS_DIRECTORY = [
+  { id: 1, name: 'Mabrouk Benali', matricule: '202012345', level: 'L3', section: 'A', group: 'G2', average: 14.7, absences: 4, notes: [14.2, 14.8, 11.4, 16.4] },
+  { id: 2, name: 'Khalil Bouzid', matricule: '202012201', level: 'L3', section: 'A', group: 'G1', average: 10.9, absences: 5, notes: [8.3, 11.7, 12.2, 11.4] },
+  { id: 3, name: 'Rania Slimani', matricule: '202012202', level: 'L3', section: 'B', group: 'G3', average: 11.8, absences: 5, notes: [9.5, 12.8, 13.1, 11.7] },
+  { id: 4, name: 'Ahmed Bouali', matricule: '202012301', level: 'L2', section: 'A', group: 'G1', average: 13.9, absences: 2, notes: [15.5, 14.3, 12.7, 13.1] },
+  { id: 5, name: 'Sara Mansouri', matricule: '202012302', level: 'L2', section: 'A', group: 'G1', average: 14.5, absences: 1, notes: [14.8, 15.1, 13.9, 14.2] },
+]
+
+export const SPECIALITIES_TREE = [
+  {
+    speciality: 'Informatique',
+    levels: [
+      {
+        level: 'L3',
+        sections: [
+          {
+            section: 'A',
+            groups: [
+              {
+                group: 'G1',
+                students: ['Khalil Bouzid', 'Ahmed Bouali', 'Sara Mansouri'],
+                modules: ['Algorithmique', 'Réseaux', 'Base de Données'],
+                teachers: ['Dr. Karim Meziani', 'Dr. Boualem', 'Mme. Rahmani'],
+              },
+              {
+                group: 'G2',
+                students: ['Mabrouk Benali', 'Nadia Cherif', 'Omar Bensalem'],
+                modules: ['Mathématiques', 'Algorithmique', 'Anglais Technique'],
+                teachers: ['Dr. Laadj', 'Dr. Karim Meziani', 'Mme. Ferhat'],
+              },
+            ],
+          },
+          {
+            section: 'B',
+            groups: [
+              {
+                group: 'G3',
+                students: ['Rania Slimani', 'Ilyes Benaissa', 'Aymen Ghali'],
+                modules: ['Structures de Données', 'Réseaux', 'Base de Données'],
+                teachers: ['Dr. Messaoud', 'Dr. Boualem', 'Mme. Rahmani'],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        level: 'L2',
+        sections: [
+          {
+            section: 'A',
+            groups: [
+              {
+                group: 'G1',
+                students: ['Ahmed Bouali', 'Sara Mansouri', 'Yasmine Ounissi'],
+                modules: ['Algorithmique', 'Mathématiques', 'Anglais Technique'],
+                teachers: ['Dr. Karim Meziani', 'Dr. Laadj', 'Mme. Ferhat'],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
 ]
