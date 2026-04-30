@@ -33,7 +33,9 @@ function StatusTimeline({ currentStep }: { currentStep: number }) {
 
 export default function AdminValidations() {
   const [tab, setTab] = useState<Tab>('pending')
-  const [pending, setPending] = useState(ADMIN_PENDING_VALIDATIONS)
+  const [pending, setPending] = useState(
+    [...ADMIN_PENDING_VALIDATIONS].sort((a, b) => a.slaHours - b.slaHours)
+  )
   const [validated, setValidated] = useState<typeof ADMIN_PENDING_VALIDATIONS[0][]>([])
 
   const handleValidate = (id: number) => {
@@ -108,10 +110,25 @@ export default function AdminValidations() {
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <StatusTimeline currentStep={1} />
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${v.slaHours <= 2 ? 'bg-red-500/15 text-red-500' : 'bg-amber-500/15 text-amber-500'}`}>
+                      {v.slaHours <= 2 ? 'Urgent' : 'Standard'}
+                    </span>
                     <div className={`flex items-center gap-1.5 text-xs font-semibold ${v.slaHours <= 2 ? 'text-red-500' : v.slaHours <= 8 ? 'text-amber-500' : 'text-muted-foreground'}`}>
                       <Clock size={12} />
                       {v.slaHours <= 0 ? 'SLA dépassé !' : `Doit être publié dans ${v.slaHours}h`}
                     </div>
+                  </div>
+                </div>
+                <div className="mt-3 p-3 rounded-xl bg-secondary">
+                  <p className="text-xs font-semibold text-muted-foreground mb-2">Notes étudiants</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    {v.studentGrades.map((student) => (
+                      <div key={student.matricule} className="p-2 rounded-lg border border-border bg-card">
+                        <p className="text-xs font-semibold text-foreground">{student.student}</p>
+                        <p className="text-[11px] text-muted-foreground">{student.matricule}</p>
+                        <p className="text-xs font-bold text-primary mt-1">{student.grade.toFixed(1)}/20</p>
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="flex gap-3 mt-4">

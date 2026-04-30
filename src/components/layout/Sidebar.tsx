@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Calendar, BookOpen, Users, FileText,
   Bot, QrCode, ClipboardList, Clock, LogOut, ChevronLeft,
-  ChevronRight, GraduationCap, ShieldCheck, BarChart2, AlertTriangle
+  ChevronRight, GraduationCap, ShieldCheck, BarChart2, AlertTriangle, UserRound, Network, FileCheck2
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -22,6 +22,7 @@ const studentNav: NavItem[] = [
   { label: 'Présences', path: '/student/attendance', icon: <Users size={20} /> },
   { label: 'Ressources', path: '/student/resources', icon: <FileText size={20} /> },
   { label: 'Assistant IA', path: '/student/ai-assistant', icon: <Bot size={20} />, badge: 'IA' },
+  { label: 'Justification', path: '/student/justification', icon: <FileCheck2 size={20} /> },
 ]
 
 const teacherNav: NavItem[] = [
@@ -37,6 +38,9 @@ const adminNav: NavItem[] = [
   { label: 'Validations', path: '/admin/validations', icon: <ShieldCheck size={20} />, badge: '7' },
   { label: 'Emploi du Temps', path: '/admin/schedule', icon: <Calendar size={20} /> },
   { label: 'Alertes Absences', path: '/admin/alerts', icon: <AlertTriangle size={20} /> },
+  { label: 'Professors', path: '/admin/professors', icon: <UserRound size={20} /> },
+  { label: 'Students', path: '/admin/students', icon: <Users size={20} /> },
+  { label: 'Specialities', path: '/admin/specialities', icon: <Network size={20} /> },
 ]
 
 export default function Sidebar() {

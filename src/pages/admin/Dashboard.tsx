@@ -23,6 +23,14 @@ export default function AdminDashboard() {
     setValidations((prev) => prev.filter((v) => v.id !== id))
   }
 
+  const recentGrades = validations.flatMap((validation) =>
+    validation.studentGrades.map((studentGrade) => ({
+      ...studentGrade,
+      module: validation.module,
+      group: validation.group,
+    }))
+  ).slice(0, 8)
+
   return (
     <>
       {/* Welcome */}
@@ -187,6 +195,26 @@ export default function AdminDashboard() {
           </ResponsiveContainer>
         </motion.div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.9 }}
+        className="bg-card border border-border rounded-xl p-5 mt-6"
+      >
+        <h3 className="font-semibold text-foreground mb-4">Notes des étudiants (aperçu)</h3>
+        <div className="space-y-2">
+          {recentGrades.map((grade) => (
+            <div key={`${grade.matricule}-${grade.module}`} className="flex items-center justify-between p-3 bg-secondary rounded-xl">
+              <div>
+                <p className="text-sm font-semibold text-foreground">{grade.student}</p>
+                <p className="text-xs text-muted-foreground">{grade.matricule} · {grade.module} · {grade.group}</p>
+              </div>
+              <span className="text-sm font-bold text-primary">{grade.grade.toFixed(1)}/20</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
     </>
   )
 }

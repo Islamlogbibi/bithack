@@ -14,6 +14,7 @@ import StudentGrades from "./pages/student/Grades";
 import StudentAttendance from "./pages/student/Attendance";
 import StudentResources from "./pages/student/Resources";
 import AIAssistant from "./pages/student/AIAssistant";
+import StudentJustification from "./pages/student/Justification";
 
 // Teacher pages
 import TeacherDashboard from "./pages/teacher/Dashboard";
@@ -27,6 +28,9 @@ import AdminDashboard from "./pages/admin/Dashboard";
 import AdminValidations from "./pages/admin/Validations";
 import AdminSchedule from "./pages/admin/Schedule";
 import AdminAlerts from "./pages/admin/Alerts";
+import AdminProfessors from "./pages/admin/Professors";
+import AdminStudents from "./pages/admin/Students";
+import AdminSpecialities from "./pages/admin/Specialities";
 
 export default function App() {
   return (
@@ -52,6 +56,7 @@ export default function App() {
               <Route path="attendance" element={<StudentAttendance />} />
               <Route path="resources" element={<StudentResources />} />
               <Route path="ai-assistant" element={<AIAssistant />} />
+              <Route path="justification" element={<StudentJustification />} />
             </Route>
 
             {/* Teacher routes */}
@@ -85,6 +90,9 @@ export default function App() {
               <Route path="validations" element={<AdminValidations />} />
               <Route path="schedule" element={<AdminSchedule />} />
               <Route path="alerts" element={<AdminAlerts />} />
+              <Route path="professors" element={<AdminProfessors />} />
+              <Route path="students" element={<AdminStudents />} />
+              <Route path="specialities" element={<AdminSpecialities />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/login" replace />} />

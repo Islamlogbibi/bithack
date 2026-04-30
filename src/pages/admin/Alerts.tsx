@@ -42,6 +42,12 @@ export default function AdminAlerts() {
     setNotified(alerts.map((a) => a.matricule))
   }
 
+  const removeNotifiedFromList = () => {
+    setAlerts((prev) => prev.filter((a) => !notified.includes(a.matricule)))
+    setDismissed((prev) => [...prev, ...notified.filter((n) => !prev.includes(n))])
+    setNotified([])
+  }
+
   return (
     <>
       {/* Header actions */}
@@ -57,14 +63,23 @@ export default function AdminAlerts() {
             </button>
           ))}
         </div>
-        <motion.button
-          whileTap={{ scale: 0.97 }}
-          onClick={notifyAll}
-          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold"
-        >
-          <Mail size={16} />
-          Notifier tous les étudiants
-        </motion.button>
+        <div className="flex gap-2">
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={notifyAll}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold"
+          >
+            <Mail size={16} />
+            Notifier tous les étudiants
+          </motion.button>
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={removeNotifiedFromList}
+            className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-xl text-sm font-semibold text-foreground"
+          >
+            Retirer notifiés
+          </motion.button>
+        </div>
       </div>
 
       {/* Stats strip */}
