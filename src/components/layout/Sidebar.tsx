@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Calendar, BookOpen, Users, FileText,
   Bot, QrCode, ClipboardList, Clock, LogOut, ChevronLeft,
   ChevronRight, GraduationCap, ShieldCheck, BarChart2, AlertTriangle,
-  FileCheck, ScanLine, User
+  FileCheck, ScanLine, User, MessageSquare
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 
@@ -23,6 +23,7 @@ const studentNav: NavItem[] = [
   { label: 'Présences', path: '/student/attendance', icon: <Users size={20} /> },
   { label: 'Scanner QR', path: '/student/qr-scan', icon: <ScanLine size={20} /> },
   { label: 'Justifier Absence', path: '/student/absence-justification', icon: <FileCheck size={20} /> },
+  { label: 'Messages', path: '/student/messages', icon: <MessageSquare size={20} /> },
   { label: 'Ressources', path: '/student/resources', icon: <FileText size={20} /> },
   { label: 'Assistant IA', path: '/student/ai-assistant', icon: <Bot size={20} />, badge: 'IA' },
   { label: 'Mon Profil', path: '/student/profile', icon: <User size={20} /> },
