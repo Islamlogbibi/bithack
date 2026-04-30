@@ -89,27 +89,6 @@ export default function TeacherWorkload() {
             </BarChart>
           </ResponsiveContainer>
         </motion.div>
-
-        {/* Department workload comparison */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-card border border-border rounded-xl p-5"
-        >
-          <h3 className="font-semibold text-foreground mb-4">Comparatif département</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={WORKLOAD_DATA} layout="vertical" barSize={10}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} domain={[0, 100]} />
-              <YAxis dataKey="teacher" type="category" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} width={100} />
-              <Tooltip contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: 8 }} />
-              <Legend />
-              <Bar dataKey="planned" name="Prévues" fill="#E2E8F0" radius={[0, 4, 4, 0]} />
-              <Bar dataKey="completed" name="Réalisées" fill="#3B82F6" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </motion.div>
       </div>
     </>
   )
