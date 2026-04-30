@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Bell } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import ThemeToggle from '../shared/ThemeToggle'
 
 interface TopbarProps {
@@ -16,12 +17,29 @@ const NOTIFICATIONS = [
 
 export default function Topbar({ title }: TopbarProps) {
   const { user } = useAuth()
+  const { language, setLanguage, t } = useLanguage()
   const [open, setOpen] = useState(false)
 
   return (
     <header className="h-[64px] flex items-center justify-between px-6 border-b border-border bg-card z-10 flex-shrink-0">
       <h1 className="text-lg font-bold text-foreground">{title}</h1>
       <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <label htmlFor="language-select" className="text-xs text-muted-foreground hidden md:block">
+            {t('common.language', 'Langue')}
+          </label>
+          <select
+            id="language-select"
+            aria-label={t('common.language', 'Langue')}
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as 'fr' | 'en' | 'ar')}
+            className="px-2 py-1.5 text-xs bg-secondary border border-border rounded-lg text-foreground"
+          >
+            <option value="fr">{t('language.fr', 'Francais')}</option>
+            <option value="en">{t('language.en', 'English')}</option>
+            <option value="ar">{t('language.ar', 'العربية')}</option>
+          </select>
+        </div>
         <div className="relative">
           <motion.button
             whileTap={{ scale: 0.9 }}
@@ -39,7 +57,7 @@ export default function Topbar({ title }: TopbarProps) {
                 exit={{ opacity: 0, y: 8, scale: 0.96 }}
                 className="absolute right-0 top-12 w-80 bg-card border border-border rounded-xl shadow-2xl z-50 p-2"
               >
-                <p className="text-xs font-semibold text-muted-foreground px-3 py-1.5">Notifications ({NOTIFICATIONS.length})</p>
+                <p className="text-xs font-semibold text-muted-foreground px-3 py-1.5">{t('topbar.notifications', 'Notifications')} ({NOTIFICATIONS.length})</p>
                 {NOTIFICATIONS.map((n) => (
                   <div key={n.id} className="flex items-start gap-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors cursor-pointer">
                     <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.dot}`} />

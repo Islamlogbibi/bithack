@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Eye, EyeOff, GraduationCap, BookOpen, Building2, Landmark } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 import ThemeToggle from '../components/shared/ThemeToggle'
 import FloatingOrbs from '../components/shared/FloatingOrbs'
 
@@ -17,6 +18,7 @@ const CREDENTIALS: Record<RoleTab, { email: string; password: string; label: str
 
 export default function Login() {
   const { user, login } = useAuth()
+  const { t, language, setLanguage } = useLanguage()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<RoleTab>('student')
   const [email, setEmail] = useState('')
@@ -68,7 +70,17 @@ export default function Login() {
       <FloatingOrbs />
 
       {/* Theme toggle */}
-      <div className="fixed top-4 right-4 z-50">
+      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <select
+          aria-label={t('common.language', 'Langue')}
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as 'fr' | 'en' | 'ar')}
+          className="px-2 py-1.5 text-xs bg-secondary border border-border rounded-lg text-foreground"
+        >
+          <option value="fr">{t('language.fr', 'Francais')}</option>
+          <option value="en">{t('language.en', 'English')}</option>
+          <option value="ar">{t('language.ar', 'العربية')}</option>
+        </select>
         <ThemeToggle />
       </div>
 
@@ -94,18 +106,26 @@ export default function Login() {
 
           {/* Role tabs */}
           <div className="flex gap-1 bg-secondary rounded-xl p-1 mb-6">
-            {tabs.map((t) => (
+            {tabs.map((tab) => (
               <button
-                key={t.role}
-                onClick={() => setActiveTab(t.role)}
+                key={tab.role}
+                onClick={() => setActiveTab(tab.role)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-lg transition-all ${
-                  activeTab === t.role
+                  activeTab === tab.role
                     ? 'bg-primary text-primary-foreground shadow'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {t.icon}
-                <span className="hidden sm:block">{t.label}</span>
+                {tab.icon}
+                <span className="hidden sm:block">
+                  {tab.role === 'student'
+                    ? t('role.student', tab.label)
+                    : tab.role === 'teacher'
+                      ? t('role.teacher', tab.label)
+                      : tab.role === 'admin'
+                        ? t('role.admin', tab.label)
+                        : t('role.dean', tab.label)}
+                </span>
               </button>
             ))}
           </div>
@@ -113,7 +133,7 @@ export default function Login() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Email universitaire</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t('login.universityEmail', 'Email universitaire')}</label>
               <input
                 type="email"
                 value={email}
@@ -124,7 +144,7 @@ export default function Login() {
               />
             </div>
             <div className="relative">
-              <label className="text-xs font-medium text-muted-foreground mb-1 block">Mot de passe</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">{t('login.password', 'Mot de passe')}</label>
               <div className="relative">
                 <input
                   type={showPwd ? 'text' : 'password'}
@@ -163,9 +183,9 @@ export default function Login() {
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Connexion...
+                  {t('login.connecting', 'Connexion...')}
                 </span>
-              ) : 'Se connecter'}
+              ) : t('login.login', 'Se connecter')}
             </motion.button>
           </form>
 

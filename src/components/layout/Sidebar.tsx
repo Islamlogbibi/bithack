@@ -8,6 +8,7 @@ import {
   UserRound, Network, FileCheck2, ScanLine, MessageSquare, FileUp, Building2
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 
 interface NavItem {
   label: string
@@ -58,6 +59,7 @@ const deanNav: NavItem[] = [
 
 export default function Sidebar() {
   const { user, logout } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
   const [collapsed, setCollapsed] = useState(false)
 
@@ -66,10 +68,10 @@ export default function Sidebar() {
       : user?.role === 'dean' ? deanNav
         : adminNav
 
-  const roleLabel = user?.role === 'student' ? 'Étudiant'
-    : user?.role === 'teacher' ? 'Enseignant'
-      : user?.role === 'dean' ? 'Doyen'
-        : 'Administration'
+  const roleLabel = user?.role === 'student' ? t('role.student', 'Etudiant')
+    : user?.role === 'teacher' ? t('role.teacher', 'Enseignant')
+      : user?.role === 'dean' ? t('role.dean', 'Doyen')
+        : t('role.admin', 'Administration')
 
   const RoleIcon = user?.role === 'student' ? GraduationCap
     : user?.role === 'teacher' ? BarChart2
@@ -131,7 +133,13 @@ export default function Sidebar() {
                   exit={{ opacity: 0, x: -8 }}
                   className="text-sm font-medium truncate flex-1"
                 >
-                  {item.label}
+                  {item.path.endsWith('/dashboard')
+                    ? t('sidebar.dashboard', item.label)
+                    : item.path.endsWith('/schedule')
+                      ? t('sidebar.schedule', item.label)
+                      : item.path.endsWith('/justifications')
+                        ? t('sidebar.justifications', item.label)
+                        : item.label}
                 </motion.span>
               )}
             </AnimatePresence>
@@ -177,7 +185,7 @@ export default function Sidebar() {
                 exit={{ opacity: 0 }}
                 className="text-sm font-medium"
               >
-                Déconnexion
+                {t('common.logout', 'Deconnexion')}
               </motion.span>
             )}
           </AnimatePresence>

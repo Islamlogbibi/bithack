@@ -2,6 +2,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
+import { useLanguage } from '../../context/LanguageContext'
 
 const PAGE_TITLES: Record<string, string> = {
   '/student/dashboard': 'Tableau de bord',
@@ -31,7 +32,15 @@ const PAGE_TITLES: Record<string, string> = {
 
 export default function AppLayout() {
   const location = useLocation()
-  const title = PAGE_TITLES[location.pathname] ?? 'PUI Smart Campus'
+  const { t } = useLanguage()
+  const rawTitle = PAGE_TITLES[location.pathname] ?? t('title.default', 'PUI Smart Campus')
+  const title = rawTitle === 'Espace Doyen'
+    ? t('title.deanSpace', rawTitle)
+    : rawTitle === 'Emploi du Temps'
+      ? t('title.schedule', rawTitle)
+      : rawTitle === 'Justifications'
+        ? t('title.justifications', rawTitle)
+        : rawTitle
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">

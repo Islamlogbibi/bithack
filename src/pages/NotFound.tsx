@@ -1,7 +1,10 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useLanguage } from "../context/LanguageContext";
 
 export default function NotFound() {
+  const { t, language, setLanguage } = useLanguage();
+
   return (
     <div
       style={{
@@ -17,6 +20,18 @@ export default function NotFound() {
         padding: "2rem",
       }}
     >
+      <div style={{ position: "fixed", top: "1rem", right: "1rem" }}>
+        <select
+          aria-label={t("common.language", "Langue")}
+          value={language}
+          onChange={(e) => setLanguage(e.target.value as "fr" | "en" | "ar")}
+          style={{ padding: "0.4rem 0.6rem", borderRadius: "0.5rem" }}
+        >
+          <option value="fr">{t("language.fr", "Francais")}</option>
+          <option value="en">{t("language.en", "English")}</option>
+          <option value="ar">{t("language.ar", "العربية")}</option>
+        </select>
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -43,7 +58,7 @@ export default function NotFound() {
             color: "var(--color-text)",
           }}
         >
-          Page Not Found
+          {t("notfound.title", "Page Not Found")}
         </h1>
         <p
           style={{
@@ -52,7 +67,7 @@ export default function NotFound() {
             maxWidth: "400px",
           }}
         >
-          The page you are looking for does not exist or has been moved.
+          {t("notfound.description", "The page you are looking for does not exist or has been moved.")}
         </p>
         <Link
           to="/"
@@ -69,7 +84,7 @@ export default function NotFound() {
           onMouseOver={(e) => (e.currentTarget.style.opacity = "0.85")}
           onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
         >
-          Back to Home
+          {t("notfound.back", "Back to Home")}
         </Link>
       </motion.div>
     </div>
