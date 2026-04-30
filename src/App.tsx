@@ -14,9 +14,6 @@ import StudentGrades from "./pages/student/Grades";
 import StudentAttendance from "./pages/student/Attendance";
 import StudentResources from "./pages/student/Resources";
 import AIAssistant from "./pages/student/AIAssistant";
-
-import StudentJustification from "./pages/student/Justification";
-
 import AbsenceJustification from "./pages/student/AbsenceJustification";
 import StudentQRScan from "./pages/student/QRScan";
 import StudentProfile from "./pages/student/Profile";
@@ -67,7 +64,7 @@ export default function App() {
               <Route path="messages" element={<StudentMessages />} />
               <Route path="resources" element={<StudentResources />} />
               <Route path="ai-assistant" element={<AIAssistant />} />
-              <Route path="justification" element={<StudentJustification />} />
+              <Route path="justification" element={<AbsenceJustification />} />
             </Route>
 
             {/* Teacher routes */}
