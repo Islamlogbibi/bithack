@@ -1,24 +1,10 @@
-import { motion } from 'framer-motion'
-import { Calendar } from 'lucide-react'
-import { useMemo, useState } from 'react'
-const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Samedi']
-const TIMES = ['08:00', '10:00', '12:00', '14:00', '16:00']
+import { motion, AnimatePresence } from 'framer-motion'
+import { Calendar, Plus, X, Save, Trash2, Download } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { getAllSchedules, createSchedule } from '../../lib/api'
 
-const ALL_SESSIONS = [
-  { day: 'Dimanche', time: '08:00', subject: 'Algorithmique', room: 'A12', teacher: 'Dr. Meziani', group: 'G2', type: 'Cours' },
-  { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', teacher: 'Dr. Boualem', group: 'G1', type: 'TP' },
-  { day: 'Dimanche', time: '14:00', subject: 'Probabilités', room: 'A08', teacher: 'Dr. Laadj', group: 'G3', type: 'Cours' },
-  { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'B04', teacher: 'Mme. Rahmani', group: 'G1', type: 'TD' },
-  { day: 'Lundi', time: '10:00', subject: 'Structures de Données', room: 'Labo Info', teacher: 'Dr. Meziani', group: 'G1', type: 'TP' },
-  { day: 'Lundi', time: '14:00', subject: 'Mathématiques', room: 'A08', teacher: 'Dr. Laadj', group: 'G2', type: 'Cours' },
-  { day: 'Mardi', time: '08:00', subject: 'Anglais Technique', room: 'C02', teacher: 'Mme. Ferhat', group: 'G1', type: 'TD' },
-  { day: 'Mardi', time: '10:00', subject: 'Algorithmique', room: 'Labo Info', teacher: 'Dr. Meziani', group: 'G2', type: 'TP' },
-  { day: 'Mercredi', time: '08:00', subject: 'Réseaux', room: 'B06', teacher: 'Dr. Boualem', group: 'G2', type: 'TD' },
-  { day: 'Mercredi', time: '10:00', subject: 'Base de Données', room: 'A12', teacher: 'Mme. Rahmani', group: 'G3', type: 'Cours' },
-  { day: 'Jeudi', time: '08:00', subject: 'Probabilités', room: 'A10', teacher: 'Dr. Laadj', group: 'G1', type: 'TD' },
-  { day: 'Jeudi', time: '14:00', subject: 'Algorithmique', room: 'A12', teacher: 'Dr. Meziani', group: 'G3', type: 'Cours' },
-  { day: 'Samedi', time: '10:00', subject: 'Projet tutoré', room: 'Labo P2', teacher: 'Dr. Meziani', group: 'G1', type: 'TP' },
-]
+const DAYS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Samedi']
+const TIMES = ['08:00', '09:45', '11:30', '14:00', '15:45']
 
 const TYPE_STYLE: Record<string, string> = {
   Cours: 'bg-blue-500/15 border-blue-500/30 text-blue-700 dark:text-blue-300',
@@ -28,146 +14,217 @@ const TYPE_STYLE: Record<string, string> = {
 
 export default function AdminSchedule() {
   const [filters, setFilters] = useState({
-    speciality: 'Informatique',
-    level: 'L3',
-    section: 'A',
-    group: 'G1',
+    group: 'Group A',
+  })
+  const [schedules, setSchedules] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newSession, setNewSession] = useState({
+    day: 'Dimanche',
+    time: '08:00',
+    subject: '',
+    room: '',
+    type: 'Cours',
+    scope: 'group',
+    scopeId: 'Group A'
   })
 
+  const fetchSchedules = () => {
+    setLoading(true)
+    getAllSchedules()
+      .then(setSchedules)
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    fetchSchedules()
+  }, [])
+
   const filteredSessions = useMemo(
-    () => ALL_SESSIONS.filter((session) => session.group === filters.group),
-    [filters.group]
+    () => schedules.filter((session) => session.scopeId === filters.group),
+    [filters.group, schedules]
   )
 
   const getSession = (day: string, time: string) =>
     filteredSessions.filter((s) => s.day === day && s.time === time)
 
-  const updateFilter = (key: keyof typeof filters, value: string) => {
-    setFilters((prev) => ({ ...prev, [key]: value }))
-  }
-
-  const downloadFile = (name: string, content: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = name
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  const exportPdf = () => {
-    const lines = [
-      `Emploi du temps - ${filters.speciality} / ${filters.level} / ${filters.section} / ${filters.group}`,
-      '',
-      ...filteredSessions.map((s) => `${s.day} ${s.time} | ${s.subject} (${s.type}) | ${s.room} | ${s.teacher}`),
-    ]
-    downloadFile(`schedule-${filters.group}.pdf`, lines.join('\n'), 'application/pdf')
-  }
-
-  const exportIcal = () => {
-    const icalContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'PRODID:-//PUI Smart Campus//Schedule//FR',
-      ...filteredSessions.map((s, index) => [
-        'BEGIN:VEVENT',
-        `UID:${filters.group}-${index}@pui-smart-campus`,
-        `SUMMARY:${s.subject} - ${s.type}`,
-        `DESCRIPTION:${s.teacher} - ${s.room}`,
-        `LOCATION:${s.room}`,
-        'END:VEVENT',
-      ].join('\n')),
-      'END:VCALENDAR',
-    ].join('\n')
-    downloadFile(`schedule-${filters.group}.ics`, icalContent, 'text/calendar')
+  const handleAdd = async () => {
+    try {
+      await createSchedule({ ...newSession, scopeId: filters.group })
+      setShowAddModal(false)
+      fetchSchedules()
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (
     <>
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="mb-6 flex items-center justify-between"
-      >
-        <p className="text-sm text-muted-foreground">Vue globale de toutes les sessions — Semestre 2 · 2024/2025</p>
-        <div className="flex items-center gap-2">
-          <button onClick={exportPdf} className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors">
-            <Calendar size={16} />
-            Exporter PDF
-          </button>
-          <button onClick={exportIcal} className="flex items-center gap-2 px-4 py-2 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors">
-            <Calendar size={16} />
-            Exporter iCal
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex gap-4">
+          <select 
+            value={filters.group} 
+            onChange={(e) => setFilters({ group: e.target.value })} 
+            className="px-4 py-2 bg-card border border-border rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <option>Group A</option>
+            <option>Group B</option>
+            <option>G1</option>
+            <option>G2</option>
+          </select>
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-black shadow-lg shadow-primary/20 hover:opacity-90 transition-all"
+          >
+            <Plus size={18} />
+            Ajouter une session
           </button>
         </div>
-      </motion.div>
-
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
-        <select value={filters.speciality} onChange={(e) => updateFilter('speciality', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          <option>Informatique</option>
-        </select>
-        <select value={filters.level} onChange={(e) => updateFilter('level', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          <option>L2</option>
-          <option>L3</option>
-        </select>
-        <select value={filters.section} onChange={(e) => updateFilter('section', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          <option>A</option>
-          <option>B</option>
-        </select>
-        <select value={filters.group} onChange={(e) => updateFilter('group', e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          <option>G1</option>
-          <option>G2</option>
-          <option>G3</option>
-        </select>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="bg-card border border-border rounded-xl overflow-hidden"
-      >
-        {/* Header */}
-        <div className="grid grid-cols-7 border-b border-border bg-secondary/50">
-          <div className="p-3 text-xs font-semibold text-muted-foreground border-r border-border" />
-          {DAYS.map((day) => (
-            <div key={day} className="p-3 text-xs font-semibold text-center text-foreground border-r border-border last:border-0">{day}</div>
-          ))}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
         </div>
-        {/* Rows */}
-        {TIMES.map((time) => (
-          <div key={time} className="grid grid-cols-7 border-b border-border last:border-0">
-            <div className="p-3 text-xs text-muted-foreground border-r border-border flex items-start pt-3">{time}</div>
-            {DAYS.map((day) => {
-              const sessions = getSession(day, time)
-              return (
-                <div key={day} className="p-1.5 border-r border-border last:border-0 min-h-[80px] space-y-1">
-                  {sessions.map((s, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.03 * i }}
-                      className={`p-1.5 rounded-lg border text-xs ${TYPE_STYLE[s.type]}`}
-                    >
-                      <p className="font-bold leading-tight text-xs">{s.subject}</p>
-                      <p className="opacity-70 text-xs">{s.teacher.split(' ')[1] || s.teacher}</p>
-                      <div className="flex items-center justify-between mt-0.5">
-                        <span className="opacity-60">{s.room}</span>
-                        <span className="font-semibold">{s.group}</span>
-                      </div>
-                    </motion.div>
-                  ))}
-                  {sessions.length === 0 && (
-                    <div className="h-full border border-dashed border-border/40 rounded-lg m-0.5" />
-                  )}
-                </div>
-              )
-            })}
+      ) : (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="bg-card border border-border rounded-xl overflow-hidden shadow-sm"
+        >
+          <div className="grid grid-cols-7 border-b border-border bg-secondary/50">
+            <div className="p-3 text-[10px] font-black uppercase text-muted-foreground border-r border-border" />
+            {DAYS.map((day) => (
+              <div key={day} className="p-3 text-[10px] font-black uppercase text-center text-foreground border-r border-border last:border-0">{day}</div>
+            ))}
           </div>
-        ))}
-      </motion.div>
+          {TIMES.map((time) => (
+            <div key={time} className="grid grid-cols-7 border-b border-border last:border-0">
+              <div className="p-3 text-[10px] font-bold text-muted-foreground border-r border-border flex items-start pt-4">{time}</div>
+              {DAYS.map((day) => {
+                const sessions = getSession(day, time)
+                return (
+                  <div key={day} className="p-1.5 border-r border-border last:border-0 min-h-[100px] space-y-1 bg-secondary/10">
+                    {sessions.map((s, i) => (
+                      <div
+                        key={i}
+                        className={`p-2 rounded-lg border text-xs shadow-sm ${TYPE_STYLE[s.type]}`}
+                      >
+                        <p className="font-bold leading-tight">{s.subject}</p>
+                        <p className="opacity-70 text-[10px] mt-0.5">{s.room}</p>
+                        <div className="flex items-center justify-between mt-1 text-[9px] font-black uppercase">
+                          <span>{s.type}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {sessions.length === 0 && (
+                      <div className="h-full border border-dashed border-border/20 rounded-lg" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </motion.div>
+      )}
+
+      {/* Add Modal */}
+      <AnimatePresence>
+        {showAddModal && (
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="font-bold text-foreground">Nouvelle session - {filters.group}</h3>
+                <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-secondary rounded-full">
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">Jour</label>
+                    <select 
+                      value={newSession.day} 
+                      onChange={e => setNewSession({...newSession, day: e.target.value})}
+                      className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-sm outline-none"
+                    >
+                      {DAYS.map(d => <option key={d}>{d}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">Heure</label>
+                    <select 
+                      value={newSession.time} 
+                      onChange={e => setNewSession({...newSession, time: e.target.value})}
+                      className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-sm outline-none"
+                    >
+                      {TIMES.map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black uppercase text-muted-foreground">Matière</label>
+                  <input 
+                    type="text" 
+                    value={newSession.subject}
+                    onChange={e => setNewSession({...newSession, subject: e.target.value})}
+                    placeholder="ex: Algorithmique"
+                    className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-sm outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">Salle</label>
+                    <input 
+                      type="text" 
+                      value={newSession.room}
+                      onChange={e => setNewSession({...newSession, room: e.target.value})}
+                      placeholder="ex: Amphi A"
+                      className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-sm outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase text-muted-foreground">Type</label>
+                    <select 
+                      value={newSession.type} 
+                      onChange={e => setNewSession({...newSession, type: e.target.value})}
+                      className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-sm outline-none"
+                    >
+                      <option>Cours</option>
+                      <option>TD</option>
+                      <option>TP</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-8 flex gap-3">
+                <button 
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1 py-3 bg-secondary text-foreground rounded-xl font-bold hover:bg-muted"
+                >
+                  Annuler
+                </button>
+                <button 
+                  onClick={handleAdd}
+                  className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl font-black shadow-lg shadow-primary/20 hover:opacity-90"
+                >
+                  Ajouter
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </>
   )
 }

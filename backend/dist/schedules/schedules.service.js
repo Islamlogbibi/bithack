@@ -41,6 +41,15 @@ let SchedulesService = class SchedulesService {
     byScope(scope, scopeId) {
         return this.repo.find({ where: { scope: scope, scopeId } });
     }
+    listAll() {
+        return this.repo.find();
+    }
+    create(data) {
+        return this.repo.save(this.repo.create(data));
+    }
+    delete(id) {
+        return this.repo.delete(id);
+    }
 };
 exports.SchedulesService = SchedulesService;
 exports.SchedulesService = SchedulesService = __decorate([

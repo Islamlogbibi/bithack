@@ -29,6 +29,7 @@ export function mapApiValidation(v: {
         : new Date(v.submittedAt as unknown as string | number | Date).toISOString(),
     slaHours: v.slaHours ?? 0,
     studentGrades: v.studentGradesJson ?? [],
+    status: v.status,
   }
 }
 

@@ -8,4 +8,8 @@ export declare class TeachersService implements OnModuleInit {
     onModuleInit(): Promise<void>;
     list(): Promise<TeacherEntity[]>;
     findByUserId(userId: number): Promise<TeacherEntity | null>;
+    update(id: number, data: {
+        subjectsJson?: string[];
+        groupsJson?: string[];
+    }): Promise<TeacherEntity | null>;
 }

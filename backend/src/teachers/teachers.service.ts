@@ -45,4 +45,9 @@ export class TeachersService implements OnModuleInit {
   findByUserId(userId: number) {
     return this.teachersRepo.findOne({ where: { user: { id: userId } }, relations: { user: true } });
   }
+
+  async update(id: number, data: { subjectsJson?: string[]; groupsJson?: string[] }) {
+    await this.teachersRepo.update(id, data);
+    return this.teachersRepo.findOne({ where: { id }, relations: { user: true } });
+  }
 }

@@ -29,4 +29,16 @@ export class SchedulesService implements OnModuleInit {
   byScope(scope: string, scopeId: string) {
     return this.repo.find({ where: { scope: scope as 'student' | 'group' | 'faculty', scopeId } });
   }
+
+  listAll() {
+    return this.repo.find();
+  }
+
+  create(data: any) {
+    return this.repo.save(this.repo.create(data));
+  }
+
+  delete(id: number) {
+    return this.repo.delete(id);
+  }
 }

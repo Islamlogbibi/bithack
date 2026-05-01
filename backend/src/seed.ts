@@ -61,7 +61,10 @@ async function bootstrap() {
   const subjectsPool = ['Algorithmique', 'Bases de données', 'Réseaux', 'IA'];
 
   for (const name of teacherNames) {
-    const email = name.toLowerCase().replace(/\s+/g, '.') + '@pui.dz';
+    const email = name.toLowerCase()
+      .replace(/dr\.|mme\.|pr\./g, '')
+      .trim()
+      .replace(/\s+/g, '.') + '@pui.dz';
     const user = await userRepo.save(userRepo.create({
       email, passwordHash, fullName: name, role: 'teacher', department: 'Informatique',
     }));

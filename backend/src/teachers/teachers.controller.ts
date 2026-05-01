@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Param, UseGuards } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -12,5 +12,11 @@ export class TeachersController {
   @Roles('admin', 'dean')
   list() {
     return this.teachersService.list();
+  }
+
+  @Patch(':id')
+  @Roles('admin')
+  update(@Param('id') id: string, @Body() data: { subjectsJson?: string[]; groupsJson?: string[] }) {
+    return this.teachersService.update(+id, data);
   }
 }

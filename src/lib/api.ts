@@ -140,6 +140,19 @@ export function getSpecialitiesTree() {
   return apiGet<any[]>('/specialities/tree')
 }
 
+export function getStudents(filters: Record<string, string | undefined> = {}) {
+  const params = new URLSearchParams()
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v) params.append(k, v)
+  })
+  const qs = params.toString()
+  return apiGet<any[]>(`/students${qs ? '?' + qs : ''}`)
+}
+
+export function getStudentsByGroup(group: string) {
+  return getStudents({ group })
+}
+
 export function createStudent(data: any) {
   return apiPost<void>('/students', data)
 }
@@ -150,11 +163,23 @@ export function getTeachers() {
   return apiGet<any[]>('/teachers')
 }
 
+export function updateTeacher(id: number, data: any) {
+  return apiPatch<void>(`/teachers/${id}`, data)
+}
+
 // =======================
 // SCHEDULES
 // =======================
 export function getScheduleByScope(scope: string, scopeId: string) {
   return apiGet<any[]>(`/schedules/${scope}/${scopeId}`)
+}
+
+export function getAllSchedules() {
+  return apiGet<any[]>('/schedules')
+}
+
+export function createSchedule(data: any) {
+  return apiPost<void>('/schedules', data)
 }
 
 // =======================
@@ -191,17 +216,4 @@ export function submitAssignment(data: {
 }
 export function getAssignmentSubmissions(id: number) {
   return apiGet<any[]>(`/assignments/${id}/submissions`)
-}
-
-export function getStudents(filters: Record<string, string | undefined> = {}) {
-  const params = new URLSearchParams()
-  Object.entries(filters).forEach(([k, v]) => {
-    if (v) params.append(k, v)
-  })
-  const qs = params.toString()
-  return apiGet<any[]>(`/students${qs ? '?' + qs : ''}`)
-}
-
-export function getStudentsByGroup(group: string) {
-  return getStudents({ group })
 }

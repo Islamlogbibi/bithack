@@ -92,6 +92,7 @@ export interface AdminPendingValidation {
   submitted: string
   slaHours: number
   studentGrades: { student: string; matricule: string; grade: number }[]
+  status: string
 }
 
 export interface ResourceItem {

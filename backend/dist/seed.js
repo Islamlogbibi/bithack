@@ -72,7 +72,10 @@ async function bootstrap() {
     const teachers = [];
     const subjectsPool = ['Algorithmique', 'Bases de données', 'Réseaux', 'IA'];
     for (const name of teacherNames) {
-        const email = name.toLowerCase().replace(/\s+/g, '.') + '@pui.dz';
+        const email = name.toLowerCase()
+            .replace(/dr\.|mme\.|pr\./g, '')
+            .trim()
+            .replace(/\s+/g, '.') + '@pui.dz';
         const user = await userRepo.save(userRepo.create({
             email, passwordHash, fullName: name, role: 'teacher', department: 'Informatique',
         }));
@@ -119,15 +122,21 @@ async function bootstrap() {
     }
     console.log('Generating timetables...');
     const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi'];
-    for (let i = 0; i < 3; i++) {
-        await scheduleRepo.save(scheduleRepo.create({
-            day: days[i], time: '08:30', subject: subjectsPool[i], room: 'Amphi A', type: 'Cours', scope: 'group', scopeId: 'Group A'
-        }));
+    const groupASessions = [
+        { day: 'Dimanche', time: '08:30', subject: 'Algorithmique', room: 'Amphi A', type: 'Cours', scope: 'group', scopeId: 'Group A' },
+        { day: 'Lundi', time: '10:30', subject: 'Bases de données', room: 'Salle B1', type: 'TD', scope: 'group', scopeId: 'Group A' },
+        { day: 'Mardi', time: '14:00', subject: 'Réseaux', room: 'Labo 1', type: 'TP', scope: 'group', scopeId: 'Group A' },
+    ];
+    for (const s of groupASessions) {
+        await scheduleRepo.save(scheduleRepo.create(s));
     }
-    for (let i = 0; i < 3; i++) {
-        await scheduleRepo.save(scheduleRepo.create({
-            day: days[i], time: '10:30', subject: subjectsPool[i], room: 'Amphi B', type: 'Cours', scope: 'group', scopeId: 'Group B'
-        }));
+    const groupBSessions = [
+        { day: 'Dimanche', time: '10:30', subject: 'Algorithmique', room: 'Amphi B', type: 'Cours', scope: 'group', scopeId: 'Group B' },
+        { day: 'Lundi', time: '08:30', subject: 'Bases de données', room: 'Salle B2', type: 'TD', scope: 'group', scopeId: 'Group B' },
+        { day: 'Mercredi', time: '14:00', subject: 'Réseaux', room: 'Labo 2', type: 'TP', scope: 'group', scopeId: 'Group B' },
+    ];
+    for (const s of groupBSessions) {
+        await scheduleRepo.save(scheduleRepo.create(s));
     }
     await specialityRepo.save([
         { name: 'Informatique', level: 'L3', section: 'A', groupName: 'Group A' },

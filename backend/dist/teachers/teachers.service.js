@@ -54,6 +54,10 @@ let TeachersService = class TeachersService {
     findByUserId(userId) {
         return this.teachersRepo.findOne({ where: { user: { id: userId } }, relations: { user: true } });
     }
+    async update(id, data) {
+        await this.teachersRepo.update(id, data);
+        return this.teachersRepo.findOne({ where: { id }, relations: { user: true } });
+    }
 };
 exports.TeachersService = TeachersService;
 exports.TeachersService = TeachersService = __decorate([

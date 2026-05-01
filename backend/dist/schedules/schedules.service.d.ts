@@ -6,4 +6,7 @@ export declare class SchedulesService implements OnModuleInit {
     constructor(repo: Repository<ScheduleEntity>);
     onModuleInit(): Promise<void>;
     byScope(scope: string, scopeId: string): Promise<ScheduleEntity[]>;
+    listAll(): Promise<ScheduleEntity[]>;
+    create(data: any): Promise<ScheduleEntity[]>;
+    delete(id: number): Promise<import("typeorm").DeleteResult>;
 }
