@@ -10,6 +10,8 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { useLanguage } from '../../context/LanguageContext'
 
+const MAIN_LOGO_SRC = '/university-logo.png'
+
 interface NavItem {
   label: string
   path: string
@@ -95,8 +97,8 @@ export default function Sidebar() {
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-sidebar-border min-h-[68px]">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0 shadow-lg">
-          <span className="text-white font-bold text-sm">PUI</span>
+        <div className="w-9 h-9 rounded-xl bg-white/90 flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden p-1">
+          <img src={MAIN_LOGO_SRC} alt="Universite Badji Mokhtar Annaba" className="w-full h-full object-contain" />
         </div>
         <AnimatePresence>
           {!collapsed && (

@@ -8,13 +8,9 @@ export declare class ValidationsController {
         module: string;
         groupName: string;
         status: "pending" | "approved" | "rejected";
-        count: number;
+        count: any;
         submittedAt: Date;
-        studentGradesJson: {
-            matricule: any;
-            grade: any;
-            td: any;
-        }[];
+        studentGradesJson: any[];
     }[]>;
     create(body: {
         teacherName: string;

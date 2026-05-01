@@ -47,10 +47,40 @@ export class StudentsService {
         q: `%${filters.query.toLowerCase()}%`,
       });
     }
-    if (filters.speciality) qb.andWhere('speciality.id = :speciality', { speciality: Number(filters.speciality) });
-    if (filters.level) qb.andWhere('level.id = :level', { level: Number(filters.level) });
-    if (filters.section) qb.andWhere('section.id = :section', { section: Number(filters.section) });
-    if (filters.group) qb.andWhere('group.id = :group', { group: Number(filters.group) });
+    if (filters.speciality) {
+      const specialityId = Number(filters.speciality);
+      if (Number.isFinite(specialityId)) {
+        qb.andWhere('speciality.id = :specialityId', { specialityId });
+      } else {
+        qb.andWhere('(LOWER(speciality.libelle) = :specialityName OR LOWER(speciality.name) = :specialityName)', {
+          specialityName: filters.speciality.toLowerCase(),
+        });
+      }
+    }
+    if (filters.level) {
+      const levelId = Number(filters.level);
+      if (Number.isFinite(levelId)) {
+        qb.andWhere('level.id = :levelId', { levelId });
+      } else {
+        qb.andWhere('LOWER(level.libelle) = :levelName', { levelName: filters.level.toLowerCase() });
+      }
+    }
+    if (filters.section) {
+      const sectionId = Number(filters.section);
+      if (Number.isFinite(sectionId)) {
+        qb.andWhere('section.id = :sectionId', { sectionId });
+      } else {
+        qb.andWhere('LOWER(section.code) = :sectionCode', { sectionCode: filters.section.toLowerCase() });
+      }
+    }
+    if (filters.group) {
+      const groupId = Number(filters.group);
+      if (Number.isFinite(groupId)) {
+        qb.andWhere('group.id = :groupId', { groupId });
+      } else {
+        qb.andWhere('LOWER(group.code) = :groupCode', { groupCode: filters.group.toLowerCase() });
+      }
+    }
 
     return qb.getMany();
   }

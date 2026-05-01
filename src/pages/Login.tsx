@@ -8,6 +8,7 @@ import ThemeToggle from '../components/shared/ThemeToggle'
 import FloatingOrbs from '../components/shared/FloatingOrbs'
 
 type RoleTab = 'student' | 'teacher' | 'admin' | 'dean'
+const MAIN_LOGO_SRC = '/university-logo.png'
 
 const CREDENTIALS: Record<RoleTab, { email: string; password: string; label: string }> = {
   student: { email: 'student@pui.dz', password: 'student123', label: 'Mabrouk Benali — Étudiant L3' },
@@ -92,8 +93,8 @@ export default function Login() {
         <div className="bg-card/80 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-8">
           {/* Logo */}
           <div className="flex flex-col items-center mb-6">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-xl mb-3">
-              <span className="text-white font-bold text-2xl">PUI</span>
+            <div className="w-20 h-20 rounded-2xl bg-white/90 border border-border flex items-center justify-center shadow-xl mb-3 p-2">
+              <img src={MAIN_LOGO_SRC} alt="Universite Badji Mokhtar Annaba" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-2xl font-bold text-balance text-center">
               <span className="bg-gradient-to-r from-blue-500 to-indigo-500 bg-clip-text text-transparent">

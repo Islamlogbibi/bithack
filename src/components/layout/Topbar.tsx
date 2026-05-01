@@ -9,6 +9,8 @@ interface TopbarProps {
   title: string
 }
 
+const MAIN_LOGO_SRC = '/university-logo.png'
+
 const NOTIFICATIONS = [
   { id: 1, text: '4 absences détectées en Algorithmique', time: 'il y a 2h', dot: 'bg-amber-500' },
   { id: 2, text: 'Nouvelle ressource publiée par Dr. Meziani', time: 'il y a 5h', dot: 'bg-blue-500' },
@@ -22,7 +24,12 @@ export default function Topbar({ title }: TopbarProps) {
 
   return (
     <header className="h-[64px] flex items-center justify-between px-6 border-b border-border bg-card z-10 flex-shrink-0">
-      <h1 className="text-lg font-bold text-foreground">{title}</h1>
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-9 h-9 rounded-lg bg-white/90 border border-border flex items-center justify-center overflow-hidden p-1">
+          <img src={MAIN_LOGO_SRC} alt="Universite Badji Mokhtar Annaba" className="w-full h-full object-contain" />
+        </div>
+        <h1 className="text-lg font-bold text-foreground truncate">{title}</h1>
+      </div>
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <label htmlFor="language-select" className="text-xs text-muted-foreground hidden md:block">

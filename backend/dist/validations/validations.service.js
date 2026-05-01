@@ -32,7 +32,7 @@ let ValidationsService = class ValidationsService {
     }
     async list() {
         const validations = await this.repo.find({
-            relations: ['teacher', 'teacher.user', 'grades', 'grades.student'],
+            relations: ['teacher', 'teacher.user', 'grades', 'grades.student', 'grades.student.user'],
             order: { submittedAt: 'DESC' }
         });
         return validations.map(v => ({
@@ -41,13 +41,16 @@ let ValidationsService = class ValidationsService {
             module: v.subject,
             groupName: v.groupName,
             status: v.status,
-            count: v.grades?.length || 0,
+            count: (v.studentGradesJson?.length || v.grades?.length || 0),
             submittedAt: v.submittedAt,
-            studentGradesJson: v.grades?.map(g => ({
-                matricule: g.student?.matricule,
-                grade: g.examGrade,
-                td: g.tdGrade
-            }))
+            studentGradesJson: Array.isArray(v.studentGradesJson) && v.studentGradesJson.length > 0
+                ? v.studentGradesJson
+                : (v.grades || []).map(g => ({
+                    student: g.student?.user?.fullName || 'Étudiant',
+                    matricule: g.student?.matricule,
+                    grade: g.examGrade,
+                    td: g.tdGrade,
+                })),
         }));
     }
     async create(data) {
@@ -61,6 +64,7 @@ let ValidationsService = class ValidationsService {
             teacher,
             subject: data.module,
             groupName: data.groupName,
+            studentGradesJson: Array.isArray(data.studentGradesJson) ? data.studentGradesJson : [],
             status: 'pending',
         }));
         if (data.studentGradesJson && Array.isArray(data.studentGradesJson)) {

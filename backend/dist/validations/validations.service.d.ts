@@ -13,13 +13,9 @@ export declare class ValidationsService {
         module: string;
         groupName: string;
         status: "pending" | "approved" | "rejected";
-        count: number;
+        count: any;
         submittedAt: Date;
-        studentGradesJson: {
-            matricule: any;
-            grade: any;
-            td: any;
-        }[];
+        studentGradesJson: any[];
     }[]>;
     create(data: any): Promise<ValidationEntity>;
     review(id: number, status: 'approved' | 'rejected', reviewerId?: number): Promise<{

@@ -19,6 +19,17 @@ const ACTIVITY_FEED = [
 export default function AdminDashboard() {
   const { user } = useAuth()
   const admin = user as AdminUser
+  const stats = (admin as AdminUser & {
+    adminStats?: Partial<AdminUser['stats']>
+    stats?: Partial<AdminUser['stats']>
+  })?.stats ?? (admin as any)?.adminStats ?? {}
+  const safeStats = {
+    totalStudents: Number(stats.totalStudents ?? 0),
+    activeTeachers: Number(stats.activeTeachers ?? 0),
+    pendingValidations: Number(stats.pendingValidations ?? 0),
+    avgAttendance: Number(stats.avgAttendance ?? 0),
+    publishedResources: Number(stats.publishedResources ?? 0),
+  }
   const [validations, setValidations] = useState<AdminPendingValidation[]>([])
   const [absenceAlerts, setAbsenceAlerts] = useState<AbsenceAlertRow[]>([])
   const [workloadData, setWorkloadData] = useState<WorkloadRow[]>([])
@@ -93,11 +104,11 @@ export default function AdminDashboard() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-        <StatCard title="Étudiants" value={admin.stats.totalStudents} icon={<Users size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
-        <StatCard title="Enseignants" value={admin.stats.activeTeachers} icon={<BookOpen size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.1} />
-        <StatCard title="Validations" value={admin.stats.pendingValidations} icon={<ShieldCheck size={20} />} color="text-red-500" bgColor="bg-red-500" delay={0.2} badge="Urgent" badgeColor="bg-red-500/20 text-red-500" />
-        <StatCard title="Présence moy." value={admin.stats.avgAttendance} suffix="%" icon={<BarChart2 size={20} />} color="text-emerald-500" bgColor="bg-emerald-500" delay={0.3} />
-        <StatCard title="Ressources" value={admin.stats.publishedResources} icon={<FileText size={20} />} color="text-amber-500" bgColor="bg-amber-500" delay={0.4} />
+        <StatCard title="Étudiants" value={safeStats.totalStudents} icon={<Users size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
+        <StatCard title="Enseignants" value={safeStats.activeTeachers} icon={<BookOpen size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.1} />
+        <StatCard title="Validations" value={safeStats.pendingValidations} icon={<ShieldCheck size={20} />} color="text-red-500" bgColor="bg-red-500" delay={0.2} badge="Urgent" badgeColor="bg-red-500/20 text-red-500" />
+        <StatCard title="Présence moy." value={safeStats.avgAttendance} suffix="%" icon={<BarChart2 size={20} />} color="text-emerald-500" bgColor="bg-emerald-500" delay={0.3} />
+        <StatCard title="Ressources" value={safeStats.publishedResources} icon={<FileText size={20} />} color="text-amber-500" bgColor="bg-amber-500" delay={0.4} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
