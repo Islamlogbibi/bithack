@@ -1,53 +1,64 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TeacherEntity, UserEntity } from '../entities';
 import { Repository } from 'typeorm';
-
-const PENDING_GRADES = [
-  { student: 'Ahmed Bouali', matricule: '202012301', group: 'G1', td: 14, exam: null, status: 'En attente' },
-  { student: 'Sara Mansouri', matricule: '202012302', group: 'G1', td: 16, exam: null, status: 'En attente' },
-  { student: 'Yacine Ferhat', matricule: '202012303', group: 'G2', td: 11, exam: null, status: 'En attente' },
-  { student: 'Nadia Cherif', matricule: '202012304', group: 'G2', td: 15, exam: null, status: 'En attente' },
-  { student: 'Omar Bensalem', matricule: '202012305', group: 'G3', td: 9, exam: null, status: 'En attente' },
-];
+import { TeacherEntity, TeacherModuleEntity } from '../entities';
 
 @Injectable()
-export class TeachersService implements OnModuleInit {
+export class TeachersService {
   constructor(
     @InjectRepository(TeacherEntity)
-    private readonly teachersRepo: Repository<TeacherEntity>,
-    @InjectRepository(UserEntity)
-    private readonly usersRepo: Repository<UserEntity>,
+    private readonly repo: Repository<TeacherEntity>,
+    @InjectRepository(TeacherModuleEntity)
+    private readonly moduleRepo: Repository<TeacherModuleEntity>,
   ) {}
 
-  async onModuleInit() {
-    const count = await this.teachersRepo.count();
-    if (count > 0) return;
-    const user = await this.usersRepo.findOne({ where: { email: 'teacher@pui.dz' } });
-    if (!user) return;
-    await this.teachersRepo.save(
-      this.teachersRepo.create({
-        user,
-        department: 'Informatique',
-        hoursPlanned: 96,
-        hoursCompleted: 72,
-        subjectsJson: ['Algorithmique', 'Structures de Données'],
-        groupsJson: ['G1', 'G2', 'G3'],
-        pendingGradesJson: PENDING_GRADES,
-      }),
-    );
+  async list() {
+    const teachers = await this.repo.find({ relations: ['user', 'modules'] });
+    return teachers.map(t => ({
+      id: t.id,
+      name: t.user.fullName,
+      email: t.user.email,
+      department: t.department,
+      hoursPlanned: t.hoursPlanned,
+      hoursCompleted: t.hoursCompleted,
+      subjects: [...new Set(t.modules?.map(m => m.subject) || [])],
+      groups: [...new Set(t.modules?.map(m => m.groupName) || [])],
+      academicCv: t.academicCvJson,
+    }));
   }
 
-  list() {
-    return this.teachersRepo.find();
+  async findByUserId(userId: number) {
+    return this.repo.findOne({
+      where: { user: { id: userId } },
+      relations: ['user', 'modules'],
+    });
   }
 
-  findByUserId(userId: number) {
-    return this.teachersRepo.findOne({ where: { user: { id: userId } }, relations: { user: true } });
-  }
+  async update(id: number, data: any) {
+    const teacher = await this.repo.findOne({ where: { id }, relations: ['modules'] });
+    if (!teacher) return;
 
-  async update(id: number, data: { subjectsJson?: string[]; groupsJson?: string[] }) {
-    await this.teachersRepo.update(id, data);
-    return this.teachersRepo.findOne({ where: { id }, relations: { user: true } });
+    if (data.department !== undefined) teacher.department = data.department;
+    if (data.hoursPlanned !== undefined) teacher.hoursPlanned = data.hoursPlanned;
+    
+    if (data.subjects !== undefined || data.groups !== undefined) {
+      // For simplicity in this demo, if subjects or groups are provided, 
+      // we rebuild the module list. In a real app, this would be more granular.
+      const subjects = data.subjects || [...new Set(teacher.modules?.map(m => m.subject) || [])];
+      const groups = data.groups || [...new Set(teacher.modules?.map(m => m.groupName) || [])];
+      
+      await this.moduleRepo.delete({ teacher: { id: teacher.id } });
+      for (const s of subjects) {
+        for (const g of groups) {
+          await this.moduleRepo.save(this.moduleRepo.create({
+            teacher,
+            subject: s,
+            groupName: g
+          }));
+        }
+      }
+    }
+
+    return this.repo.save(teacher);
   }
 }

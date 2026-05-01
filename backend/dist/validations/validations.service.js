@@ -15,213 +15,123 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ValidationsService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const entities_1 = require("../entities");
 const typeorm_2 = require("typeorm");
-const SEED = [
-    {
-        teacherName: 'Dr. Karim Meziani',
-        speciality: 'Informatique',
-        module: 'Algorithmique',
-        level: 'L2',
-        section: 'A',
-        groupName: 'G1',
-        count: 28,
-        submittedAt: '2025-01-10T09:30:00.000Z',
-        slaHours: 18,
-        studentGradesJson: [
-            { student: 'Ahmed Bouali', matricule: '202012301', grade: 15.5 },
-            { student: 'Sara Mansouri', matricule: '202012302', grade: 14.8 },
-            { student: 'Nadia Cherif', matricule: '202012304', grade: 13.4 },
-        ],
-    },
-    {
-        teacherName: 'Dr. Karim Meziani',
-        speciality: 'Informatique',
-        module: 'Algorithmique',
-        level: 'L3',
-        section: 'A',
-        groupName: 'G2',
-        count: 30,
-        submittedAt: '2025-01-10T10:15:00.000Z',
-        slaHours: 16,
-        studentGradesJson: [
-            { student: 'Mabrouk Benali', matricule: '202012345', grade: 14.2 },
-            { student: 'Lina Sadoud', matricule: '202012322', grade: 16.1 },
-            { student: 'Farid Bousselah', matricule: '202012325', grade: 11.7 },
-        ],
-    },
-    {
-        teacherName: 'Mme. Rahmani',
-        speciality: 'Informatique',
-        module: 'Base de Données',
-        level: 'L3',
-        section: 'A',
-        groupName: 'G1',
-        count: 27,
-        submittedAt: '2025-01-09T14:00:00.000Z',
-        slaHours: 6,
-        studentGradesJson: [
-            { student: 'Yasmine Ounissi', matricule: '202012317', grade: 12.9 },
-            { student: 'Fares Taleb', matricule: '202012203', grade: 10.4 },
-            { student: 'Ines Hamidi', matricule: '202012319', grade: 13.7 },
-        ],
-    },
-    {
-        teacherName: 'Dr. Boualem',
-        speciality: 'Informatique',
-        module: 'Réseaux',
-        level: 'L3',
-        section: 'B',
-        groupName: 'G3',
-        count: 25,
-        submittedAt: '2025-01-09T16:30:00.000Z',
-        slaHours: 8,
-        studentGradesJson: [
-            { student: 'Aymen Ghali', matricule: '202012330', grade: 11.2 },
-            { student: 'Rania Slimani', matricule: '202012202', grade: 9.5 },
-            { student: 'Ilyes Benaissa', matricule: '202012329', grade: 14.1 },
-        ],
-    },
-    {
-        teacherName: 'Dr. Laadj',
-        speciality: 'Informatique',
-        module: 'Mathématiques',
-        level: 'L3',
-        section: 'A',
-        groupName: 'G2',
-        count: 29,
-        submittedAt: '2025-01-08T11:00:00.000Z',
-        slaHours: 2,
-        studentGradesJson: [
-            { student: 'Khalil Bouzid', matricule: '202012201', grade: 8.3 },
-            { student: 'Houda Amrani', matricule: '202012204', grade: 13.6 },
-            { student: 'Sonia Bellal', matricule: '202012340', grade: 12.8 },
-        ],
-    },
-    {
-        teacherName: 'Mme. Ferhat',
-        speciality: 'Informatique',
-        module: 'Anglais Technique',
-        level: 'L2',
-        section: 'A',
-        groupName: 'G1',
-        count: 26,
-        submittedAt: '2025-01-08T15:00:00.000Z',
-        slaHours: 4,
-        studentGradesJson: [
-            { student: 'Nourhane Rebbah', matricule: '202012335', grade: 15.9 },
-            { student: 'Omar Bensalem', matricule: '202012305', grade: 10.7 },
-            { student: 'Lamia Djeffal', matricule: '202012338', grade: 14.2 },
-        ],
-    },
-    {
-        teacherName: 'Dr. Messaoud',
-        speciality: 'Informatique',
-        module: 'Structures de Données',
-        level: 'L3',
-        section: 'B',
-        groupName: 'G3',
-        count: 28,
-        submittedAt: '2025-01-07T09:00:00.000Z',
-        slaHours: 0,
-        studentGradesJson: [
-            { student: 'Walid Bensaci', matricule: '202012346', grade: 12.4 },
-            { student: 'Kenza Rezig', matricule: '202012347', grade: 14.9 },
-            { student: 'Samir Zouaoui', matricule: '202012348', grade: 9.8 },
-        ],
-    },
-];
+const entities_1 = require("../entities");
 let ValidationsService = class ValidationsService {
     repo;
+    gradeRepo;
     studentRepo;
-    constructor(repo, studentRepo) {
+    teacherRepo;
+    userRepo;
+    constructor(repo, gradeRepo, studentRepo, teacherRepo, userRepo) {
         this.repo = repo;
+        this.gradeRepo = gradeRepo;
         this.studentRepo = studentRepo;
+        this.teacherRepo = teacherRepo;
+        this.userRepo = userRepo;
     }
-    async onModuleInit() {
-        const count = await this.repo.count();
-        if (count > 0)
-            return;
-        for (const row of SEED) {
-            await this.repo.save(this.repo.create({
-                ...row,
-                submittedAt: new Date(row.submittedAt),
-                status: 'pending',
-            }));
-        }
-    }
-    list() {
-        return this.repo.find({ order: { submittedAt: 'DESC' } });
-    }
-    create(data) {
-        return this.repo.save(this.repo.create({
-            teacherName: data.teacherName,
-            module: data.module,
-            groupName: data.groupName,
-            count: data.count,
-            slaHours: data.slaHours ?? 24,
-            studentGradesJson: data.studentGradesJson ?? [],
-            status: 'pending',
+    async list() {
+        const validations = await this.repo.find({
+            relations: ['teacher', 'teacher.user', 'grades', 'grades.student'],
+            order: { submittedAt: 'DESC' }
+        });
+        return validations.map(v => ({
+            id: v.id,
+            teacherName: v.teacher?.user?.fullName || 'Inconnu',
+            module: v.subject,
+            groupName: v.groupName,
+            status: v.status,
+            count: v.grades?.length || 0,
+            submittedAt: v.submittedAt,
+            studentGradesJson: v.grades?.map(g => ({
+                matricule: g.student?.matricule,
+                grade: g.examGrade,
+                td: g.tdGrade
+            }))
         }));
     }
-    async review(id, status) {
-        const validation = await this.repo.findOne({ where: { id } });
-        if (!validation)
-            return;
-        if (status === 'approved' && validation.studentGradesJson) {
-            for (const entry of validation.studentGradesJson) {
+    async create(data) {
+        const teacher = await this.teacherRepo.findOne({
+            where: { user: { fullName: data.teacherName } },
+            relations: ['user']
+        });
+        if (!teacher)
+            throw new common_1.NotFoundException('Teacher not found');
+        const validation = await this.repo.save(this.repo.create({
+            teacher,
+            subject: data.module,
+            groupName: data.groupName,
+            status: 'pending',
+        }));
+        if (data.studentGradesJson && Array.isArray(data.studentGradesJson)) {
+            for (const entry of data.studentGradesJson) {
                 const student = await this.studentRepo.findOne({ where: { matricule: entry.matricule } });
                 if (student) {
-                    let grades = student.gradesJson || [];
-                    const existingIdx = grades.findIndex((g) => g.subject === validation.module);
-                    if (existingIdx > -1) {
-                        const existingGrade = grades[existingIdx];
-                        const newTd = entry.td ?? existingGrade.td ?? 10;
-                        const newExam = entry.grade;
-                        const newFinal = Math.round((newTd * 0.4 + newExam * 0.6) * 10) / 10;
-                        grades[existingIdx] = {
-                            ...existingGrade,
-                            td: newTd,
-                            exam: newExam,
-                            final: newFinal,
-                            status: newFinal >= 10 ? 'Validé' : 'Rattrapage'
-                        };
-                    }
-                    else {
-                        const newTd = entry.td ?? 10;
-                        const newExam = entry.grade;
-                        const newFinal = Math.round((newTd * 0.4 + newExam * 0.6) * 10) / 10;
-                        grades.push({
-                            subject: validation.module,
-                            td: newTd,
-                            exam: newExam,
-                            final: newFinal,
-                            status: newFinal >= 10 ? 'Validé' : 'Rattrapage',
-                            credits: 4
-                        });
-                    }
-                    student.gradesJson = grades;
-                    const gradedSubjects = grades.filter((g) => g.final !== null);
-                    if (gradedSubjects.length > 0) {
-                        let sum = 0;
-                        for (const g of gradedSubjects) {
-                            sum += g.final || 0;
-                        }
-                        student.average = Math.round((sum / gradedSubjects.length) * 100) / 100;
-                    }
-                    await this.studentRepo.save(student);
+                    const grade = this.gradeRepo.create({
+                        student,
+                        validation,
+                        subject: data.module,
+                        tdGrade: entry.td || 10,
+                        examGrade: entry.grade || 10,
+                        finalGrade: Math.round(((entry.td || 10) * 0.4 + (entry.grade || 10) * 0.6) * 10) / 10,
+                        status: 'pending',
+                        credits: 3
+                    });
+                    await this.gradeRepo.save(grade);
                 }
             }
         }
-        return this.repo.update({ id }, { status });
+        return validation;
+    }
+    async review(id, status, reviewerId) {
+        const validation = await this.repo.findOne({
+            where: { id },
+            relations: ['grades', 'grades.student']
+        });
+        if (!validation)
+            throw new common_1.NotFoundException('Validation not found');
+        validation.status = status;
+        validation.reviewedAt = new Date();
+        if (reviewerId) {
+            const reviewer = await this.userRepo.findOne({ where: { id: reviewerId } });
+            if (reviewer)
+                validation.reviewedBy = reviewer;
+        }
+        await this.repo.save(validation);
+        if (validation.grades) {
+            for (const grade of validation.grades) {
+                grade.status = status;
+                await this.gradeRepo.save(grade);
+                if (status === 'approved' && grade.student) {
+                    await this.updateStudentAverage(grade.student.id);
+                }
+            }
+        }
+        return { success: true };
+    }
+    async updateStudentAverage(studentId) {
+        const approvedGrades = await this.gradeRepo.find({
+            where: { student: { id: studentId }, status: 'approved' }
+        });
+        if (approvedGrades.length > 0) {
+            const sum = approvedGrades.reduce((acc, g) => acc + Number(g.finalGrade), 0);
+            const avg = sum / approvedGrades.length;
+            await this.studentRepo.update(studentId, { average: Math.round(avg * 100) / 100 });
+        }
     }
 };
 exports.ValidationsService = ValidationsService;
 exports.ValidationsService = ValidationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.ValidationEntity)),
-    __param(1, (0, typeorm_1.InjectRepository)(entities_1.StudentEntity)),
+    __param(1, (0, typeorm_1.InjectRepository)(entities_1.GradeEntity)),
+    __param(2, (0, typeorm_1.InjectRepository)(entities_1.StudentEntity)),
+    __param(3, (0, typeorm_1.InjectRepository)(entities_1.TeacherEntity)),
+    __param(4, (0, typeorm_1.InjectRepository)(entities_1.UserEntity)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], ValidationsService);
 //# sourceMappingURL=validations.service.js.map

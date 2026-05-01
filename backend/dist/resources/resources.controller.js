@@ -29,19 +29,20 @@ let ResourcesController = class ResourcesController {
         return this.resourcesService.create(body);
     }
     remove(id) {
-        return this.resourcesService.remove(Number(id));
+        return this.resourcesService.delete(Number(id));
     }
 };
 exports.ResourcesController = ResourcesController;
 __decorate([
     (0, common_1.Get)(),
+    (0, roles_decorator_1.Roles)('admin', 'dean', 'teacher', 'student'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ResourcesController.prototype, "list", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)('teacher', 'admin'),
+    (0, roles_decorator_1.Roles)('admin', 'teacher'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -49,7 +50,7 @@ __decorate([
 ], ResourcesController.prototype, "create", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)('teacher', 'admin'),
+    (0, roles_decorator_1.Roles)('admin', 'teacher'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

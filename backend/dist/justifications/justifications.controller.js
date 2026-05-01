@@ -26,20 +26,16 @@ let JustificationsController = class JustificationsController {
         return this.justificationsService.list();
     }
     create(body) {
-        return this.justificationsService.create(body.studentId, body.module, body.fileName, body.fileContent, {
-            absenceDate: body.absenceDate,
-            absenceDay: body.absenceDay,
-            absenceTime: body.absenceTime,
-        });
+        return this.justificationsService.create(body);
     }
     review(id, body) {
-        return this.justificationsService.review(Number(id), body.status, body.reviewComment);
+        return this.justificationsService.review(Number(id), body);
     }
 };
 exports.JustificationsController = JustificationsController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('student', 'admin', 'dean'),
+    (0, roles_decorator_1.Roles)('admin', 'dean'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
@@ -53,7 +49,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], JustificationsController.prototype, "create", null);
 __decorate([
-    (0, common_1.Post)(':id/review'),
+    (0, common_1.Patch)(':id/review'),
     (0, roles_decorator_1.Roles)('admin', 'dean'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),

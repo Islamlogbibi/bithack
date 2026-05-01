@@ -1,11 +1,15 @@
-import { OnModuleInit } from '@nestjs/common';
-import { AttendanceAlertEntity, StudentEntity } from '../entities';
 import { Repository } from 'typeorm';
-export declare class AttendanceService implements OnModuleInit {
-    private readonly repo;
-    private readonly studentsRepo;
-    constructor(repo: Repository<AttendanceAlertEntity>, studentsRepo: Repository<StudentEntity>);
-    onModuleInit(): Promise<void>;
-    alerts(): Promise<AttendanceAlertEntity[]>;
-    dismiss(id: number): Promise<import("typeorm").UpdateResult>;
+import { AttendanceAlertEntity, StudentEntity } from '../entities';
+export declare class AttendanceService {
+    private readonly alertRepo;
+    private readonly studentRepo;
+    constructor(alertRepo: Repository<AttendanceAlertEntity>, studentRepo: Repository<StudentEntity>);
+    listAlerts(): Promise<AttendanceAlertEntity[]>;
+    createAlert(data: {
+        studentId: number;
+        module: string;
+        absences: number;
+        severity: 'low' | 'medium' | 'high';
+    }): Promise<AttendanceAlertEntity[]>;
+    dismissAlert(id: number): Promise<import("typeorm").UpdateResult>;
 }

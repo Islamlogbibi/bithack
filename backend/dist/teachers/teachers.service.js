@@ -15,55 +15,65 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TeachersService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const entities_1 = require("../entities");
 const typeorm_2 = require("typeorm");
-const PENDING_GRADES = [
-    { student: 'Ahmed Bouali', matricule: '202012301', group: 'G1', td: 14, exam: null, status: 'En attente' },
-    { student: 'Sara Mansouri', matricule: '202012302', group: 'G1', td: 16, exam: null, status: 'En attente' },
-    { student: 'Yacine Ferhat', matricule: '202012303', group: 'G2', td: 11, exam: null, status: 'En attente' },
-    { student: 'Nadia Cherif', matricule: '202012304', group: 'G2', td: 15, exam: null, status: 'En attente' },
-    { student: 'Omar Bensalem', matricule: '202012305', group: 'G3', td: 9, exam: null, status: 'En attente' },
-];
+const entities_1 = require("../entities");
 let TeachersService = class TeachersService {
-    teachersRepo;
-    usersRepo;
-    constructor(teachersRepo, usersRepo) {
-        this.teachersRepo = teachersRepo;
-        this.usersRepo = usersRepo;
+    repo;
+    moduleRepo;
+    constructor(repo, moduleRepo) {
+        this.repo = repo;
+        this.moduleRepo = moduleRepo;
     }
-    async onModuleInit() {
-        const count = await this.teachersRepo.count();
-        if (count > 0)
-            return;
-        const user = await this.usersRepo.findOne({ where: { email: 'teacher@pui.dz' } });
-        if (!user)
-            return;
-        await this.teachersRepo.save(this.teachersRepo.create({
-            user,
-            department: 'Informatique',
-            hoursPlanned: 96,
-            hoursCompleted: 72,
-            subjectsJson: ['Algorithmique', 'Structures de Données'],
-            groupsJson: ['G1', 'G2', 'G3'],
-            pendingGradesJson: PENDING_GRADES,
+    async list() {
+        const teachers = await this.repo.find({ relations: ['user', 'modules'] });
+        return teachers.map(t => ({
+            id: t.id,
+            name: t.user.fullName,
+            email: t.user.email,
+            department: t.department,
+            hoursPlanned: t.hoursPlanned,
+            hoursCompleted: t.hoursCompleted,
+            subjects: [...new Set(t.modules?.map(m => m.subject) || [])],
+            groups: [...new Set(t.modules?.map(m => m.groupName) || [])],
+            academicCv: t.academicCvJson,
         }));
     }
-    list() {
-        return this.teachersRepo.find();
-    }
-    findByUserId(userId) {
-        return this.teachersRepo.findOne({ where: { user: { id: userId } }, relations: { user: true } });
+    async findByUserId(userId) {
+        return this.repo.findOne({
+            where: { user: { id: userId } },
+            relations: ['user', 'modules'],
+        });
     }
     async update(id, data) {
-        await this.teachersRepo.update(id, data);
-        return this.teachersRepo.findOne({ where: { id }, relations: { user: true } });
+        const teacher = await this.repo.findOne({ where: { id }, relations: ['modules'] });
+        if (!teacher)
+            return;
+        if (data.department !== undefined)
+            teacher.department = data.department;
+        if (data.hoursPlanned !== undefined)
+            teacher.hoursPlanned = data.hoursPlanned;
+        if (data.subjects !== undefined || data.groups !== undefined) {
+            const subjects = data.subjects || [...new Set(teacher.modules?.map(m => m.subject) || [])];
+            const groups = data.groups || [...new Set(teacher.modules?.map(m => m.groupName) || [])];
+            await this.moduleRepo.delete({ teacher: { id: teacher.id } });
+            for (const s of subjects) {
+                for (const g of groups) {
+                    await this.moduleRepo.save(this.moduleRepo.create({
+                        teacher,
+                        subject: s,
+                        groupName: g
+                    }));
+                }
+            }
+        }
+        return this.repo.save(teacher);
     }
 };
 exports.TeachersService = TeachersService;
 exports.TeachersService = TeachersService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.TeacherEntity)),
-    __param(1, (0, typeorm_1.InjectRepository)(entities_1.UserEntity)),
+    __param(1, (0, typeorm_1.InjectRepository)(entities_1.TeacherModuleEntity)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
         typeorm_2.Repository])
 ], TeachersService);

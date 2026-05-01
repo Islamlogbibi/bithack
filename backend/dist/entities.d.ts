@@ -1,154 +1,196 @@
-export type UserRole = 'student' | 'teacher' | 'admin' | 'dean';
+export type UserRole = 'admin' | 'student' | 'teacher' | 'dean';
 export declare class UserEntity {
     id: number;
     email: string;
-    passwordHash: string;
     fullName: string;
+    passwordHash: string;
     role: UserRole;
-    department: string | null;
-    faculty: string | null;
-    adminStatsJson: Record<string, number> | null;
-    createdAt: Date;
-    updatedAt: Date;
+    department: string;
+    faculty: string;
+    adminStatsJson: any;
+    student?: any;
+    teacher?: any;
+}
+export declare class DepartmentEntity {
+    id: number;
+    libelle: string;
+    code: string;
+    specialities: any[];
+    teachers: any[];
+    chef: any;
+}
+export declare class SpecialityEntity {
+    id: number;
+    code: string;
+    libelle: string;
+    department: any;
+    levels: any[];
+}
+export declare class LevelEntity {
+    id: number;
+    code: string;
+    libelle: string;
+    speciality: any;
+    sections: any[];
+}
+export declare class SectionEntity {
+    id: number;
+    code: string;
+    level: any;
+    groups: any[];
+}
+export declare class GroupEntity {
+    id: number;
+    code: string;
+    type: string;
+    section: any;
 }
 export declare class StudentEntity {
     id: number;
-    user: UserEntity;
-    matricule: string;
-    speciality: string;
-    level: string;
-    section: string;
-    groupName: string;
+    user: any;
+    nom: string;
+    prenom: string;
+    numCarte: string;
+    speciality: any;
+    level: any;
+    section: any;
+    group: any;
     average: number;
-    absences: number;
-    yearLabel: string | null;
-    gradesJson: unknown[] | null;
-    absencesByModuleJson: Record<string, number> | null;
-    notesJson: number[] | null;
-    gpaByPeriodJson: {
-        year: string;
-        semester: string;
-        gpa: number;
-    }[] | null;
-    displayFaculty: string | null;
-    displayDepartment: string | null;
-    displayModule: string | null;
+    grades: any[];
+    presences: any[];
 }
 export declare class TeacherEntity {
     id: number;
-    user: UserEntity;
-    department: string;
-    hoursPlanned: number;
-    hoursCompleted: number;
-    subjectsJson: string[] | null;
-    groupsJson: string[] | null;
-    pendingGradesJson: unknown[] | null;
-    academicCvJson: {
-        orcid?: string;
-        scopus?: string;
-        publications: {
-            title: string;
-            year: number;
-            journal: string;
-        }[];
-    } | null;
+    user: any;
+    department: any;
+    nom: string;
+    prenom: string;
+    orcid: string;
+    scopusId: string;
+    courses: any[];
+    cv: any;
+}
+export declare class CourseEntity {
+    id: number;
+    intitule: string;
+    codeCours: string;
+    credits: number;
+    type: string;
+    teacher: any;
+    speciality: any;
+    level: any;
+}
+export declare class ScheduleEntity {
+    id: number;
+    dateSeance: Date;
+    heureDebut: string;
+    heureFin: string;
+    salle: string;
+    codeQr: string;
+    course: any;
+    section: any;
+    group: any;
+    level: any;
+    speciality: any;
+}
+export declare class GradeEntity {
+    id: number;
+    valeur: number;
+    session: string;
+    statut: string;
+    dateSaisie: Date;
+    dateValidation: Date;
+    student: any;
+    course: any;
+    teacher: any;
+    validation: any;
+}
+export declare class PresenceEntity {
+    id: number;
+    horodatage: Date;
+    methode: string;
+    student: any;
+    schedule: any;
+}
+export declare class CVAcademiqueEntity {
+    id: number;
+    orcid: string;
+    dateSync: Date;
+    teacher: any;
+}
+export declare class TeacherSpecialityEntity {
+    id: number;
+    teacher: any;
+    speciality: any;
+    level: any;
+}
+export declare class ValidationEntity {
+    id: number;
+    teacher: any;
+    course: any;
+    group: any;
+    status: 'pending' | 'approved' | 'rejected';
+    submittedAt: Date;
+    grades: any[];
 }
 export declare class ResourceEntity {
     id: number;
     title: string;
-    subject: string;
+    course: any;
     type: string;
-    fileType: string;
-    teacherName: string;
-    sizeLabel: string | null;
-    isNew: boolean;
-    fileContent: string | null;
-    groupsJson: string[] | null;
+    date: string;
+    size: string;
+    url: string;
+    group: any;
     createdAt: Date;
 }
 export declare class JustificationEntity {
     id: number;
-    student: StudentEntity;
-    module: string;
-    absenceDate: string;
-    absenceDay: string;
-    absenceTime: string;
+    student: any;
+    course: any;
+    status: 'pending' | 'approved' | 'rejected';
     fileName: string;
-    status: 'pending' | 'approved' | 'rejected';
-    reviewComment: string | null;
-    fileContent: string | null;
+    fileContent: string;
+    absenceDate: string;
+    reviewComment: string;
     submittedAt: Date;
-}
-export declare class ValidationEntity {
-    id: number;
-    teacherName: string;
-    module: string;
-    groupName: string;
-    count: number;
-    speciality: string | null;
-    level: string | null;
-    section: string | null;
-    slaHours: number;
-    studentGradesJson: {
-        student: string;
-        matricule: string;
-        grade: number;
-    }[] | null;
-    status: 'pending' | 'approved' | 'rejected';
-    submittedAt: Date;
-}
-export declare class AttendanceAlertEntity {
-    id: number;
-    student: StudentEntity;
-    subject: string;
-    risk: 'low' | 'medium' | 'high';
-    status: 'open' | 'dismissed';
-    absenceCount: number | null;
-    maxAllowed: number | null;
 }
 export declare class MessageEntity {
     id: number;
     conversationId: string;
-    sender: UserEntity;
+    sender: any;
     content: string;
-    sentAt: Date;
+    timestamp: Date;
 }
-export declare class SpecialityEntity {
+export declare class AttendanceAlertEntity {
     id: number;
-    name: string;
-    level: string;
-    section: string;
-    groupName: string;
-}
-export declare class ScheduleEntity {
-    id: number;
-    day: string;
-    time: string;
-    subject: string;
-    room: string;
-    type: string;
-    scope: 'student' | 'group' | 'faculty';
-    scopeId: string;
+    student: any;
+    course: any;
+    absences: number;
+    severity: 'low' | 'medium' | 'high';
+    dismissed: boolean;
+    status: string;
+    createdAt: Date;
 }
 export declare class ReferenceBlobEntity {
+    id: number;
     key: string;
-    data: unknown;
+    data: any;
 }
 export declare class AssignmentEntity {
     id: number;
     title: string;
+    course: any;
+    dueDate: string;
     description: string;
-    module: string;
-    teacherName: string;
-    targetGroupsJson: string[];
-    deadline: Date;
+    groups: any[];
+    teacher: any;
     createdAt: Date;
 }
 export declare class AssignmentSubmissionEntity {
     id: number;
-    assignment: AssignmentEntity;
-    studentId: number;
-    studentName: string;
+    assignment: any;
+    student: any;
     fileName: string;
     fileContent: string;
     submittedAt: Date;

@@ -17,7 +17,7 @@ let TeachersModule = class TeachersModule {
 exports.TeachersModule = TeachersModule;
 exports.TeachersModule = TeachersModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.TeacherEntity, entities_1.UserEntity])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.TeacherEntity, entities_1.UserEntity, entities_1.TeacherModuleEntity])],
         controllers: [teachers_controller_1.TeachersController],
         providers: [teachers_service_1.TeachersService],
         exports: [teachers_service_1.TeachersService],

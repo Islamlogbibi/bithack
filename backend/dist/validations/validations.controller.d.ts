@@ -2,7 +2,20 @@ import { ValidationsService } from './validations.service';
 export declare class ValidationsController {
     private readonly validationsService;
     constructor(validationsService: ValidationsService);
-    list(): Promise<import("../entities").ValidationEntity[]>;
+    list(): Promise<{
+        id: number;
+        teacherName: any;
+        module: any;
+        groupName: any;
+        status: "pending" | "approved" | "rejected";
+        count: number;
+        submittedAt: Date;
+        studentGradesJson: {
+            matricule: any;
+            grade: any;
+            td: any;
+        }[];
+    }[]>;
     create(body: {
         teacherName: string;
         module: string;
@@ -14,8 +27,10 @@ export declare class ValidationsController {
             matricule: string;
             grade: number;
         }[];
-    }): Promise<import("../entities").ValidationEntity>;
+    }): Promise<import("../entities").ValidationEntity[]>;
     review(id: string, body: {
         status: 'approved' | 'rejected';
-    }): Promise<import("typeorm").UpdateResult | undefined>;
+    }): Promise<{
+        success: boolean;
+    }>;
 }

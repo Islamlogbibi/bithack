@@ -1,23 +1,18 @@
-import { OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { StudentEntity, UserEntity } from '../entities';
-export declare class StudentsService implements OnModuleInit {
-    private readonly studentsRepo;
+import { StudentEntity, UserEntity, GradeEntity, PresenceEntity, SpecialityEntity, LevelEntity, SectionEntity, GroupEntity } from '../entities';
+export declare class StudentsService {
+    private readonly repo;
     private readonly usersRepo;
-    constructor(studentsRepo: Repository<StudentEntity>, usersRepo: Repository<UserEntity>);
-    onModuleInit(): Promise<void>;
+    private readonly gradeRepo;
+    private readonly presenceRepo;
+    private readonly specRepo;
+    private readonly levelRepo;
+    private readonly sectionRepo;
+    private readonly groupRepo;
+    constructor(repo: Repository<StudentEntity>, usersRepo: Repository<UserEntity>, gradeRepo: Repository<GradeEntity>, presenceRepo: Repository<PresenceEntity>, specRepo: Repository<SpecialityEntity>, levelRepo: Repository<LevelEntity>, sectionRepo: Repository<SectionEntity>, groupRepo: Repository<GroupEntity>);
     list(filters: Record<string, string | undefined>): Promise<StudentEntity[]>;
     findByUserId(userId: number): Promise<StudentEntity | null>;
-    create(payload: {
-        name: string;
-        email: string;
-        password: string;
-        matricule: string;
-        speciality: string;
-        level: string;
-        section: string;
-        group: string;
-    }): Promise<StudentEntity>;
+    create(payload: any): Promise<StudentEntity[]>;
     remove(id: number): Promise<{
         success: boolean;
     }>;

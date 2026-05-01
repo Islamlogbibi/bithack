@@ -1,5 +1,3 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { DataSource } from 'typeorm';
 import {
   UserEntity,
@@ -12,147 +10,186 @@ import {
   AttendanceAlertEntity,
   MessageEntity,
   SpecialityEntity,
+  GradeEntity,
+  PresenceEntity,
+  DepartmentEntity,
+  LevelEntity,
+  SectionEntity,
+  GroupEntity,
+  CourseEntity,
+  CVAcademiqueEntity,
+  TeacherSpecialityEntity,
+  ReferenceBlobEntity,
+  AssignmentEntity,
+  AssignmentSubmissionEntity
 } from './entities';
 import * as bcrypt from 'bcrypt';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+const dataSource = new DataSource({
+  type: 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT || 5432),
+  username: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || 'postgres',
+  database: process.env.DB_NAME || 'bithack',
+  entities: [
+    UserEntity, StudentEntity, TeacherEntity, GradeEntity, PresenceEntity,
+    DepartmentEntity, SpecialityEntity, LevelEntity, SectionEntity, GroupEntity,
+    CourseEntity, CVAcademiqueEntity, TeacherSpecialityEntity,
+    ResourceEntity, JustificationEntity, ValidationEntity, AttendanceAlertEntity,
+    MessageEntity, ScheduleEntity, ReferenceBlobEntity, AssignmentEntity, AssignmentSubmissionEntity
+  ],
+  synchronize: false,
+});
 
 async function bootstrap() {
-  const app = await NestFactory.createApplicationContext(AppModule);
-  const dataSource = app.get(DataSource);
+  await dataSource.initialize();
+  console.log('Database connected!');
 
-  console.log('Database connected via NestJS!');
-
-  // Clear tables in order of dependencies
   await dataSource.dropDatabase();
-  await dataSource.synchronize();
-  console.log('Database cleared and synchronized.');
+  console.log('Database dropped.');
+  
+  await dataSource.synchronize(true);
+  console.log('Database synchronized with new schema.');
 
   const passwordHash = await bcrypt.hash('password123', 10);
 
   const userRepo = dataSource.getRepository(UserEntity);
   const studentRepo = dataSource.getRepository(StudentEntity);
   const teacherRepo = dataSource.getRepository(TeacherEntity);
+  const deptRepo = dataSource.getRepository(DepartmentEntity);
+  const specRepo = dataSource.getRepository(SpecialityEntity);
+  const levelRepo = dataSource.getRepository(LevelEntity);
+  const sectionRepo = dataSource.getRepository(SectionEntity);
+  const groupRepo = dataSource.getRepository(GroupEntity);
+  const courseRepo = dataSource.getRepository(CourseEntity);
+  const teacherSpecRepo = dataSource.getRepository(TeacherSpecialityEntity);
+  const gradeRepo = dataSource.getRepository(GradeEntity);
   const scheduleRepo = dataSource.getRepository(ScheduleEntity);
-  const resourceRepo = dataSource.getRepository(ResourceEntity);
-  const justificationRepo = dataSource.getRepository(JustificationEntity);
-  const validationRepo = dataSource.getRepository(ValidationEntity);
-  const alertRepo = dataSource.getRepository(AttendanceAlertEntity);
-  const specialityRepo = dataSource.getRepository(SpecialityEntity);
 
-  // 1. Create Admins
+  // 1. Create Department
+  const deptInfo = await deptRepo.save(deptRepo.create({
+    libelle: 'Département Informatique',
+    code: 'INFO'
+  }));
+
+  // 2. Create Hierarchy
+  const speciality = await specRepo.save(specRepo.create({
+    libelle: 'Informatique Académique',
+    code: 'INFO_ACAD',
+    department: deptInfo
+  }));
+
+  const levels = [];
+  for (const l of ['L3', 'M1']) {
+    levels.push(await levelRepo.save(levelRepo.create({
+      libelle: l,
+      code: l,
+      speciality
+    })));
+  }
+
+  const sections = [];
+  for (const level of levels) {
+    sections.push(await sectionRepo.save(sectionRepo.create({
+      code: 'A',
+      level
+    })));
+  }
+
+  const groups = [];
+  for (const section of sections) {
+    groups.push(await groupRepo.save(groupRepo.create({
+      code: 'Group 1',
+      type: 'TD',
+      section
+    })));
+    groups.push(await groupRepo.save(groupRepo.create({
+      code: 'Group 2',
+      type: 'TP',
+      section
+    })));
+  }
+
+  // 3. Create Admins
   await userRepo.save(userRepo.create({
     email: 'admin@pui.dz',
     passwordHash,
     fullName: 'Prof. Amina Hadj',
     role: 'admin',
-    department: 'Département Informatique',
-    adminStatsJson: {
-      totalStudents: 1500, activeTeachers: 90, pendingValidations: 15, avgAttendance: 88, publishedResources: 450,
-    },
+    department: 'INFO',
+    adminStatsJson: { totalStudents: 1500, activeTeachers: 90 },
   }));
 
-  // 2. Create Dean
-  await userRepo.save(userRepo.create({
-    email: 'dean@pui.dz', passwordHash, fullName: 'Pr. Samia Belkacem', role: 'dean', faculty: 'Faculté des Nouvelles Technologies',
-  }));
-
-  // 3. Create Teachers
+  // 4. Create Teachers
   const teacherNames = ['Dr. Karim Meziani', 'Dr. Mourad Bakri'];
   const teachers: TeacherEntity[] = [];
-  const subjectsPool = ['Algorithmique', 'Bases de données', 'Réseaux', 'IA'];
-
   for (const name of teacherNames) {
-    const email = name.toLowerCase()
-      .replace(/dr\.|mme\.|pr\./g, '')
-      .trim()
-      .replace(/\s+/g, '.') + '@pui.dz';
     const user = await userRepo.save(userRepo.create({
-      email, passwordHash, fullName: name, role: 'teacher', department: 'Informatique',
+      email: name.toLowerCase().replace(/dr\.|mme\.|pr\./g, '').trim().replace(/\s+/g, '.') + '@pui.dz',
+      passwordHash, fullName: name, role: 'teacher', department: 'INFO'
     }));
     const teacher = await teacherRepo.save(teacherRepo.create({
-      user,
-      department: 'Informatique',
-      hoursPlanned: 160,
-      hoursCompleted: 45,
-      subjectsJson: subjectsPool,
-      groupsJson: ['Group A', 'Group B'],
-      academicCvJson: {
-        orcid: '0000-0002-1825-0097',
-        scopus: '57193563400',
-        publications: [
-          { title: 'Advanced Algorithms in Distributed Systems', year: 2023, journal: 'IEEE Transactions' },
-          { title: 'Machine Learning for Educational Data Mining', year: 2022, journal: 'Journal of AI Research' },
-        ]
-      }
+      user, department: deptInfo, orcid: '0000-0000-0000-0000'
     }));
     teachers.push(teacher);
+
+    // Assign to Speciality/Level
+    await teacherSpecRepo.save(teacherSpecRepo.create({
+      teacher, speciality, level: levels[0]
+    }));
   }
 
-  // 4. Create Students (60 total for Group A/B testing)
-  console.log('Generating 60 students for Group A/B testing...');
-  const allStudents: StudentEntity[] = [];
-  
+  // 5. Create Courses
+  const subjects = ['Algorithmique', 'Bases de données', 'IA', 'Réseaux'];
+  const courses: CourseEntity[] = [];
+  for (let i = 0; i < subjects.length; i++) {
+    courses.push(await courseRepo.save(courseRepo.create({
+      intitule: subjects[i],
+      codeCours: `INF${100 + i}`,
+      credits: 4,
+      type: 'Cours',
+      teacher: teachers[i % 2],
+      speciality,
+      level: levels[0]
+    })));
+  }
+
+  // 6. Create Students
+  console.log('Generating students in the new hierarchy...');
   for (let i = 1; i <= 60; i++) {
-    const groupName = i <= 30 ? 'Group A' : 'Group B';
-    const studentUser = await userRepo.save(userRepo.create({
-      email: `student${i}@pui.dz`,
-      passwordHash,
-      fullName: `Etudiant ${i}`,
-      role: 'student',
+    const group = i <= 30 ? groups[0] : groups[1];
+    const user = await userRepo.save(userRepo.create({
+      email: `student${i}@pui.dz`, passwordHash, fullName: `Etudiant ${i}`, role: 'student'
     }));
-
     const student = await studentRepo.save(studentRepo.create({
-      user: studentUser,
-      matricule: `2024${String(i).padStart(4, '0')}`,
-      speciality: 'Informatique',
-      level: 'L3',
-      section: 'A',
-      groupName: groupName,
-      average: 12.5,
-      absences: 2,
-      yearLabel: 'L3 Informatique',
-      displayFaculty: 'Nouvelles Technologies',
-      displayDepartment: 'Informatique',
-      gradesJson: [
-        { subject: 'Algorithmique', td: 14, exam: null, final: null, status: 'En attente', credits: 6 },
-        { subject: 'Bases de données', td: 12, exam: null, final: null, status: 'En attente', credits: 4 },
-      ],
-      absencesByModuleJson: { 'Algorithmique': 1, 'Bases de données': 1 },
-      gpaByPeriodJson: [{ year: '2023', semester: 'S1', gpa: 12.5 }],
+      user, matricule: `2024${String(i).padStart(4, '0')}`,
+      speciality, level: levels[0], section: sections[0], group
     }));
-    allStudents.push(student);
+
+    // Initial grades
+    for (const course of courses.slice(0, 2)) {
+      await gradeRepo.save(gradeRepo.create({
+        student, course, teacher: course.teacher, valeur: 10 + (i % 10),
+        session: 'Normal', statut: 'Valide'
+      }));
+    }
   }
 
-  // 5. Create Timetables for Group A and B
-  console.log('Generating timetables...');
-  
-  // Group A Timetable
-  const groupASessions = [
-    { day: 'Dimanche', time: '08:30', subject: 'Algorithmique', room: 'Amphi A', type: 'Cours', scope: 'group', scopeId: 'Group A' },
-    { day: 'Lundi', time: '10:30', subject: 'Bases de données', room: 'Salle B1', type: 'TD', scope: 'group', scopeId: 'Group A' },
-    { day: 'Mardi', time: '14:00', subject: 'Réseaux', room: 'Labo 1', type: 'TP', scope: 'group', scopeId: 'Group A' },
-  ];
-  for (const s of groupASessions) {
-    await scheduleRepo.save(scheduleRepo.create(s as any));
-  }
+  // 7. Create Schedules
+  console.log('Generating schedules...');
+  const today = new Date();
+  await scheduleRepo.save(scheduleRepo.create({
+    dateSeance: today, heureDebut: '08:30:00', heureFin: '10:00:00',
+    salle: 'Amphi A', course: courses[0], speciality, level: levels[0],
+    section: sections[0], group: groups[0]
+  }));
 
-  // Group B Timetable
-  const groupBSessions = [
-    { day: 'Dimanche', time: '10:30', subject: 'Algorithmique', room: 'Amphi B', type: 'Cours', scope: 'group', scopeId: 'Group B' },
-    { day: 'Lundi', time: '08:30', subject: 'Bases de données', room: 'Salle B2', type: 'TD', scope: 'group', scopeId: 'Group B' },
-    { day: 'Mercredi', time: '14:00', subject: 'Réseaux', room: 'Labo 2', type: 'TP', scope: 'group', scopeId: 'Group B' },
-  ];
-  for (const s of groupBSessions) {
-    await scheduleRepo.save(scheduleRepo.create(s as any));
-  }
-
-  // 6. Create Specialities records
-  await specialityRepo.save([
-    { name: 'Informatique', level: 'L3', section: 'A', groupName: 'Group A' },
-    { name: 'Informatique', level: 'L3', section: 'A', groupName: 'Group B' },
-  ]);
-
-  console.log('Seeding completed successfully!');
-  await app.close();
+  console.log('Seeding completed successfully with new hierarchy!');
+  await dataSource.destroy();
 }
 
 bootstrap().catch((err) => {

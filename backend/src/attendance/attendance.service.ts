@@ -1,45 +1,39 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AttendanceAlertEntity, StudentEntity } from '../entities';
 import { Repository } from 'typeorm';
-
-const SEED: Array<{ matricule: string; subject: string; risk: 'low' | 'medium' | 'high'; absenceCount: number; maxAllowed: number }> = [
-  { matricule: '202012201', subject: 'Algorithmique', risk: 'high', absenceCount: 5, maxAllowed: 6 },
-  { matricule: '202012202', subject: 'Base de Données', risk: 'high', absenceCount: 5, maxAllowed: 6 },
-  { matricule: '202012203', subject: 'Réseaux', risk: 'medium', absenceCount: 4, maxAllowed: 6 },
-  { matricule: '202012345', subject: 'Algorithmique', risk: 'medium', absenceCount: 4, maxAllowed: 6 },
-  { matricule: '202012204', subject: 'Mathématiques', risk: 'low', absenceCount: 3, maxAllowed: 6 },
-];
+import { AttendanceAlertEntity, StudentEntity } from '../entities';
 
 @Injectable()
-export class AttendanceService implements OnModuleInit {
+export class AttendanceService {
   constructor(
-    @InjectRepository(AttendanceAlertEntity) private readonly repo: Repository<AttendanceAlertEntity>,
-    @InjectRepository(StudentEntity) private readonly studentsRepo: Repository<StudentEntity>,
+    @InjectRepository(AttendanceAlertEntity)
+    private readonly alertRepo: Repository<AttendanceAlertEntity>,
+    @InjectRepository(StudentEntity)
+    private readonly studentRepo: Repository<StudentEntity>,
   ) {}
 
-  async onModuleInit() {
-    const count = await this.repo.count();
-    if (count > 0) return;
-    for (const row of SEED) {
-      const student = await this.studentsRepo.findOne({ where: { matricule: row.matricule } });
-      if (!student) continue;
-      await this.repo.save(
-        this.repo.create({
-          student,
-          subject: row.subject,
-          risk: row.risk,
-          status: 'open',
-          absenceCount: row.absenceCount,
-          maxAllowed: row.maxAllowed,
-        }),
-      );
-    }
+  async listAlerts() {
+    return this.alertRepo.find({
+      where: { dismissed: false },
+      relations: ['student', 'student.user'],
+      order: { createdAt: 'DESC' },
+    });
   }
-  alerts() {
-    return this.repo.find();
+
+  async createAlert(data: { studentId: number; module: string; absences: number; severity: 'low' | 'medium' | 'high' }) {
+    const student = await this.studentRepo.findOne({ where: { id: data.studentId } });
+    if (!student) throw new NotFoundException('Student not found');
+
+    const alert = this.alertRepo.create({
+      student,
+      module: data.module,
+      absences: data.absences,
+      severity: data.severity,
+    });
+    return this.alertRepo.save(alert);
   }
-  dismiss(id: number) {
-    return this.repo.update({ id }, { status: 'dismissed' });
+
+  async dismissAlert(id: number) {
+    return this.alertRepo.update(id, { dismissed: true });
   }
 }

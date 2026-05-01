@@ -17,7 +17,7 @@ let ValidationsModule = class ValidationsModule {
 exports.ValidationsModule = ValidationsModule;
 exports.ValidationsModule = ValidationsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.ValidationEntity, entities_1.StudentEntity])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.ValidationEntity, entities_1.StudentEntity, entities_1.GradeEntity, entities_1.TeacherEntity, entities_1.UserEntity])],
         controllers: [validations_controller_1.ValidationsController],
         providers: [validations_service_1.ValidationsService],
     })

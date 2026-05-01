@@ -1,17 +1,19 @@
 import {
-  Column,
-  CreateDateColumn,
   Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToOne,
   JoinColumn,
   ManyToOne,
-  OneToOne,
-  PrimaryColumn,
-  PrimaryGeneratedColumn,
-  Unique,
+  OneToMany,
+  CreateDateColumn,
   UpdateDateColumn,
+  Unique,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
-export type UserRole = 'student' | 'teacher' | 'admin' | 'dean';
+export type UserRole = 'admin' | 'student' | 'teacher' | 'dean';
 
 @Entity('users')
 export class UserEntity {
@@ -22,28 +24,116 @@ export class UserEntity {
   email: string;
 
   @Column()
-  passwordHash: string;
+  fullName: string;
 
   @Column()
-  fullName: string;
+  passwordHash: string;
 
   @Column()
   role: UserRole;
 
-  @Column({ type: 'varchar', nullable: true })
-  department: string | null;
+  @Column({ nullable: true })
+  department: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  faculty: string | null;
+  @Column({ nullable: true })
+  faculty: string;
 
   @Column({ type: 'jsonb', nullable: true })
-  adminStatsJson: Record<string, number> | null;
+  adminStatsJson: any;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @OneToOne('StudentEntity', 'user', { cascade: true })
+  student?: any;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @OneToOne('TeacherEntity', 'user', { cascade: true })
+  teacher?: any;
+}
+
+@Entity('departments')
+export class DepartmentEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  libelle: string;
+
+  @Column({ unique: true })
+  code: string;
+
+  @OneToMany('SpecialityEntity', 'department')
+  specialities: any[];
+
+  @OneToMany('TeacherEntity', 'department')
+  teachers: any[];
+
+  @ManyToOne('TeacherEntity')
+  @JoinColumn()
+  chef: any;
+}
+
+@Entity('specialities')
+export class SpecialityEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  code: string;
+
+  @Column()
+  libelle: string;
+
+  @ManyToOne('DepartmentEntity', 'specialities')
+  department: any;
+
+  @OneToMany('LevelEntity', 'speciality')
+  levels: any[];
+}
+
+@Entity('levels')
+export class LevelEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  code: string;
+
+  @Column()
+  libelle: string;
+
+  @ManyToOne('SpecialityEntity', 'levels')
+  speciality: any;
+
+  @OneToMany('SectionEntity', 'level')
+  sections: any[];
+}
+
+@Entity('sections')
+export class SectionEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  code: string;
+
+  @ManyToOne('LevelEntity', 'sections')
+  level: any;
+
+  @OneToMany('GroupEntity', 'section')
+  groups: any[];
+}
+
+@Entity('groups')
+export class GroupEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  code: string;
+
+  @Column()
+  type: string; // 'TD', 'TP', etc.
+
+  @ManyToOne('SectionEntity', 'groups')
+  section: any;
 }
 
 @Entity('students')
@@ -51,54 +141,39 @@ export class StudentEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => UserEntity, { eager: true })
+  @OneToOne('UserEntity', 'student')
   @JoinColumn()
-  user: UserEntity;
+  user: any;
+
+  @Column({ nullable: true })
+  nom: string;
+
+  @Column({ nullable: true })
+  prenom: string;
 
   @Column({ unique: true })
-  matricule: string;
+  numCarte: string;
 
-  @Column()
-  speciality: string;
+  @ManyToOne('SpecialityEntity')
+  speciality: any;
 
-  @Column()
-  level: string;
+  @ManyToOne('LevelEntity')
+  level: any;
 
-  @Column()
-  section: string;
+  @ManyToOne('SectionEntity')
+  section: any;
 
-  @Column()
-  groupName: string;
+  @ManyToOne('GroupEntity')
+  group: any;
 
   @Column({ type: 'float', default: 0 })
   average: number;
 
-  @Column({ default: 0 })
-  absences: number;
+  @OneToMany('GradeEntity', 'student')
+  grades: any[];
 
-  @Column({ type: 'varchar', nullable: true })
-  yearLabel: string | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  gradesJson: unknown[] | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  absencesByModuleJson: Record<string, number> | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  notesJson: number[] | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  gpaByPeriodJson: { year: string; semester: string; gpa: number }[] | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  displayFaculty: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  displayDepartment: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  displayModule: string | null;
+  @OneToMany('PresenceEntity', 'student')
+  presences: any[];
 }
 
 @Entity('teachers')
@@ -106,34 +181,199 @@ export class TeacherEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => UserEntity, { eager: true })
+  @OneToOne('UserEntity', 'teacher')
   @JoinColumn()
-  user: UserEntity;
+  user: any;
+
+  @ManyToOne('DepartmentEntity', 'teachers')
+  department: any;
+
+  @Column({ nullable: true })
+  nom: string;
+
+  @Column({ nullable: true })
+  prenom: string;
+
+  @Column({ nullable: true })
+  orcid: string;
+
+  @Column({ nullable: true })
+  scopusId: string;
+
+  @OneToMany('CourseEntity', 'teacher')
+  courses: any[];
+
+  @OneToOne('CVAcademiqueEntity', 'teacher')
+  cv: any;
+}
+
+@Entity('courses')
+export class CourseEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column()
-  department: string;
+  intitule: string;
 
-  @Column({ type: 'int', default: 0 })
-  hoursPlanned: number;
+  @Column()
+  codeCours: string;
 
-  @Column({ type: 'int', default: 0 })
-  hoursCompleted: number;
+  @Column()
+  credits: number;
 
-  @Column({ type: 'jsonb', nullable: true })
-  subjectsJson: string[] | null;
+  @Column()
+  type: string; // 'Cours', 'TD', 'TP'
 
-  @Column({ type: 'jsonb', nullable: true })
-  groupsJson: string[] | null;
+  @ManyToOne('TeacherEntity', 'courses')
+  teacher: any;
 
-  @Column({ type: 'jsonb', nullable: true })
-  pendingGradesJson: unknown[] | null;
+  @ManyToOne('SpecialityEntity')
+  speciality: any;
 
-  @Column({ type: 'jsonb', nullable: true })
-  academicCvJson: { 
-    orcid?: string; 
-    scopus?: string; 
-    publications: { title: string; year: number; journal: string }[] 
-  } | null;
+  @ManyToOne('LevelEntity')
+  level: any;
+}
+
+@Entity('schedules')
+export class ScheduleEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: 'date' })
+  dateSeance: Date;
+
+  @Column({ type: 'time' })
+  heureDebut: string;
+
+  @Column({ type: 'time' })
+  heureFin: string;
+
+  @Column()
+  salle: string;
+
+  @Column({ nullable: true })
+  codeQr: string;
+
+  @ManyToOne('CourseEntity')
+  course: any;
+
+  @ManyToOne('SectionEntity')
+  section: any;
+
+  @ManyToOne('GroupEntity')
+  group: any;
+
+  @ManyToOne('LevelEntity')
+  level: any;
+
+  @ManyToOne('SpecialityEntity')
+  speciality: any;
+}
+
+@Entity('grades')
+export class GradeEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ type: 'float' })
+  valeur: number;
+
+  @Column()
+  session: string; // 'Normal', 'Rattrapage'
+
+  @Column()
+  statut: string; // 'Saisi', 'Valide', 'Rejete'
+
+  @CreateDateColumn()
+  dateSaisie: Date;
+
+  @Column({ nullable: true })
+  dateValidation: Date;
+
+  @ManyToOne('StudentEntity', 'grades')
+  student: any;
+
+  @ManyToOne('CourseEntity')
+  course: any;
+
+  @ManyToOne('TeacherEntity')
+  teacher: any;
+
+  @ManyToOne('ValidationEntity', 'grades', { nullable: true })
+  validation: any;
+}
+
+@Entity('presences')
+export class PresenceEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @CreateDateColumn()
+  horodatage: Date;
+
+  @Column()
+  methode: string; // 'QR', 'Manuel'
+
+  @ManyToOne('StudentEntity', 'presences')
+  student: any;
+
+  @ManyToOne('ScheduleEntity')
+  schedule: any;
+}
+
+@Entity('cv_academique')
+export class CVAcademiqueEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  orcid: string;
+
+  @UpdateDateColumn()
+  dateSync: Date;
+
+  @OneToOne('TeacherEntity', 'cv')
+  @JoinColumn()
+  teacher: any;
+}
+
+@Entity('teacher_speciality')
+export class TeacherSpecialityEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne('TeacherEntity')
+  teacher: any;
+
+  @ManyToOne('SpecialityEntity')
+  speciality: any;
+
+  @ManyToOne('LevelEntity')
+  level: any;
+}
+
+@Entity('validations')
+export class ValidationEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne('TeacherEntity')
+  teacher: any;
+
+  @ManyToOne('CourseEntity')
+  course: any;
+
+  @ManyToOne('GroupEntity')
+  group: any;
+
+  @Column({ default: 'pending' })
+  status: 'pending' | 'approved' | 'rejected';
+
+  @CreateDateColumn()
+  submittedAt: Date;
+
+  @OneToMany('GradeEntity', 'validation')
+  grades: any[];
 }
 
 @Entity('resources')
@@ -144,29 +384,23 @@ export class ResourceEntity {
   @Column()
   title: string;
 
-  @Column()
-  subject: string;
+  @ManyToOne('CourseEntity')
+  course: any;
 
   @Column()
   type: string;
 
   @Column()
-  fileType: string;
+  date: string;
 
   @Column()
-  teacherName: string;
+  size: string;
 
-  @Column({ type: 'varchar', nullable: true })
-  sizeLabel: string | null;
+  @Column()
+  url: string;
 
-  @Column({ default: false })
-  isNew: boolean;
-
-  @Column({ type: 'text', nullable: true })
-  fileContent: string | null;
-
-  @Column({ type: 'jsonb', nullable: true })
-  groupsJson: string[] | null;
+  @ManyToOne('GroupEntity')
+  group: any;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -177,98 +411,29 @@ export class JustificationEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => StudentEntity, { eager: true })
-  student: StudentEntity;
+  @ManyToOne('StudentEntity')
+  student: any;
+
+  @ManyToOne('CourseEntity')
+  course: any;
+
+  @Column({ default: 'pending' })
+  status: 'pending' | 'approved' | 'rejected';
 
   @Column()
-  module: string;
+  fileName: string;
+
+  @Column({ type: 'text', nullable: true })
+  fileContent: string;
 
   @Column({ nullable: true })
   absenceDate: string;
 
   @Column({ nullable: true })
-  absenceDay: string;
-
-  @Column({ nullable: true })
-  absenceTime: string;
-
-  @Column()
-  fileName: string;
-
-  @Column({ default: 'pending' })
-  status: 'pending' | 'approved' | 'rejected';
-
-  @Column({ type: 'varchar', nullable: true })
-  reviewComment: string | null;
-
-  @Column({ type: 'text', nullable: true })
-  fileContent: string | null;
+  reviewComment: string;
 
   @CreateDateColumn()
   submittedAt: Date;
-}
-
-@Entity('validations')
-export class ValidationEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  teacherName: string;
-
-  @Column()
-  module: string;
-
-  @Column()
-  groupName: string;
-
-  @Column({ type: 'int' })
-  count: number;
-
-  @Column({ type: 'varchar', nullable: true })
-  speciality: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  level: string | null;
-
-  @Column({ type: 'varchar', nullable: true })
-  section: string | null;
-
-  @Column({ type: 'int', default: 0 })
-  slaHours: number;
-
-  @Column({ type: 'jsonb', nullable: true })
-  studentGradesJson: { student: string; matricule: string; grade: number }[] | null;
-
-  @Column({ default: 'pending' })
-  status: 'pending' | 'approved' | 'rejected';
-
-  @CreateDateColumn()
-  submittedAt: Date;
-}
-
-@Entity('attendance_alerts')
-export class AttendanceAlertEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @ManyToOne(() => StudentEntity, { eager: true })
-  student: StudentEntity;
-
-  @Column()
-  subject: string;
-
-  @Column()
-  risk: 'low' | 'medium' | 'high';
-
-  @Column({ default: 'open' })
-  status: 'open' | 'dismissed';
-
-  @Column({ type: 'int', nullable: true })
-  absenceCount: number | null;
-
-  @Column({ type: 'int', nullable: true })
-  maxAllowed: number | null;
 }
 
 @Entity('messages')
@@ -279,69 +444,53 @@ export class MessageEntity {
   @Column()
   conversationId: string;
 
-  @ManyToOne(() => UserEntity, { eager: true })
-  sender: UserEntity;
+  @ManyToOne('UserEntity')
+  sender: any;
 
-  @Column('text')
+  @Column()
   content: string;
 
   @CreateDateColumn()
-  sentAt: Date;
+  timestamp: Date;
 }
 
-@Entity('specialities')
-@Unique(['name', 'level', 'section', 'groupName'])
-export class SpecialityEntity {
+@Entity('attendance_alerts')
+export class AttendanceAlertEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  name: string;
+  @ManyToOne('StudentEntity')
+  student: any;
+
+  @ManyToOne('CourseEntity')
+  course: any;
 
   @Column()
-  level: string;
+  absences: number;
 
   @Column()
-  section: string;
+  severity: 'low' | 'medium' | 'high';
 
-  @Column()
-  groupName: string;
-}
+  @Column({ default: false })
+  dismissed: boolean;
 
-@Entity('schedules')
-export class ScheduleEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @Column({ default: 'active' })
+  status: string;
 
-  @Column()
-  day: string;
-
-  @Column()
-  time: string;
-
-  @Column()
-  subject: string;
-
-  @Column()
-  room: string;
-
-  @Column()
-  type: string;
-
-  @Column()
-  scope: 'student' | 'group' | 'faculty';
-
-  @Column()
-  scopeId: string;
+  @CreateDateColumn()
+  createdAt: Date;
 }
 
 @Entity('reference_blobs')
 export class ReferenceBlobEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column({ unique: true })
   key: string;
 
   @Column({ type: 'jsonb' })
-  data: unknown;
+  data: any;
 }
 
 @Entity('assignments')
@@ -352,20 +501,21 @@ export class AssignmentEntity {
   @Column()
   title: string;
 
-  @Column({ type: 'text' })
+  @ManyToOne('CourseEntity')
+  course: any;
+
+  @Column()
+  dueDate: string;
+
+  @Column()
   description: string;
 
-  @Column()
-  module: string;
+  @ManyToMany('GroupEntity')
+  @JoinTable()
+  groups: any[];
 
-  @Column()
-  teacherName: string;
-
-  @Column({ type: 'jsonb' })
-  targetGroupsJson: string[];
-
-  @Column()
-  deadline: Date;
+  @ManyToOne('TeacherEntity')
+  teacher: any;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -376,14 +526,11 @@ export class AssignmentSubmissionEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => AssignmentEntity)
-  assignment: AssignmentEntity;
+  @ManyToOne('AssignmentEntity')
+  assignment: any;
 
-  @Column()
-  studentId: number;
-
-  @Column()
-  studentName: string;
+  @ManyToOne('StudentEntity')
+  student: any;
 
   @Column()
   fileName: string;

@@ -7,5 +7,5 @@ export declare class MessagesController {
         conversationId: string;
         senderId: number;
         content: string;
-    }): Promise<import("../entities").MessageEntity>;
+    }): Promise<import("../entities").MessageEntity | undefined>;
 }

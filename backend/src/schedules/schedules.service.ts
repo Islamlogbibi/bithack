@@ -1,44 +1,64 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ScheduleEntity } from '../entities';
 import { Repository } from 'typeorm';
+import { ScheduleEntity, TeacherEntity } from '../entities';
 
 @Injectable()
-export class SchedulesService implements OnModuleInit {
-  constructor(@InjectRepository(ScheduleEntity) private readonly repo: Repository<ScheduleEntity>) {}
+export class SchedulesService {
+  constructor(
+    @InjectRepository(ScheduleEntity)
+    private readonly repo: Repository<ScheduleEntity>,
+    @InjectRepository(TeacherEntity)
+    private readonly teacherRepo: Repository<TeacherEntity>,
+  ) {}
 
-  async onModuleInit() {
-    const count = await this.repo.count();
-    if (count > 0) return;
-
-    await this.repo.save(
-      this.repo.create([
-        { day: 'Dimanche', time: '08:00', subject: 'Algorithmique', room: 'Salle A12', type: 'Cours', scope: 'group', scopeId: 'G2' },
-        { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', type: 'TP', scope: 'group', scopeId: 'G2' },
-        { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'Salle B04', type: 'TD', scope: 'group', scopeId: 'G2' },
-        { day: 'Lundi', time: '14:00', subject: 'Mathématiques', room: 'Salle A08', type: 'Cours', scope: 'group', scopeId: 'G2' },
-        { day: 'Mardi', time: '10:00', subject: 'Algorithmique', room: 'Labo Info', type: 'TP', scope: 'group', scopeId: 'G2' },
-        { day: 'Mercredi', time: '08:00', subject: 'Anglais Technique', room: 'Salle C02', type: 'TD', scope: 'group', scopeId: 'G2' },
-        { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', type: 'TP', scope: 'group', scopeId: 'G1' },
-        { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'Salle B04', type: 'TD', scope: 'group', scopeId: 'G1' },
-        { day: 'Samedi', time: '10:00', subject: 'Projet tutoré', room: 'Labo P2', type: 'TP', scope: 'group', scopeId: 'G1' },
-      ]),
-    );
+  async list() {
+    return this.repo.find({ relations: ['teacher', 'teacher.user'] });
   }
 
-  byScope(scope: string, scopeId: string) {
-    return this.repo.find({ where: { scope: scope as 'student' | 'group' | 'faculty', scopeId } });
+  async getByScope(scope: string, scopeId: string) {
+    if (scope === 'group') {
+      return this.repo.find({ 
+        where: { groupName: scopeId },
+        relations: ['teacher', 'teacher.user'],
+        order: { day: 'ASC', timeSlot: 'ASC' }
+      });
+    }
+    if (scope === 'teacher') {
+      return this.repo.find({ 
+        where: { teacher: { id: Number(scopeId) } },
+        relations: ['teacher', 'teacher.user'],
+        order: { day: 'ASC', timeSlot: 'ASC' }
+      });
+    }
+    return [];
   }
 
-  listAll() {
-    return this.repo.find();
+  async create(data: any) {
+    const teacher = await this.teacherRepo.findOne({ where: { id: data.teacherId } });
+    if (!teacher) throw new NotFoundException('Teacher not found');
+    
+    const schedule = this.repo.create({
+      day: data.day,
+      timeSlot: data.time,
+      subject: data.subject,
+      sessionType: data.type,
+      room: data.room,
+      teacher: teacher,
+      groupName: data.group,
+    });
+
+    try {
+      return await this.repo.save(schedule);
+    } catch (e) {
+      if (e.code === '23505') { 
+        throw new ConflictException('Conflit d\'emploi du temps : Salle, Enseignant ou Groupe déjà occupé à ce créneau.');
+      }
+      throw e;
+    }
   }
 
-  create(data: any) {
-    return this.repo.save(this.repo.create(data));
-  }
-
-  delete(id: number) {
+  async delete(id: number) {
     return this.repo.delete(id);
   }
 }

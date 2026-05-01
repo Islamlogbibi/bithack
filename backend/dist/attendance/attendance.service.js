@@ -15,45 +15,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AttendanceService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const entities_1 = require("../entities");
 const typeorm_2 = require("typeorm");
-const SEED = [
-    { matricule: '202012201', subject: 'Algorithmique', risk: 'high', absenceCount: 5, maxAllowed: 6 },
-    { matricule: '202012202', subject: 'Base de Données', risk: 'high', absenceCount: 5, maxAllowed: 6 },
-    { matricule: '202012203', subject: 'Réseaux', risk: 'medium', absenceCount: 4, maxAllowed: 6 },
-    { matricule: '202012345', subject: 'Algorithmique', risk: 'medium', absenceCount: 4, maxAllowed: 6 },
-    { matricule: '202012204', subject: 'Mathématiques', risk: 'low', absenceCount: 3, maxAllowed: 6 },
-];
+const entities_1 = require("../entities");
 let AttendanceService = class AttendanceService {
-    repo;
-    studentsRepo;
-    constructor(repo, studentsRepo) {
-        this.repo = repo;
-        this.studentsRepo = studentsRepo;
+    alertRepo;
+    studentRepo;
+    constructor(alertRepo, studentRepo) {
+        this.alertRepo = alertRepo;
+        this.studentRepo = studentRepo;
     }
-    async onModuleInit() {
-        const count = await this.repo.count();
-        if (count > 0)
-            return;
-        for (const row of SEED) {
-            const student = await this.studentsRepo.findOne({ where: { matricule: row.matricule } });
-            if (!student)
-                continue;
-            await this.repo.save(this.repo.create({
-                student,
-                subject: row.subject,
-                risk: row.risk,
-                status: 'open',
-                absenceCount: row.absenceCount,
-                maxAllowed: row.maxAllowed,
-            }));
-        }
+    async listAlerts() {
+        return this.alertRepo.find({
+            where: { dismissed: false },
+            relations: ['student', 'student.user'],
+            order: { createdAt: 'DESC' },
+        });
     }
-    alerts() {
-        return this.repo.find();
+    async createAlert(data) {
+        const student = await this.studentRepo.findOne({ where: { id: data.studentId } });
+        if (!student)
+            throw new common_1.NotFoundException('Student not found');
+        const alert = this.alertRepo.create({
+            student,
+            module: data.module,
+            absences: data.absences,
+            severity: data.severity,
+        });
+        return this.alertRepo.save(alert);
     }
-    dismiss(id) {
-        return this.repo.update({ id }, { status: 'dismissed' });
+    async dismissAlert(id) {
+        return this.alertRepo.update(id, { dismissed: true });
     }
 };
 exports.AttendanceService = AttendanceService;

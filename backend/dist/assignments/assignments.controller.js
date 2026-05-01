@@ -23,20 +23,20 @@ let AssignmentsController = class AssignmentsController {
         this.assignmentsService = assignmentsService;
     }
     list(groups) {
-        const groupsArray = groups ? groups.split(',') : undefined;
-        return this.assignmentsService.list(groupsArray);
+        const groupList = groups ? groups.split(',') : undefined;
+        return this.assignmentsService.list(groupList);
     }
     findByTeacher(name) {
-        return this.assignmentsService.findByTeacher(name);
+        return this.assignmentsService.listByTeacher(name);
     }
     create(body) {
-        return this.assignmentsService.createAssignment(body);
+        return this.assignmentsService.create(body);
     }
     submit(body) {
-        return this.assignmentsService.submitWork(body);
+        return this.assignmentsService.submit(body);
     }
     getSubmissions(id) {
-        return this.assignmentsService.getSubmissions(Number(id));
+        return this.assignmentsService.listSubmissions(Number(id));
     }
 };
 exports.AssignmentsController = AssignmentsController;
@@ -50,7 +50,7 @@ __decorate([
 ], AssignmentsController.prototype, "list", null);
 __decorate([
     (0, common_1.Get)('teacher/:name'),
-    (0, roles_decorator_1.Roles)('teacher'),
+    (0, roles_decorator_1.Roles)('teacher', 'admin'),
     __param(0, (0, common_1.Param)('name')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -58,7 +58,7 @@ __decorate([
 ], AssignmentsController.prototype, "findByTeacher", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)('teacher'),
+    (0, roles_decorator_1.Roles)('teacher', 'admin'),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -74,7 +74,7 @@ __decorate([
 ], AssignmentsController.prototype, "submit", null);
 __decorate([
     (0, common_1.Get)(':id/submissions'),
-    (0, roles_decorator_1.Roles)('teacher'),
+    (0, roles_decorator_1.Roles)('teacher', 'admin'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

@@ -1,15 +1,20 @@
-import { OnModuleInit } from '@nestjs/common';
-import { TeacherEntity, UserEntity } from '../entities';
 import { Repository } from 'typeorm';
-export declare class TeachersService implements OnModuleInit {
-    private readonly teachersRepo;
-    private readonly usersRepo;
-    constructor(teachersRepo: Repository<TeacherEntity>, usersRepo: Repository<UserEntity>);
-    onModuleInit(): Promise<void>;
-    list(): Promise<TeacherEntity[]>;
+import { TeacherEntity, TeacherModuleEntity } from '../entities';
+export declare class TeachersService {
+    private readonly repo;
+    private readonly moduleRepo;
+    constructor(repo: Repository<TeacherEntity>, moduleRepo: Repository<TeacherModuleEntity>);
+    list(): Promise<{
+        id: number;
+        name: any;
+        email: any;
+        department: any;
+        hoursPlanned: any;
+        hoursCompleted: any;
+        subjects: unknown[];
+        groups: unknown[];
+        academicCv: any;
+    }[]>;
     findByUserId(userId: number): Promise<TeacherEntity | null>;
-    update(id: number, data: {
-        subjectsJson?: string[];
-        groupsJson?: string[];
-    }): Promise<TeacherEntity | null>;
+    update(id: number, data: any): Promise<TeacherEntity | undefined>;
 }

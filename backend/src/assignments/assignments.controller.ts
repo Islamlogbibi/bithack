@@ -11,31 +11,31 @@ export class AssignmentsController {
   @Get()
   @Roles('student', 'teacher', 'admin')
   list(@Query('groups') groups?: string) {
-    const groupsArray = groups ? groups.split(',') : undefined;
-    return this.assignmentsService.list(groupsArray);
+    const groupList = groups ? groups.split(',') : undefined;
+    return this.assignmentsService.list(groupList);
   }
 
   @Get('teacher/:name')
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   findByTeacher(@Param('name') name: string) {
-    return this.assignmentsService.findByTeacher(name);
+    return this.assignmentsService.listByTeacher(name);
   }
 
   @Post()
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   create(@Body() body: any) {
-    return this.assignmentsService.createAssignment(body);
+    return this.assignmentsService.create(body);
   }
 
   @Post('submit')
   @Roles('student')
   submit(@Body() body: any) {
-    return this.assignmentsService.submitWork(body);
+    return this.assignmentsService.submit(body);
   }
 
   @Get(':id/submissions')
-  @Roles('teacher')
+  @Roles('teacher', 'admin')
   getSubmissions(@Param('id') id: string) {
-    return this.assignmentsService.getSubmissions(Number(id));
+    return this.assignmentsService.listSubmissions(Number(id));
   }
 }

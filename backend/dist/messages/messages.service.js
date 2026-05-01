@@ -15,47 +15,32 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessagesService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const entities_1 = require("../entities");
 const typeorm_2 = require("typeorm");
+const entities_1 = require("../entities");
 let MessagesService = class MessagesService {
-    messagesRepo;
-    usersRepo;
-    constructor(messagesRepo, usersRepo) {
-        this.messagesRepo = messagesRepo;
-        this.usersRepo = usersRepo;
+    repo;
+    userRepo;
+    constructor(repo, userRepo) {
+        this.repo = repo;
+        this.userRepo = userRepo;
     }
-    async onModuleInit() {
-        const count = await this.messagesRepo.count();
-        if (count > 0)
+    async list(conversationId) {
+        return this.repo.find({
+            where: { conversationId },
+            relations: ['sender'],
+            order: { timestamp: 'ASC' },
+        });
+    }
+    async send(data) {
+        const sender = await this.userRepo.findOne({ where: { id: data.senderId } });
+        if (!sender)
             return;
-        const student = await this.usersRepo.findOne({ where: { email: 'student@pui.dz' } });
-        const teacher = await this.usersRepo.findOne({ where: { email: 'teacher@pui.dz' } });
-        if (!student || !teacher)
-            return;
-        await this.messagesRepo.save(this.messagesRepo.create([
-            {
-                conversationId: 't1',
-                sender: teacher,
-                content: "Bonjour! Bienvenue dans mon cours d'Algorithmique.",
-            },
-            {
-                conversationId: 't1',
-                sender: student,
-                content: 'Bonjour Professeur! Merci.',
-            },
-            {
-                conversationId: 'group1',
-                sender: student,
-                content: "Quelqu'un a compris l'exercice 3?",
-            },
-        ]));
-    }
-    list(conversationId) {
-        return this.messagesRepo.find({ where: { conversationId }, order: { sentAt: 'ASC' } });
-    }
-    async send(payload) {
-        const sender = await this.usersRepo.findOneByOrFail({ id: payload.senderId });
-        return this.messagesRepo.save(this.messagesRepo.create({ conversationId: payload.conversationId, sender, content: payload.content }));
+        const message = this.repo.create({
+            conversationId: data.conversationId,
+            sender,
+            content: data.content,
+        });
+        return this.repo.save(message);
     }
 };
 exports.MessagesService = MessagesService;

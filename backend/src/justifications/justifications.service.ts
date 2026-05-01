@@ -1,66 +1,46 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { JustificationEntity, StudentEntity } from '../entities';
 import { Repository } from 'typeorm';
+import { JustificationEntity, StudentEntity } from '../entities';
 
 @Injectable()
-export class JustificationsService implements OnModuleInit {
+export class JustificationsService {
   constructor(
     @InjectRepository(JustificationEntity)
-    private readonly justificationsRepo: Repository<JustificationEntity>,
+    private readonly repo: Repository<JustificationEntity>,
     @InjectRepository(StudentEntity)
-    private readonly studentsRepo: Repository<StudentEntity>,
+    private readonly studentRepo: Repository<StudentEntity>,
   ) {}
 
-  async onModuleInit() {
-    const count = await this.justificationsRepo.count();
-    if (count > 0) return;
-    const s1 = await this.studentsRepo.findOne({ where: { matricule: '202012345' } });
-    const s2 = await this.studentsRepo.findOne({ where: { matricule: '202012202' } });
-    const rows: Partial<JustificationEntity>[] = [];
-    if (s1) {
-      rows.push({
-        student: s1,
-        module: 'Algorithmique',
-        fileName: 'justification-medicale.pdf',
-        status: 'pending',
-      });
-    }
-    if (s2) {
-      rows.push({
-        student: s2,
-        module: 'Réseaux',
-        fileName: 'attestation.png',
-        status: 'approved',
-      });
-    }
-    if (rows.length) await this.justificationsRepo.save(this.justificationsRepo.create(rows));
+  async list() {
+    return this.repo.find({ 
+      relations: ['student', 'student.user'],
+      order: { submittedAt: 'DESC' }
+    });
   }
 
-  list() {
-    return this.justificationsRepo.find({ order: { submittedAt: 'DESC' } });
+  async create(data: any) {
+    const student = await this.studentRepo.findOne({ where: { id: data.studentId } });
+    if (!student) throw new NotFoundException('Student not found');
+
+    const justification = this.repo.create({
+      student,
+      module: data.module,
+      fileName: data.fileName,
+      fileContent: data.fileContent,
+      absenceDate: data.absenceDate,
+      status: 'pending',
+    });
+    return this.repo.save(justification);
   }
 
-  async create(studentId: number, module: string, fileName: string, fileContent?: string, metadata?: { absenceDate: string; absenceDay: string; absenceTime: string }) {
-    const student = await this.studentsRepo.findOneOrFail({ where: { user: { id: studentId } } });
-    return this.justificationsRepo.save(
-      this.justificationsRepo.create({ 
-        student, 
-        module, 
-        fileName, 
-        fileContent, 
-        absenceDate: metadata?.absenceDate,
-        absenceDay: metadata?.absenceDay,
-        absenceTime: metadata?.absenceTime,
-        status: 'pending' 
-      }),
-    );
-  }
+  async review(id: number, data: { status: 'approved' | 'rejected'; reviewComment?: string }) {
+    const justification = await this.repo.findOne({ where: { id } });
+    if (!justification) throw new NotFoundException('Justification not found');
 
-  async review(id: number, status: 'approved' | 'rejected', reviewComment?: string) {
-    const item = await this.justificationsRepo.findOneOrFail({ where: { id } });
-    item.status = status;
-    item.reviewComment = reviewComment ?? null;
-    return this.justificationsRepo.save(item);
+    justification.status = data.status;
+    justification.reviewComment = data.reviewComment || '';
+    
+    return this.repo.save(justification);
   }
 }

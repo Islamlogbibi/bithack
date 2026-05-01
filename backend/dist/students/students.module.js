@@ -17,7 +17,18 @@ let StudentsModule = class StudentsModule {
 exports.StudentsModule = StudentsModule;
 exports.StudentsModule = StudentsModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.StudentEntity, entities_1.UserEntity])],
+        imports: [
+            typeorm_1.TypeOrmModule.forFeature([
+                entities_1.StudentEntity,
+                entities_1.UserEntity,
+                entities_1.GradeEntity,
+                entities_1.PresenceEntity,
+                entities_1.SpecialityEntity,
+                entities_1.LevelEntity,
+                entities_1.SectionEntity,
+                entities_1.GroupEntity
+            ])
+        ],
         controllers: [students_controller_1.StudentsController],
         providers: [students_service_1.StudentsService],
         exports: [students_service_1.StudentsService],

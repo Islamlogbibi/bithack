@@ -1,11 +1,14 @@
-import { OnModuleInit } from '@nestjs/common';
-import { UserEntity } from '../entities';
 import { Repository } from 'typeorm';
-export declare class UsersService implements OnModuleInit {
-    private readonly usersRepo;
-    constructor(usersRepo: Repository<UserEntity>);
-    onModuleInit(): Promise<void>;
+import { UserEntity, UserRole } from '../entities';
+export declare class UsersService {
+    private readonly repo;
+    constructor(repo: Repository<UserEntity>);
     findByEmail(email: string): Promise<UserEntity | null>;
     findById(id: number): Promise<UserEntity | null>;
-    private createSeedUser;
+    create(data: {
+        email: string;
+        fullName: string;
+        passwordHash: string;
+        role: UserRole;
+    }): Promise<UserEntity>;
 }

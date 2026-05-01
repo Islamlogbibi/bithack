@@ -1,23 +1,29 @@
-import { OnModuleInit } from '@nestjs/common';
-import { ValidationEntity, StudentEntity } from '../entities';
 import { Repository } from 'typeorm';
-export declare class ValidationsService implements OnModuleInit {
+import { ValidationEntity, GradeEntity, StudentEntity, TeacherEntity, UserEntity } from '../entities';
+export declare class ValidationsService {
     private readonly repo;
+    private readonly gradeRepo;
     private readonly studentRepo;
-    constructor(repo: Repository<ValidationEntity>, studentRepo: Repository<StudentEntity>);
-    onModuleInit(): Promise<void>;
-    list(): Promise<ValidationEntity[]>;
-    create(data: {
-        teacherName: string;
-        module: string;
-        groupName: string;
+    private readonly teacherRepo;
+    private readonly userRepo;
+    constructor(repo: Repository<ValidationEntity>, gradeRepo: Repository<GradeEntity>, studentRepo: Repository<StudentEntity>, teacherRepo: Repository<TeacherEntity>, userRepo: Repository<UserEntity>);
+    list(): Promise<{
+        id: number;
+        teacherName: any;
+        module: any;
+        groupName: any;
+        status: "pending" | "approved" | "rejected";
         count: number;
-        slaHours?: number;
-        studentGradesJson?: {
-            student: string;
-            matricule: string;
-            grade: number;
+        submittedAt: Date;
+        studentGradesJson: {
+            matricule: any;
+            grade: any;
+            td: any;
         }[];
-    }): Promise<ValidationEntity>;
-    review(id: number, status: 'approved' | 'rejected'): Promise<import("typeorm").UpdateResult | undefined>;
+    }[]>;
+    create(data: any): Promise<ValidationEntity[]>;
+    review(id: number, status: 'approved' | 'rejected', reviewerId?: number): Promise<{
+        success: boolean;
+    }>;
+    private updateStudentAverage;
 }

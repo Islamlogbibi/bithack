@@ -31,6 +31,15 @@ import {
   ReferenceBlobEntity,
   AssignmentEntity,
   AssignmentSubmissionEntity,
+  GradeEntity,
+  PresenceEntity,
+  DepartmentEntity,
+  LevelEntity,
+  SectionEntity,
+  GroupEntity,
+  CourseEntity,
+  CVAcademiqueEntity,
+  TeacherSpecialityEntity,
 } from './entities';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
@@ -48,7 +57,6 @@ import { RolesGuard } from './auth/roles.guard';
         password: configService.get('DB_PASSWORD', 'postgres'),
         database: configService.get('DB_NAME', 'bithack'),
         extra: {
-          // Fail fast instead of hanging when Postgres is not running
           connectionTimeoutMillis: Number(
             configService.get('DB_CONNECTION_TIMEOUT_MS', 10000),
           ),
@@ -57,12 +65,21 @@ import { RolesGuard } from './auth/roles.guard';
           UserEntity,
           StudentEntity,
           TeacherEntity,
+          GradeEntity,
+          PresenceEntity,
+          DepartmentEntity,
+          SpecialityEntity,
+          LevelEntity,
+          SectionEntity,
+          GroupEntity,
+          CourseEntity,
+          CVAcademiqueEntity,
+          TeacherSpecialityEntity,
           ResourceEntity,
           JustificationEntity,
           ValidationEntity,
           AttendanceAlertEntity,
           MessageEntity,
-          SpecialityEntity,
           ScheduleEntity,
           ReferenceBlobEntity,
           AssignmentEntity,

@@ -17,7 +17,7 @@ let SchedulesModule = class SchedulesModule {
 exports.SchedulesModule = SchedulesModule;
 exports.SchedulesModule = SchedulesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.ScheduleEntity])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.ScheduleEntity, entities_1.TeacherEntity])],
         controllers: [schedules_controller_1.SchedulesController],
         providers: [schedules_service_1.SchedulesService],
     })

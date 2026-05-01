@@ -22,24 +22,24 @@ let AttendanceController = class AttendanceController {
     constructor(attendanceService) {
         this.attendanceService = attendanceService;
     }
-    alerts() {
-        return this.attendanceService.alerts();
+    listAlerts() {
+        return this.attendanceService.listAlerts();
     }
     dismiss(id) {
-        return this.attendanceService.dismiss(Number(id));
+        return this.attendanceService.dismissAlert(Number(id));
     }
 };
 exports.AttendanceController = AttendanceController;
 __decorate([
     (0, common_1.Get)('alerts'),
-    (0, roles_decorator_1.Roles)('admin', 'dean', 'teacher'),
+    (0, roles_decorator_1.Roles)('admin', 'dean'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], AttendanceController.prototype, "alerts", null);
+], AttendanceController.prototype, "listAlerts", null);
 __decorate([
     (0, common_1.Patch)('alerts/:id/dismiss'),
-    (0, roles_decorator_1.Roles)('admin'),
+    (0, roles_decorator_1.Roles)('admin', 'dean'),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),

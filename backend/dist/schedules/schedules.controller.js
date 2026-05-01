@@ -22,29 +22,29 @@ let SchedulesController = class SchedulesController {
     constructor(schedulesService) {
         this.schedulesService = schedulesService;
     }
-    byScope(scope, scopeId) {
-        return this.schedulesService.byScope(scope, scopeId);
+    getByScope(scope, scopeId) {
+        return this.schedulesService.getByScope(scope, scopeId);
     }
     listAll() {
-        return this.schedulesService.listAll();
+        return this.schedulesService.list();
     }
-    create(data) {
-        return this.schedulesService.create(data);
+    create(body) {
+        return this.schedulesService.create(body);
     }
-    delete(id) {
-        return this.schedulesService.delete(+id);
+    remove(id) {
+        return this.schedulesService.delete(Number(id));
     }
 };
 exports.SchedulesController = SchedulesController;
 __decorate([
     (0, common_1.Get)(':scope/:scopeId'),
-    (0, roles_decorator_1.Roles)('student', 'teacher', 'admin', 'dean'),
+    (0, roles_decorator_1.Roles)('admin', 'dean', 'teacher', 'student'),
     __param(0, (0, common_1.Param)('scope')),
     __param(1, (0, common_1.Param)('scopeId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", void 0)
-], SchedulesController.prototype, "byScope", null);
+], SchedulesController.prototype, "getByScope", null);
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)('admin', 'dean'),
@@ -67,7 +67,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
-], SchedulesController.prototype, "delete", null);
+], SchedulesController.prototype, "remove", null);
 exports.SchedulesController = SchedulesController = __decorate([
     (0, common_1.Controller)('schedules'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

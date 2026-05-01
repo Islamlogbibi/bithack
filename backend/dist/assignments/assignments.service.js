@@ -18,42 +18,45 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const entities_1 = require("../entities");
 let AssignmentsService = class AssignmentsService {
-    assignmentsRepo;
-    submissionsRepo;
-    constructor(assignmentsRepo, submissionsRepo) {
-        this.assignmentsRepo = assignmentsRepo;
-        this.submissionsRepo = submissionsRepo;
+    assignmentRepo;
+    submissionRepo;
+    constructor(assignmentRepo, submissionRepo) {
+        this.assignmentRepo = assignmentRepo;
+        this.submissionRepo = submissionRepo;
     }
     async list(groups) {
-        const qb = this.assignmentsRepo.createQueryBuilder('a');
         if (groups && groups.length > 0) {
-            qb.where('a.targetGroupsJson ?| :groups', { groups });
+            return this.assignmentRepo.find({ order: { createdAt: 'DESC' } });
         }
-        return qb.orderBy('a.deadline', 'ASC').getMany();
+        return this.assignmentRepo.find({ order: { createdAt: 'DESC' } });
     }
-    async findByTeacher(teacherName) {
-        return this.assignmentsRepo.find({
+    async listByTeacher(teacherName) {
+        return this.assignmentRepo.find({
             where: { teacherName },
-            order: { createdAt: 'DESC' },
+            order: { createdAt: 'DESC' }
         });
     }
-    async createAssignment(data) {
-        return this.assignmentsRepo.save(this.assignmentsRepo.create(data));
+    async create(data) {
+        const assignment = this.assignmentRepo.create(data);
+        return this.assignmentRepo.save(assignment);
     }
-    async submitWork(data) {
-        const assignment = await this.assignmentsRepo.findOneOrFail({ where: { id: data.assignmentId } });
-        return this.submissionsRepo.save(this.submissionsRepo.create({
+    async submit(data) {
+        const assignment = await this.assignmentRepo.findOne({ where: { id: data.assignmentId } });
+        if (!assignment)
+            throw new common_1.NotFoundException('Assignment not found');
+        const submission = this.submissionRepo.create({
             assignment,
             studentId: data.studentId,
             studentName: data.studentName,
             fileName: data.fileName,
             fileContent: data.fileContent,
-        }));
+        });
+        return this.submissionRepo.save(submission);
     }
-    async getSubmissions(assignmentId) {
-        return this.submissionsRepo.find({
+    async listSubmissions(assignmentId) {
+        return this.submissionRepo.find({
             where: { assignment: { id: assignmentId } },
-            order: { submittedAt: 'DESC' },
+            order: { submittedAt: 'DESC' }
         });
     }
 };

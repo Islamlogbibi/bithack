@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -7,14 +7,16 @@ import { Roles } from '../auth/roles.decorator';
 @UseGuards(JwtAuthGuard)
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
+
   @Get('alerts')
-  @Roles('admin', 'dean', 'teacher')
-  alerts() {
-    return this.attendanceService.alerts();
+  @Roles('admin', 'dean')
+  listAlerts() {
+    return this.attendanceService.listAlerts();
   }
+
   @Patch('alerts/:id/dismiss')
-  @Roles('admin')
+  @Roles('admin', 'dean')
   dismiss(@Param('id') id: string) {
-    return this.attendanceService.dismiss(Number(id));
+    return this.attendanceService.dismissAlert(Number(id));
   }
 }

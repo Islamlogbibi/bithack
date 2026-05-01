@@ -15,39 +15,59 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SchedulesService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
-const entities_1 = require("../entities");
 const typeorm_2 = require("typeorm");
+const entities_1 = require("../entities");
 let SchedulesService = class SchedulesService {
     repo;
-    constructor(repo) {
+    teacherRepo;
+    constructor(repo, teacherRepo) {
         this.repo = repo;
+        this.teacherRepo = teacherRepo;
     }
-    async onModuleInit() {
-        const count = await this.repo.count();
-        if (count > 0)
-            return;
-        await this.repo.save(this.repo.create([
-            { day: 'Dimanche', time: '08:00', subject: 'Algorithmique', room: 'Salle A12', type: 'Cours', scope: 'group', scopeId: 'G2' },
-            { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', type: 'TP', scope: 'group', scopeId: 'G2' },
-            { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'Salle B04', type: 'TD', scope: 'group', scopeId: 'G2' },
-            { day: 'Lundi', time: '14:00', subject: 'Mathématiques', room: 'Salle A08', type: 'Cours', scope: 'group', scopeId: 'G2' },
-            { day: 'Mardi', time: '10:00', subject: 'Algorithmique', room: 'Labo Info', type: 'TP', scope: 'group', scopeId: 'G2' },
-            { day: 'Mercredi', time: '08:00', subject: 'Anglais Technique', room: 'Salle C02', type: 'TD', scope: 'group', scopeId: 'G2' },
-            { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', type: 'TP', scope: 'group', scopeId: 'G1' },
-            { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'Salle B04', type: 'TD', scope: 'group', scopeId: 'G1' },
-            { day: 'Samedi', time: '10:00', subject: 'Projet tutoré', room: 'Labo P2', type: 'TP', scope: 'group', scopeId: 'G1' },
-        ]));
+    async list() {
+        return this.repo.find({ relations: ['teacher', 'teacher.user'] });
     }
-    byScope(scope, scopeId) {
-        return this.repo.find({ where: { scope: scope, scopeId } });
+    async getByScope(scope, scopeId) {
+        if (scope === 'group') {
+            return this.repo.find({
+                where: { groupName: scopeId },
+                relations: ['teacher', 'teacher.user'],
+                order: { day: 'ASC', timeSlot: 'ASC' }
+            });
+        }
+        if (scope === 'teacher') {
+            return this.repo.find({
+                where: { teacher: { id: Number(scopeId) } },
+                relations: ['teacher', 'teacher.user'],
+                order: { day: 'ASC', timeSlot: 'ASC' }
+            });
+        }
+        return [];
     }
-    listAll() {
-        return this.repo.find();
+    async create(data) {
+        const teacher = await this.teacherRepo.findOne({ where: { id: data.teacherId } });
+        if (!teacher)
+            throw new common_1.NotFoundException('Teacher not found');
+        const schedule = this.repo.create({
+            day: data.day,
+            timeSlot: data.time,
+            subject: data.subject,
+            sessionType: data.type,
+            room: data.room,
+            teacher: teacher,
+            groupName: data.group,
+        });
+        try {
+            return await this.repo.save(schedule);
+        }
+        catch (e) {
+            if (e.code === '23505') {
+                throw new common_1.ConflictException('Conflit d\'emploi du temps : Salle, Enseignant ou Groupe déjà occupé à ce créneau.');
+            }
+            throw e;
+        }
     }
-    create(data) {
-        return this.repo.save(this.repo.create(data));
-    }
-    delete(id) {
+    async delete(id) {
         return this.repo.delete(id);
     }
 };
@@ -55,6 +75,8 @@ exports.SchedulesService = SchedulesService;
 exports.SchedulesService = SchedulesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.ScheduleEntity)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(entities_1.TeacherEntity)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], SchedulesService);
 //# sourceMappingURL=schedules.service.js.map

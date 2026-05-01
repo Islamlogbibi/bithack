@@ -4,7 +4,7 @@ export declare class AssignmentsController {
     constructor(assignmentsService: AssignmentsService);
     list(groups?: string): Promise<import("../entities").AssignmentEntity[]>;
     findByTeacher(name: string): Promise<import("../entities").AssignmentEntity[]>;
-    create(body: any): Promise<import("../entities").AssignmentEntity>;
-    submit(body: any): Promise<import("../entities").AssignmentSubmissionEntity>;
+    create(body: any): Promise<import("../entities").AssignmentEntity[]>;
+    submit(body: any): Promise<import("../entities").AssignmentSubmissionEntity[]>;
     getSubmissions(id: string): Promise<import("../entities").AssignmentSubmissionEntity[]>;
 }

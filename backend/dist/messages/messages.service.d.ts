@@ -1,15 +1,13 @@
-import { OnModuleInit } from '@nestjs/common';
-import { MessageEntity, UserEntity } from '../entities';
 import { Repository } from 'typeorm';
-export declare class MessagesService implements OnModuleInit {
-    private readonly messagesRepo;
-    private readonly usersRepo;
-    constructor(messagesRepo: Repository<MessageEntity>, usersRepo: Repository<UserEntity>);
-    onModuleInit(): Promise<void>;
+import { MessageEntity, UserEntity } from '../entities';
+export declare class MessagesService {
+    private readonly repo;
+    private readonly userRepo;
+    constructor(repo: Repository<MessageEntity>, userRepo: Repository<UserEntity>);
     list(conversationId: string): Promise<MessageEntity[]>;
-    send(payload: {
+    send(data: {
         conversationId: string;
         senderId: number;
         content: string;
-    }): Promise<MessageEntity>;
+    }): Promise<MessageEntity | undefined>;
 }

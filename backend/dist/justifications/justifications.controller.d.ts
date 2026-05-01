@@ -3,17 +3,6 @@ export declare class JustificationsController {
     private readonly justificationsService;
     constructor(justificationsService: JustificationsService);
     list(): Promise<import("../entities").JustificationEntity[]>;
-    create(body: {
-        studentId: number;
-        module: string;
-        fileName: string;
-        fileContent?: string;
-        absenceDate: string;
-        absenceDay: string;
-        absenceTime: string;
-    }): Promise<import("../entities").JustificationEntity>;
-    review(id: string, body: {
-        status: 'approved' | 'rejected';
-        reviewComment?: string;
-    }): Promise<import("../entities").JustificationEntity>;
+    create(body: any): Promise<import("../entities").JustificationEntity[]>;
+    review(id: string, body: any): Promise<import("../entities").JustificationEntity>;
 }

@@ -47,14 +47,14 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
-const jwt_1 = require("@nestjs/jwt");
-const typeorm_1 = require("@nestjs/typeorm");
-const typeorm_2 = require("typeorm");
 const users_service_1 = require("../users/users.service");
+const jwt_1 = require("@nestjs/jwt");
+const bcrypt = __importStar(require("bcrypt"));
 const students_service_1 = require("../students/students.service");
 const teachers_service_1 = require("../teachers/teachers.service");
+const typeorm_1 = require("@nestjs/typeorm");
 const entities_1 = require("../entities");
-const bcrypt = __importStar(require("bcrypt"));
+const typeorm_2 = require("typeorm");
 let AuthService = class AuthService {
     usersService;
     jwtService;
@@ -68,25 +68,20 @@ let AuthService = class AuthService {
         this.teachersService = teachersService;
         this.scheduleRepo = scheduleRepo;
     }
-    async login(email, password) {
+    async login(email, pass) {
         const user = await this.usersService.findByEmail(email);
-        if (!user) {
+        if (!user)
             throw new common_1.UnauthorizedException('Invalid credentials');
-        }
-        const isValid = await bcrypt.compare(password, user.passwordHash);
-        if (!isValid) {
+        const isMatch = await bcrypt.compare(pass, user.passwordHash);
+        if (!isMatch)
             throw new common_1.UnauthorizedException('Invalid credentials');
-        }
         const accessToken = await this.jwtService.signAsync({
             sub: user.id,
             role: user.role,
             email: user.email,
         });
         const profile = await this.buildProfile(user.id);
-        return {
-            accessToken,
-            profile,
-        };
+        return { accessToken, profile };
     }
     async profileForUserId(userId) {
         return this.buildProfile(userId);
@@ -97,75 +92,59 @@ let AuthService = class AuthService {
             throw new common_1.UnauthorizedException();
         if (user.role === 'student') {
             const student = await this.studentsService.findByUserId(userId);
-            if (!student) {
-                return {
-                    id: user.id,
-                    name: user.fullName,
-                    email: user.email,
-                    role: 'student',
-                    matricule: '',
-                    group: '',
-                    year: '',
-                    gpa: 0,
-                    absences: {},
-                    grades: [],
-                    schedule: [],
-                };
-            }
+            if (!student)
+                return { id: user.id, name: user.fullName, email: user.email, role: 'student' };
             const schedules = await this.scheduleRepo.find({
-                where: [{ scope: 'group', scopeId: student.groupName }],
-                order: { day: 'ASC', time: 'ASC' },
+                where: [
+                    { group: { id: student.group?.id } },
+                    { section: { id: student.section?.id } }
+                ],
+                relations: ['course', 'course.teacher', 'course.teacher.user'],
+                order: { dateSeance: 'ASC', heureDebut: 'ASC' }
             });
-            const schedule = schedules.map((s) => ({
-                day: s.day,
-                time: s.time,
-                subject: s.subject,
-                room: s.room.includes('Salle') || s.room.includes('Labo') ? s.room : `Salle ${s.room}`,
-                type: s.type,
-            }));
             return {
                 id: user.id,
                 name: user.fullName,
                 email: user.email,
                 role: 'student',
                 matricule: student.matricule,
-                group: student.groupName,
-                year: student.yearLabel ?? `${student.level} ${student.speciality}`,
-                level: student.level,
-                displayDepartment: student.displayDepartment,
+                speciality: student.speciality?.libelle,
+                level: student.level?.libelle,
+                section: student.section?.code,
+                group: student.group?.code,
                 gpa: student.average,
-                absences: student.absencesByModuleJson ?? {},
-                grades: student.gradesJson ?? [],
-                schedule,
+                grades: student.grades?.map(g => ({
+                    subject: g.course?.intitule,
+                    value: g.valeur,
+                    status: g.statut,
+                    credits: g.course?.credits
+                })) || [],
+                schedule: schedules.map(s => ({
+                    day: s.dateSeance,
+                    time: s.heureDebut,
+                    subject: s.course?.intitule,
+                    room: s.salle,
+                    teacher: s.course?.teacher?.user?.fullName
+                }))
             };
         }
         if (user.role === 'teacher') {
             const teacher = await this.teachersService.findByUserId(userId);
-            if (!teacher) {
-                return {
-                    id: user.id,
-                    name: user.fullName,
-                    email: user.email,
-                    role: 'teacher',
-                    department: '',
-                    subjects: [],
-                    groups: [],
-                    hoursPlanned: 0,
-                    hoursCompleted: 0,
-                    pendingGrades: [],
-                };
-            }
+            if (!teacher)
+                return { id: user.id, name: user.fullName, email: user.email, role: 'teacher' };
             return {
                 id: user.id,
                 name: user.fullName,
                 email: user.email,
                 role: 'teacher',
-                department: teacher.department,
-                subjects: teacher.subjectsJson ?? [],
-                groups: teacher.groupsJson ?? [],
-                hoursPlanned: teacher.hoursPlanned,
-                hoursCompleted: teacher.hoursCompleted,
-                pendingGrades: teacher.pendingGradesJson ?? [],
+                department: teacher.department?.libelle,
+                orcid: teacher.orcid,
+                scopusId: teacher.scopusId,
+                courses: teacher.courses?.map(c => ({
+                    id: c.id,
+                    name: c.intitule,
+                    level: c.level?.libelle
+                })) || []
             };
         }
         if (user.role === 'admin') {
@@ -174,23 +153,16 @@ let AuthService = class AuthService {
                 name: user.fullName,
                 email: user.email,
                 role: 'admin',
-                department: user.department ?? '',
-                stats: {
-                    totalStudents: user.adminStatsJson?.totalStudents ?? 0,
-                    activeTeachers: user.adminStatsJson?.activeTeachers ?? 0,
-                    pendingValidations: user.adminStatsJson?.pendingValidations ?? 0,
-                    avgAttendance: user.adminStatsJson?.avgAttendance ?? 0,
-                    publishedResources: user.adminStatsJson?.publishedResources ?? 0,
+                department: user.department || 'Administration',
+                adminStats: user.adminStatsJson || {
+                    totalStudents: 1500,
+                    pendingValidations: 8,
+                    activeAlerts: 12,
+                    faculty: 'Faculté des Sciences',
                 },
             };
         }
-        return {
-            id: user.id,
-            name: user.fullName,
-            email: user.email,
-            role: 'dean',
-            faculty: user.faculty ?? '',
-        };
+        return { id: user.id, name: user.fullName, email: user.email, role: user.role };
     }
 };
 exports.AuthService = AuthService;

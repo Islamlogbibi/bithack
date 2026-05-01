@@ -7,18 +7,22 @@ import { Roles } from '../auth/roles.decorator';
 @UseGuards(JwtAuthGuard)
 export class ResourcesController {
   constructor(private readonly resourcesService: ResourcesService) {}
+
   @Get()
+  @Roles('admin', 'dean', 'teacher', 'student')
   list() {
     return this.resourcesService.list();
   }
+
   @Post()
-  @Roles('teacher', 'admin')
-  create(@Body() body: Record<string, unknown>) {
+  @Roles('admin', 'teacher')
+  create(@Body() body: any) {
     return this.resourcesService.create(body);
   }
+
   @Delete(':id')
-  @Roles('teacher', 'admin')
+  @Roles('admin', 'teacher')
   remove(@Param('id') id: string) {
-    return this.resourcesService.remove(Number(id));
+    return this.resourcesService.delete(Number(id));
   }
 }
