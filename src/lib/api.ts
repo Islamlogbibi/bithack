@@ -139,9 +139,7 @@ export function deleteResource(id: number) {
 export function getSpecialitiesTree() {
   return apiGet<any[]>('/specialities/tree')
 }
-export function getStudents(query: string = '') {
-  return apiGet<any[]>(`/students${query}`)
-}
+
 export function createStudent(data: any) {
   return apiPost<void>('/students', data)
 }
@@ -167,4 +165,43 @@ export function getReference<T>(key: string) {
 }
 export function saveReference<T>(key: string, data: T) {
   return apiPost<T>(`/reference/${key}`, data)
+}
+
+// =======================
+// ASSIGNMENTS
+// =======================
+export function getAssignments(groups?: string[]) {
+  const query = groups ? `?groups=${encodeURIComponent(groups.join(','))}` : ''
+  return apiGet<any[]>(`/assignments${query}`)
+}
+export function getTeacherAssignments(name: string) {
+  return apiGet<any[]>(`/assignments/teacher/${encodeURIComponent(name)}`)
+}
+export function createAssignment(data: any) {
+  return apiPost<void>('/assignments', data)
+}
+export function submitAssignment(data: {
+  assignmentId: number
+  studentId: number
+  studentName: string
+  fileName: string
+  fileContent: string
+}) {
+  return apiPost<void>('/assignments/submit', data)
+}
+export function getAssignmentSubmissions(id: number) {
+  return apiGet<any[]>(`/assignments/${id}/submissions`)
+}
+
+export function getStudents(filters: Record<string, string | undefined> = {}) {
+  const params = new URLSearchParams()
+  Object.entries(filters).forEach(([k, v]) => {
+    if (v) params.append(k, v)
+  })
+  const qs = params.toString()
+  return apiGet<any[]>(`/students${qs ? '?' + qs : ''}`)
+}
+
+export function getStudentsByGroup(group: string) {
+  return getStudents({ group })
 }

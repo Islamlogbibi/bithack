@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import type { TeacherUser, PendingGrade } from '../../types/domain'
-import { apiPost } from '../../lib/api'
+import { apiPost, getStudentsByGroup } from '../../lib/api'
 
 function getAppreciation(avg: number): string {
   if (avg >= 16) return 'Excellent'
@@ -22,13 +22,40 @@ function getAppColor(avg: number): string {
 export default function TeacherGrades() {
   const { user } = useAuth()
   const teacher = user as TeacherUser
-  const [selectedModule, setSelectedModule] = useState(teacher.subjects[0])
-  const [selectedGroup, setSelectedGroup] = useState(teacher.groups[0])
-  const [grades, setGrades] = useState<(PendingGrade & { examInput: string })[]>(
-    teacher.pendingGrades.map((g) => ({ ...g, examInput: g.exam !== null ? String(g.exam) : '' }))
-  )
+  const [selectedModule, setSelectedModule] = useState(teacher.subjects?.[0] || '')
+  const [selectedGroup, setSelectedGroup] = useState(teacher.groups?.[0] || '')
+  const [grades, setGrades] = useState<(PendingGrade & { examInput: string })[]>([])
+  const [loading, setLoading] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    if (!selectedGroup || !selectedModule) return
+    let cancelled = false
+    setLoading(true)
+    getStudentsByGroup(selectedGroup).then(students => {
+      if (cancelled) return
+      const mapped = students.map(s => {
+        const studentGrade = s.gradesJson?.find((g: any) => g.subject === selectedModule)
+        return {
+          student: s.user?.fullName || 'Inconnu',
+          matricule: s.matricule,
+          group: s.groupName,
+          td: studentGrade?.td || 0,
+          exam: studentGrade?.exam || null,
+          examInput: studentGrade?.exam !== null && studentGrade?.exam !== undefined ? String(studentGrade.exam) : ''
+        }
+      })
+      setGrades(mapped)
+      setSubmitted(false)
+    }).catch(err => {
+      console.error(err)
+      if (!cancelled) setGrades([])
+    }).finally(() => {
+      if (!cancelled) setLoading(false)
+    })
+    return () => { cancelled = true }
+  }, [selectedGroup, selectedModule])
 
   const updateExam = (idx: number, val: string) => {
     setGrades((prev) => prev.map((g, i) => i === idx ? { ...g, examInput: val } : g))
@@ -76,14 +103,14 @@ export default function TeacherGrades() {
           onChange={(e) => setSelectedModule(e.target.value)}
           className="px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
-          {teacher.subjects.map((s) => <option key={s}>{s}</option>)}
+          {(teacher.subjects || []).map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         <select
           value={selectedGroup}
           onChange={(e) => setSelectedGroup(e.target.value)}
           className="px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
         >
-          {teacher.groups.map((g) => <option key={g}>{g}</option>)}
+          {(teacher.groups || []).map((g) => <option key={g} value={g}>{g}</option>)}
         </select>
       </div>
 
@@ -105,8 +132,16 @@ export default function TeacherGrades() {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-card border border-border rounded-xl overflow-hidden mb-4"
+        className="bg-card border border-border rounded-xl overflow-hidden mb-4 relative min-h-[200px]"
       >
+        {loading && (
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px] flex items-center justify-center z-10">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <p className="text-xs font-medium text-muted-foreground">Chargement des étudiants...</p>
+            </div>
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>

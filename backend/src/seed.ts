@@ -72,12 +72,20 @@ async function bootstrap() {
       hoursCompleted: 45,
       subjectsJson: subjectsPool,
       groupsJson: ['Group A', 'Group B'],
+      academicCvJson: {
+        orcid: '0000-0002-1825-0097',
+        scopus: '57193563400',
+        publications: [
+          { title: 'Advanced Algorithms in Distributed Systems', year: 2023, journal: 'IEEE Transactions' },
+          { title: 'Machine Learning for Educational Data Mining', year: 2022, journal: 'Journal of AI Research' },
+        ]
+      }
     }));
     teachers.push(teacher);
   }
 
-  // 4. Create Students (60 total)
-  console.log('Generating 60 students...');
+  // 4. Create Students (60 total for Group A/B testing)
+  console.log('Generating 60 students for Group A/B testing...');
   const allStudents: StudentEntity[] = [];
   
   for (let i = 1; i <= 60; i++) {
@@ -113,20 +121,25 @@ async function bootstrap() {
 
   // 5. Create Timetables for Group A and B
   console.log('Generating timetables...');
-  const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi'];
   
   // Group A Timetable
-  for (let i = 0; i < 3; i++) {
-    await scheduleRepo.save(scheduleRepo.create({
-      day: days[i], time: '08:30', subject: subjectsPool[i], room: 'Amphi A', type: 'Cours', scope: 'group', scopeId: 'Group A'
-    }));
+  const groupASessions = [
+    { day: 'Dimanche', time: '08:30', subject: 'Algorithmique', room: 'Amphi A', type: 'Cours', scope: 'group', scopeId: 'Group A' },
+    { day: 'Lundi', time: '10:30', subject: 'Bases de données', room: 'Salle B1', type: 'TD', scope: 'group', scopeId: 'Group A' },
+    { day: 'Mardi', time: '14:00', subject: 'Réseaux', room: 'Labo 1', type: 'TP', scope: 'group', scopeId: 'Group A' },
+  ];
+  for (const s of groupASessions) {
+    await scheduleRepo.save(scheduleRepo.create(s as any));
   }
 
   // Group B Timetable
-  for (let i = 0; i < 3; i++) {
-    await scheduleRepo.save(scheduleRepo.create({
-      day: days[i], time: '10:30', subject: subjectsPool[i], room: 'Amphi B', type: 'Cours', scope: 'group', scopeId: 'Group B'
-    }));
+  const groupBSessions = [
+    { day: 'Dimanche', time: '10:30', subject: 'Algorithmique', room: 'Amphi B', type: 'Cours', scope: 'group', scopeId: 'Group B' },
+    { day: 'Lundi', time: '08:30', subject: 'Bases de données', room: 'Salle B2', type: 'TD', scope: 'group', scopeId: 'Group B' },
+    { day: 'Mercredi', time: '14:00', subject: 'Réseaux', room: 'Labo 2', type: 'TP', scope: 'group', scopeId: 'Group B' },
+  ];
+  for (const s of groupBSessions) {
+    await scheduleRepo.save(scheduleRepo.create(s as any));
   }
 
   // 6. Create Specialities records
