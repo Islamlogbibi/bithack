@@ -41,30 +41,49 @@ export default function TeacherGrades() {
   }, [teacher, selectedModule, selectedGroup])
 
   const fetchStudents = useCallback(async () => {
-    if (!selectedGroup) return
+    if (!selectedGroup || !teacher?.name) return
     setLoading(true)
     try {
-      const data = await getStudentsByGroup(selectedGroup)
-      if (Array.isArray(data)) {
-        setGrades(data.map(s => {
+      // Fetch both students and validations in parallel
+      const [studentsData, validationsData] = await Promise.all([
+        getStudentsByGroup(selectedGroup),
+        apiGet<any[]>('/validations')
+      ])
+
+      // Find if there's a pending validation for this teacher, module and group
+      const pendingVal = Array.isArray(validationsData) ? validationsData.find(v => 
+        v.status === 'pending' && 
+        v.teacherName === teacher.name && 
+        v.module === selectedModule && 
+        v.groupName === selectedGroup
+      ) : null
+
+      if (Array.isArray(studentsData)) {
+        const mapped = studentsData.map(s => {
           const existingModuleGrade = s.gradesJson?.find((g: any) => g.subject === selectedModule)
+          
+          // Check if there's a grade for this student in the pending validation
+          const pendingGradeEntry = pendingVal?.studentGradesJson?.find((pg: any) => pg.matricule === s.matricule)
+
           return {
             student: s.user?.fullName || 'Étudiant sans nom',
             matricule: s.matricule,
             group: s.groupName,
             td: existingModuleGrade?.td || 12,
-            exam: null,
-            status: 'En attente',
-            examInput: ''
+            exam: existingModuleGrade?.exam || null,
+            status: pendingVal ? 'Soumis (Attente)' : (existingModuleGrade?.status || 'En attente'),
+            examInput: pendingGradeEntry ? String(pendingGradeEntry.grade) : (existingModuleGrade?.exam !== null && existingModuleGrade?.exam !== undefined ? String(existingModuleGrade.exam) : '')
           }
-        }))
+        })
+        setGrades(mapped)
+        if (mapped.length > 0) setSubmitted(false)
       }
     } catch (err) {
-      console.error('Failed to fetch students:', err)
+      console.error('Failed to fetch students or validations:', err)
     } finally {
       setLoading(false)
     }
-  }, [selectedGroup, selectedModule])
+  }, [selectedGroup, selectedModule, teacher?.name])
 
   useEffect(() => {
     fetchStudents()
