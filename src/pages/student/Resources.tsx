@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Search, Download, FileText, Presentation, File } from 'lucide-react'
-import { RESOURCES } from '../../data/users'
+import { apiGet } from '../../lib/api'
+import { mapApiResource } from '../../lib/mappers'
+import type { ResourceItem } from '../../types/domain'
 
 const FILE_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
   PDF: { icon: <FileText size={24} />, color: 'text-red-500 bg-red-500/10' },
@@ -16,8 +18,25 @@ export default function StudentResources() {
   const [search, setSearch] = useState('')
   const [subject, setSubject] = useState('Tous')
   const [type, setType] = useState('Tous')
+  const [resources, setResources] = useState<ResourceItem[]>([])
 
-  const filtered = RESOURCES.filter((r) => {
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const raw = await apiGet<Parameters<typeof mapApiResource>[0][]>('/resources')
+        if (cancelled) return
+        setResources(raw.map(mapApiResource))
+      } catch {
+        setResources([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const filtered = resources.filter((r) => {
     const matchSearch = r.title.toLowerCase().includes(search.toLowerCase()) ||
       r.subject.toLowerCase().includes(search.toLowerCase())
     const matchSubject = subject === 'Tous' || r.subject === subject
@@ -27,7 +46,6 @@ export default function StudentResources() {
 
   return (
     <>
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -55,10 +73,8 @@ export default function StudentResources() {
         </select>
       </div>
 
-      {/* Results count */}
       <p className="text-sm text-muted-foreground mb-4">{filtered.length} ressource(s) trouvée(s)</p>
 
-      {/* Resource grid */}
       <AnimatePresence mode="popLayout">
         {filtered.length === 0 ? (
           <motion.div
@@ -81,42 +97,33 @@ export default function StudentResources() {
                 <motion.div
                   key={r.id}
                   layout
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ delay: i * 0.04 }}
-                  whileHover={{ y: -4, boxShadow: '0 8px 30px rgba(59,130,246,0.12)' }}
-                  className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3 cursor-default"
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition-colors group"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className={`p-2.5 rounded-lg ${fileInfo.color}`}>
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className={`p-2.5 rounded-xl ${fileInfo.color}`}>
                       {fileInfo.icon}
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      {r.isNew && (
-                        <span className="text-xs font-bold px-2 py-0.5 bg-blue-500/15 text-blue-500 rounded-full">Nouveau</span>
-                      )}
-                      <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-md">{r.type}</span>
-                    </div>
+                    {r.isNew && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-500/15 text-emerald-600 rounded-full">NOUVEAU</span>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground leading-snug">{r.title}</p>
-                    <p className="text-xs text-primary mt-1">{r.subject}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Par {r.teacher}</p>
+                  <h3 className="font-semibold text-sm text-foreground line-clamp-2 mb-1 group-hover:text-primary transition-colors">{r.title}</h3>
+                  <p className="text-xs text-muted-foreground mb-3">{r.subject} · {r.type}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>{r.teacher}</span>
+                    <span>{r.size}</span>
                   </div>
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{r.date}</p>
-                      <p className="text-xs text-muted-foreground">{r.size}</p>
-                    </div>
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-semibold hover:bg-primary/90 transition-colors"
-                    >
-                      <Download size={13} />
-                      Télécharger
-                    </motion.button>
-                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    className="mt-3 w-full flex items-center justify-center gap-2 py-2 bg-secondary hover:bg-primary/10 text-foreground rounded-lg text-xs font-semibold transition-colors"
+                  >
+                    <Download size={14} />
+                    Télécharger
+                  </motion.button>
                 </motion.div>
               )
             })}

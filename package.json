@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "dev:db": "docker compose up -d",
+    "dev:db:down": "docker compose down",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint ."

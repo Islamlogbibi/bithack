@@ -4,9 +4,10 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   OneToOne,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
@@ -28,6 +29,15 @@ export class UserEntity {
 
   @Column()
   role: UserRole;
+
+  @Column({ nullable: true })
+  department: string | null;
+
+  @Column({ nullable: true })
+  faculty: string | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  adminStatsJson: Record<string, number> | null;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -65,6 +75,30 @@ export class StudentEntity {
 
   @Column({ default: 0 })
   absences: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  yearLabel: string | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  gradesJson: unknown[] | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  absencesByModuleJson: Record<string, number> | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  notesJson: number[] | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  gpaByPeriodJson: { year: string; semester: string; gpa: number }[] | null;
+
+  @Column({ nullable: true })
+  displayFaculty: string | null;
+
+  @Column({ nullable: true })
+  displayDepartment: string | null;
+
+  @Column({ nullable: true })
+  displayModule: string | null;
 }
 
 @Entity('teachers')
@@ -84,6 +118,15 @@ export class TeacherEntity {
 
   @Column({ type: 'int', default: 0 })
   hoursCompleted: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  subjectsJson: string[] | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  groupsJson: string[] | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  pendingGradesJson: unknown[] | null;
 }
 
 @Entity('resources')
@@ -106,6 +149,12 @@ export class ResourceEntity {
   @Column()
   teacherName: string;
 
+  @Column({ nullable: true })
+  sizeLabel: string | null;
+
+  @Column({ default: false })
+  isNew: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 }
@@ -127,7 +176,7 @@ export class JustificationEntity {
   @Column({ default: 'pending' })
   status: 'pending' | 'approved' | 'rejected';
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   reviewComment: string | null;
 
   @CreateDateColumn()
@@ -150,6 +199,21 @@ export class ValidationEntity {
 
   @Column({ type: 'int' })
   count: number;
+
+  @Column({ nullable: true })
+  speciality: string | null;
+
+  @Column({ nullable: true })
+  level: string | null;
+
+  @Column({ nullable: true })
+  section: string | null;
+
+  @Column({ type: 'int', default: 0 })
+  slaHours: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  studentGradesJson: { student: string; matricule: string; grade: number }[] | null;
 
   @Column({ default: 'pending' })
   status: 'pending' | 'approved' | 'rejected';
@@ -174,6 +238,12 @@ export class AttendanceAlertEntity {
 
   @Column({ default: 'open' })
   status: 'open' | 'dismissed';
+
+  @Column({ type: 'int', nullable: true })
+  absenceCount: number | null;
+
+  @Column({ type: 'int', nullable: true })
+  maxAllowed: number | null;
 }
 
 @Entity('messages')
@@ -195,11 +265,12 @@ export class MessageEntity {
 }
 
 @Entity('specialities')
+@Unique(['name', 'level', 'section', 'groupName'])
 export class SpecialityEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   @Column()
@@ -237,5 +308,14 @@ export class ScheduleEntity {
 
   @Column()
   scopeId: string;
+}
+
+@Entity('reference_blobs')
+export class ReferenceBlobEntity {
+  @PrimaryColumn()
+  key: string;
+
+  @Column({ type: 'jsonb' })
+  data: unknown;
 }
 

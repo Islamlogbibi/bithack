@@ -1,16 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { JustificationEntity, StudentEntity } from '../entities';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class JustificationsService {
+export class JustificationsService implements OnModuleInit {
   constructor(
     @InjectRepository(JustificationEntity)
     private readonly justificationsRepo: Repository<JustificationEntity>,
     @InjectRepository(StudentEntity)
     private readonly studentsRepo: Repository<StudentEntity>,
   ) {}
+
+  async onModuleInit() {
+    const count = await this.justificationsRepo.count();
+    if (count > 0) return;
+    const s1 = await this.studentsRepo.findOne({ where: { matricule: '202012345' } });
+    const s2 = await this.studentsRepo.findOne({ where: { matricule: '202012202' } });
+    const rows: Partial<JustificationEntity>[] = [];
+    if (s1) {
+      rows.push({
+        student: s1,
+        module: 'Algorithmique',
+        fileName: 'justification-medicale.pdf',
+        status: 'pending',
+      });
+    }
+    if (s2) {
+      rows.push({
+        student: s2,
+        module: 'Réseaux',
+        fileName: 'attestation.png',
+        status: 'approved',
+      });
+    }
+    if (rows.length) await this.justificationsRepo.save(this.justificationsRepo.create(rows));
+  }
 
   list() {
     return this.justificationsRepo.find({ order: { submittedAt: 'DESC' } });

@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Users, BookOpen, ShieldCheck, BarChart2, FileText, CheckCircle, XCircle, AlertTriangle, Activity } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import StatCard from '../../components/shared/StatCard'
 import { useAuth } from '../../context/AuthContext'
-import { AdminUser, ADMIN_PENDING_VALIDATIONS, ABSENCE_ALERTS, WORKLOAD_DATA } from '../../data/users'
+import type { AdminUser, AdminPendingValidation, AbsenceAlertRow, WorkloadRow } from '../../types/domain'
+import { apiGet, apiPost } from '../../lib/api'
+import { mapApiValidation, mapApiAlert, mapWorkload } from '../../lib/mappers'
 
 const ACTIVITY_FEED = [
   { icon: <CheckCircle size={14} className="text-emerald-500" />, text: 'Dr. Boualem a soumis les notes de Réseaux G3', time: 'il y a 15 min' },
@@ -17,11 +19,54 @@ const ACTIVITY_FEED = [
 export default function AdminDashboard() {
   const { user } = useAuth()
   const admin = user as AdminUser
-  const [validations, setValidations] = useState(ADMIN_PENDING_VALIDATIONS.slice(0, 3))
-  const [selectedValidation, setSelectedValidation] = useState<typeof ADMIN_PENDING_VALIDATIONS[number] | null>(null)
+  const [validations, setValidations] = useState<AdminPendingValidation[]>([])
+  const [absenceAlerts, setAbsenceAlerts] = useState<AbsenceAlertRow[]>([])
+  const [workloadData, setWorkloadData] = useState<WorkloadRow[]>([])
+  const [selectedValidation, setSelectedValidation] = useState<AdminPendingValidation | null>(null)
 
-  const handleValidate = (id: number) => {
-    setValidations((prev) => prev.filter((v) => v.id !== id))
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const [rawVal, rawAlerts, workload] = await Promise.all([
+          apiGet<Record<string, unknown>[]>('/validations'),
+          apiGet<Parameters<typeof mapApiAlert>[0][]>('/attendance/alerts'),
+          apiGet<unknown>('/reference/workload'),
+        ])
+        if (cancelled) return
+        const pending = rawVal
+          .filter((v) => v.status === 'pending')
+          .map((v) => mapApiValidation(v as Parameters<typeof mapApiValidation>[0]))
+          .sort((a, b) => a.slaHours - b.slaHours)
+          .slice(0, 3)
+        setValidations(pending)
+        setAbsenceAlerts(rawAlerts.slice(0, 4).map(mapApiAlert))
+        setWorkloadData(mapWorkload(workload))
+      } catch {
+        /* keep empty */
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const handleValidate = async (id: number) => {
+    try {
+      await apiPost(`/validations/${id}/review`, { status: 'approved' })
+      setValidations((prev) => prev.filter((v) => v.id !== id))
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const handleReject = async (id: number) => {
+    try {
+      await apiPost(`/validations/${id}/review`, { status: 'rejected' })
+      setValidations((prev) => prev.filter((v) => v.id !== id))
+    } catch {
+      /* ignore */
+    }
   }
 
   const recentGrades = validations.flatMap((validation) =>
@@ -100,7 +145,7 @@ export default function AdminDashboard() {
                 <div className="flex gap-2">
                   <motion.button
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => handleValidate(v.id)}
+                    onClick={() => void handleValidate(v.id)}
                     className="flex items-center gap-1 px-3 py-1.5 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 rounded-lg text-xs font-semibold hover:bg-emerald-500/25 transition-colors"
                   >
                     <CheckCircle size={13} />
@@ -108,6 +153,7 @@ export default function AdminDashboard() {
                   </motion.button>
                   <motion.button
                     whileTap={{ scale: 0.9 }}
+                    onClick={() => void handleReject(v.id)}
                     className="flex items-center gap-1 px-3 py-1.5 bg-red-500/15 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-500/25 transition-colors"
                   >
                     <XCircle size={13} />
@@ -160,8 +206,8 @@ export default function AdminDashboard() {
             Alertes absences
           </h3>
           <div className="space-y-2">
-            {ABSENCE_ALERTS.slice(0, 4).map((a, i) => (
-              <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${a.risk === 'high' ? 'border-red-500/30 bg-red-500/5' : a.risk === 'medium' ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-secondary'}`}>
+            {absenceAlerts.map((a, i) => (
+              <div key={a.id ?? i} className={`flex items-center justify-between p-3 rounded-xl border ${a.risk === 'high' ? 'border-red-500/30 bg-red-500/5' : a.risk === 'medium' ? 'border-amber-500/30 bg-amber-500/5' : 'border-border bg-secondary'}`}>
                 <div>
                   <p className="text-sm font-semibold text-foreground">{a.student}</p>
                   <p className="text-xs text-muted-foreground">{a.subject}</p>
@@ -186,7 +232,7 @@ export default function AdminDashboard() {
         >
           <h3 className="font-semibold text-foreground mb-4">Charge horaire — Enseignants</h3>
           <ResponsiveContainer width="100%" height={230}>
-            <BarChart data={WORKLOAD_DATA} layout="vertical" barSize={10}>
+            <BarChart data={workloadData.length ? workloadData : [{ teacher: '—', planned: 0, completed: 0 }]} layout="vertical" barSize={10}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} />
               <YAxis dataKey="teacher" type="category" tick={{ fontSize: 11, fill: 'var(--muted-foreground)' }} width={95} />

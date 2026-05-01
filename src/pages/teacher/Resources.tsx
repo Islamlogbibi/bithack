@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, FileText, Trash2, Eye, X, Check, Users, BookOpen } from 'lucide-react'
-import { RESOURCES } from '../../data/users'
-
-const TEACHER_RESOURCES = RESOURCES.filter((r) => r.teacher === 'Dr. Meziani')
+import { apiGet, apiDelete } from '../../lib/api'
+import { mapApiResource } from '../../lib/mappers'
+import type { ResourceItem } from '../../types/domain'
 
 const SUBJECTS = ['Algorithmique', 'Structures de Données', 'Analyse Numérique', 'Probabilités']
 const GROUPS = ['G1', 'G2', 'G3']
@@ -18,7 +18,24 @@ interface ResourceForm {
 }
 
 export default function TeacherResources() {
-  const [resources, setResources] = useState(TEACHER_RESOURCES)
+  const [resources, setResources] = useState<ResourceItem[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const raw = await apiGet<Parameters<typeof mapApiResource>[0][]>('/resources')
+        if (cancelled) return
+        const mapped = raw.map(mapApiResource).filter((r) => r.teacher.includes('Meziani'))
+        setResources(mapped)
+      } catch {
+        setResources([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
   const [dragging, setDragging] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [form, setForm] = useState<ResourceForm>({
@@ -29,8 +46,13 @@ export default function TeacherResources() {
     file: null,
   })
 
-  const removeResource = (id: number) => {
-    setResources((prev) => prev.filter((r) => r.id !== id))
+  const removeResource = async (id: number) => {
+    try {
+      await apiDelete(`/resources/${id}`)
+      setResources((prev) => prev.filter((r) => r.id !== id))
+    } catch {
+      /* ignore */
+    }
   }
 
   const toggleGroup = (group: string) => {
@@ -112,7 +134,7 @@ export default function TeacherResources() {
                   <Eye size={15} />
                 </button>
                 <button
-                  onClick={() => removeResource(r.id)}
+                  onClick={() => void removeResource(r.id)}
                   className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors rounded-lg hover:bg-red-500/10"
                 >
                   <Trash2 size={15} />

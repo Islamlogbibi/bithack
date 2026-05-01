@@ -17,8 +17,29 @@ export class UsersService implements OnModuleInit {
 
     await this.createSeedUser('student@pui.dz', 'student123', 'Mabrouk Benali', 'student');
     await this.createSeedUser('teacher@pui.dz', 'teacher123', 'Dr. Karim Meziani', 'teacher');
-    await this.createSeedUser('admin@pui.dz', 'admin123', 'Prof. Amina Hadj', 'admin');
-    await this.createSeedUser('dean@pui.dz', 'dean123', 'Pr. Samia Belkacem', 'dean');
+    const admin = await this.createSeedUser('admin@pui.dz', 'admin123', 'Prof. Amina Hadj', 'admin');
+    admin.department = 'Département Informatique';
+    admin.adminStatsJson = {
+      totalStudents: 342,
+      activeTeachers: 28,
+      pendingValidations: 7,
+      avgAttendance: 87,
+      publishedResources: 156,
+    };
+    await this.usersRepo.save(admin);
+    const dean = await this.createSeedUser('dean@pui.dz', 'dean123', 'Pr. Samia Belkacem', 'dean');
+    dean.faculty = 'Faculté des Sciences et Technologies';
+    await this.usersRepo.save(dean);
+
+    const extraAccounts: { email: string; password: string; name: string }[] = [
+      { email: 'k.bouzid@pui.dz', password: 'student123', name: 'Khalil Bouzid' },
+      { email: 'r.slimani@pui.dz', password: 'student123', name: 'Rania Slimani' },
+      { email: 'f.taleb@pui.dz', password: 'student123', name: 'Fares Taleb' },
+      { email: 'h.amrani@pui.dz', password: 'student123', name: 'Houda Amrani' },
+    ];
+    for (const a of extraAccounts) {
+      await this.createSeedUser(a.email, a.password, a.name, 'student');
+    }
   }
 
   findByEmail(email: string) {

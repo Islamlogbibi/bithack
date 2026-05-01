@@ -28,26 +28,25 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (user) {
-      const map: Record<string, string> = {
-        student: '/student/dashboard',
-        teacher: '/teacher/dashboard',
-        admin: '/admin/dashboard',
-        dean: '/dean/dashboard',
-      }
-      navigate(map[user.role] || '/')
+    if (!user) return
+    const map: Record<string, string> = {
+      student: '/student/dashboard',
+      teacher: '/teacher/dashboard',
+      admin: '/admin/dashboard',
+      dean: '/dean/dashboard',
     }
+    const target = map[user.role]
+    if (target) navigate(target, { replace: true })
   }, [user, navigate])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    await new Promise((r) => setTimeout(r, 600))
-    const ok = login(email, password)
+    const ok = await login(email, password)
+    setLoading(false)
     if (!ok) {
       setError('Email ou mot de passe incorrect.')
-      setLoading(false)
     }
   }
 
@@ -85,9 +84,9 @@ export default function Login() {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.97 }}
+        initial={false}
         animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.35, ease: 'easeOut' }}
         className="relative z-10 w-full max-w-md"
       >
         <div className="bg-card/80 backdrop-blur-xl border border-border rounded-2xl shadow-2xl p-8">

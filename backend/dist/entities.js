@@ -208,7 +208,7 @@ __decorate([
     __metadata("design:type", String)
 ], JustificationEntity.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", Object)
 ], JustificationEntity.prototype, "reviewComment", void 0);
 __decorate([
@@ -334,7 +334,7 @@ __decorate([
     __metadata("design:type", Number)
 ], SpecialityEntity.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ unique: true }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], SpecialityEntity.prototype, "name", void 0);
 __decorate([
@@ -350,7 +350,8 @@ __decorate([
     __metadata("design:type", String)
 ], SpecialityEntity.prototype, "groupName", void 0);
 exports.SpecialityEntity = SpecialityEntity = __decorate([
-    (0, typeorm_1.Entity)('specialities')
+    (0, typeorm_1.Entity)('specialities'),
+    (0, typeorm_1.Unique)(['name', 'level', 'section', 'groupName'])
 ], SpecialityEntity);
 let ScheduleEntity = class ScheduleEntity {
     id;

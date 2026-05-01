@@ -13,6 +13,7 @@ import { MessagesModule } from './messages/messages.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { SpecialitiesModule } from './specialities/specialities.module';
 import { SchedulesModule } from './schedules/schedules.module';
+import { ReferenceModule } from './reference/reference.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
@@ -26,6 +27,7 @@ import {
   TeacherEntity,
   UserEntity,
   ValidationEntity,
+  ReferenceBlobEntity,
 } from './entities';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
@@ -42,6 +44,12 @@ import { RolesGuard } from './auth/roles.guard';
         username: configService.get('DB_USER', 'postgres'),
         password: configService.get('DB_PASSWORD', 'postgres'),
         database: configService.get('DB_NAME', 'bithack'),
+        extra: {
+          // Fail fast instead of hanging when Postgres is not running
+          connectionTimeoutMillis: Number(
+            configService.get('DB_CONNECTION_TIMEOUT_MS', 10000),
+          ),
+        },
         entities: [
           UserEntity,
           StudentEntity,
@@ -53,6 +61,7 @@ import { RolesGuard } from './auth/roles.guard';
           MessageEntity,
           SpecialityEntity,
           ScheduleEntity,
+          ReferenceBlobEntity,
         ],
         synchronize: true,
       }),
@@ -69,6 +78,7 @@ import { RolesGuard } from './auth/roles.guard';
     DashboardModule,
     SpecialitiesModule,
     SchedulesModule,
+    ReferenceModule,
   ],
   controllers: [AppController],
   providers: [

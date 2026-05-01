@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
 export type Language = 'fr' | 'en' | 'ar'
 
@@ -229,7 +229,6 @@ const PHRASE_TRANSLATIONS: Record<string, { en: string; ar: string }> = {
 const LanguageContext = createContext<LanguageContextType | null>(null)
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const originalTextByNodeRef = useRef<WeakMap<Text, string>>(new WeakMap())
   const [language, setLanguage] = useState<Language>(() => {
     const raw = localStorage.getItem('pui_language')
     if (raw === 'fr' || raw === 'en' || raw === 'ar') return raw
@@ -240,70 +239,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('pui_language', language)
     document.documentElement.lang = language
     document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr'
-  }, [language])
-
-  useEffect(() => {
-    const originalTextByNode = originalTextByNodeRef.current
-    const reverseEn = new Map<string, string>()
-    const reverseAr = new Map<string, string>()
-    Object.entries(PHRASE_TRANSLATIONS).forEach(([fr, values]) => {
-      reverseEn.set(values.en, fr)
-      reverseAr.set(values.ar, fr)
-    })
-
-    const toFrenchCanonical = (text: string) => reverseEn.get(text) ?? reverseAr.get(text) ?? text
-
-    const translateOne = (text: string) => {
-      const trimmed = text.trim()
-      if (!trimmed) return text
-      if (language === 'fr') return text
-      const canonical = toFrenchCanonical(trimmed)
-      const hit = PHRASE_TRANSLATIONS[canonical]
-      if (!hit) return text
-      const translated = language === 'en' ? hit.en : hit.ar
-      return text.replace(trimmed, translated)
-    }
-
-    const applyNode = (node: Text) => {
-      if (!node.parentElement) return
-      const tag = node.parentElement.tagName
-      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'NOSCRIPT') return
-
-      const original = originalTextByNode.get(node) ?? toFrenchCanonical(node.nodeValue ?? '')
-      if (!originalTextByNode.has(node)) {
-        originalTextByNode.set(node, original)
-      }
-      node.nodeValue = translateOne(original)
-    }
-
-    const walk = (root: Node) => {
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
-      let current = walker.nextNode()
-      while (current) {
-        applyNode(current as Text)
-        current = walker.nextNode()
-      }
-    }
-
-    walk(document.body)
-
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'characterData') {
-          applyNode(mutation.target as Text)
-          continue
-        }
-        mutation.addedNodes.forEach((added) => walk(added))
-      }
-    })
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-    })
-
-    return () => observer.disconnect()
   }, [language])
 
   const value = useMemo<LanguageContextType>(

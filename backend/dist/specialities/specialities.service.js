@@ -23,16 +23,18 @@ let SpecialitiesService = class SpecialitiesService {
         this.repo = repo;
     }
     async onModuleInit() {
-        const count = await this.repo.count();
-        if (count > 0)
-            return;
-        await this.repo.save(this.repo.create([
+        const rows = [
             { name: 'Informatique', level: 'L2', section: 'A', groupName: 'G1' },
             { name: 'Informatique', level: 'L2', section: 'A', groupName: 'G2' },
             { name: 'Informatique', level: 'L3', section: 'A', groupName: 'G1' },
             { name: 'Informatique', level: 'L3', section: 'A', groupName: 'G2' },
             { name: 'Informatique', level: 'L3', section: 'B', groupName: 'G3' },
-        ]));
+        ];
+        for (const row of rows) {
+            const exists = await this.repo.exist({ where: row });
+            if (!exists)
+                await this.repo.save(this.repo.create(row));
+        }
     }
     list() {
         return this.repo.find();

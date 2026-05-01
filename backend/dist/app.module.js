@@ -43,6 +43,9 @@ exports.AppModule = AppModule = __decorate([
                     username: configService.get('DB_USER', 'postgres'),
                     password: configService.get('DB_PASSWORD', 'postgres'),
                     database: configService.get('DB_NAME', 'bithack'),
+                    extra: {
+                        connectionTimeoutMillis: Number(configService.get('DB_CONNECTION_TIMEOUT_MS', 10000)),
+                    },
                     entities: [
                         entities_1.UserEntity,
                         entities_1.StudentEntity,

@@ -1,10 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import { AppUser, TEST_USERS } from '../data/users'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import type { AppUser } from '../types/domain'
+import { apiGet, loginRequest } from '../lib/api'
 
 interface AuthContextType {
   user: AppUser | null
-  login: (email: string, password: string) => boolean
+  login: (email: string, password: string) => Promise<boolean>
   logout: () => void
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -19,6 +21,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   })
 
+  const refreshProfile = useCallback(async () => {
+    const token = localStorage.getItem('pui_token')
+    if (!token) {
+      setUser(null)
+      return
+    }
+    try {
+      const profile = await apiGet<AppUser>('/auth/me')
+      setUser(profile)
+    } catch {
+      setUser(null)
+      localStorage.removeItem('pui_token')
+      localStorage.removeItem('pui_user')
+    }
+  }, [])
+
   useEffect(() => {
     if (user) {
       localStorage.setItem('pui_user', JSON.stringify(user))
@@ -27,21 +45,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user])
 
-  const login = (email: string, password: string): boolean => {
-    const found = TEST_USERS.find(
-      (u) => u.email === email && u.password === password
-    )
-    if (found) {
-      setUser(found)
-      return true
+  useEffect(() => {
+    const token = localStorage.getItem('pui_token')
+    if (token && !user) {
+      void refreshProfile()
     }
-    return false
+  }, [refreshProfile, user])
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      const { accessToken, profile } = await loginRequest(email, password)
+      localStorage.setItem('pui_token', accessToken)
+      setUser(profile)
+      return true
+    } catch {
+      return false
+    }
   }
 
-  const logout = () => setUser(null)
+  const logout = () => {
+    localStorage.removeItem('pui_token')
+    setUser(null)
+  }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )
