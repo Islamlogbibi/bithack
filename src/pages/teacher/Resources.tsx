@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileText, Trash2, Eye, X, Check, Users, BookOpen } from 'lucide-react'
+import { Upload, FileText, Trash2, Eye, X, Check, Users, BookOpen, Clock } from 'lucide-react'
 import { apiGet, apiDelete, apiPost } from '../../lib/api'
 import { mapApiResource } from '../../lib/mappers'
 import type { ResourceItem } from '../../types/domain'
 import { useAuth } from '../../context/AuthContext'
 import type { TeacherUser } from '../../types/domain'
+import { hoursDiff } from '../../lib/sla'
+import type { SlaResourceStatus } from '../../lib/sla'
+import SlaBadge from '../../components/shared/SlaBadge'
+import type { SlaBadgeStatus } from '../../components/shared/SlaBadge'
 
 const SUBJECTS = ['Algorithmique', 'Structures de Données', 'Analyse Numérique', 'Probabilités']
 
@@ -29,6 +33,14 @@ interface ResourceForm {
   section: string
   group: string
   file: File | null
+}
+
+/** Compute SLA 48h status for a resource. */
+function getResourceSla(r: ResourceItem): { status: SlaResourceStatus; badgeStatus: SlaBadgeStatus; label: string; remaining: number } {
+  if (r.publishedAt) return { status: 'published', badgeStatus: 'ok', label: 'Publié', remaining: 0 }
+  const elapsed = hoursDiff(new Date(r.createdAt), new Date())
+  if (elapsed > 48) return { status: 'late', badgeStatus: 'late', label: 'En retard', remaining: 0 }
+  return { status: 'pending', badgeStatus: 'pending', label: 'En attente', remaining: Math.max(0, 48 - elapsed) }
 }
 
 export default function TeacherResources() {
@@ -204,6 +216,31 @@ export default function TeacherResources() {
         </button>
       </motion.div>
 
+      {/* SLA 48h overview banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -6 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-4 flex flex-wrap items-center gap-3 px-4 py-3 bg-card border border-border rounded-xl"
+      >
+        <div className="flex items-center gap-2">
+          <Clock size={16} className="text-primary" />
+          <span className="text-sm font-bold text-foreground">SLA Publication</span>
+        </div>
+        <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">48h max</span>
+        {(() => {
+          const late = resources.filter(r => getResourceSla(r).status === 'late').length
+          const pending = resources.filter(r => getResourceSla(r).status === 'pending').length
+          const published = resources.filter(r => getResourceSla(r).status === 'published').length
+          return (
+            <div className="flex items-center gap-3 ml-auto text-xs font-semibold">
+              <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400"><span className="w-2 h-2 rounded-full bg-emerald-500" />{published} publiés</span>
+              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400"><span className="w-2 h-2 rounded-full bg-amber-500" />{pending} en attente</span>
+              {late > 0 && <span className="flex items-center gap-1 text-red-600 dark:text-red-400"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />{late} en retard</span>}
+            </div>
+          )
+        })()}
+      </motion.div>
+
       {/* Resources list */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="p-4 border-b border-border flex justify-between items-center">
@@ -223,7 +260,22 @@ export default function TeacherResources() {
                 <FileText size={18} className="text-red-500" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
+                  {/* SLA 48h badge per resource */}
+                  {(() => {
+                    const sla = getResourceSla(r)
+                    return (
+                      <SlaBadge
+                        slaLabel="48h"
+                        status={sla.badgeStatus}
+                        statusText={sla.label}
+                        remainingHours={sla.remaining}
+                        tooltip="Les ressources doivent être publiées dans les 48 heures suivant leur création"
+                      />
+                    )
+                  })()}
+                </div>
                 <p className="text-xs text-muted-foreground">{r.subject} · {r.type} · {r.size} · {r.date}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <Users size={12} className="text-muted-foreground" />

@@ -113,6 +113,10 @@ export interface ResourceItem {
   levelName?: string
   sectionName?: string
   groupName?: string
+  /** ISO date string – used for SLA 48h tracking */
+  createdAt: string
+  /** ISO date string – set when the resource is actually published */
+  publishedAt?: string
 }
 
 export interface AbsenceAlertRow {

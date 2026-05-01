@@ -5,6 +5,9 @@ import { AdminPendingValidation } from '../../types/domain'
 import { apiGet, apiPost } from '../../lib/api'
 import { mapApiValidation } from '../../lib/mappers'
 import { useEffect } from 'react'
+import { hoursDiff } from '../../lib/sla'
+import SlaBadge from '../../components/shared/SlaBadge'
+import type { SlaBadgeStatus } from '../../components/shared/SlaBadge'
 
 type Tab = 'pending' | 'history'
 
@@ -15,6 +18,17 @@ const HISTORY = [
 ]
 
 const STEPS = ['Saisi', 'Soumis', 'Validé', 'Publié']
+
+/** Compute SLA 72h status for a grade validation. */
+function getValidationSla(v: AdminPendingValidation): { badgeStatus: SlaBadgeStatus; label: string; remaining: number } {
+  // If already validated (approved/rejected), it's OK
+  if (v.status === 'approved' || v.status === 'rejected') {
+    return { badgeStatus: 'ok', label: 'Validé', remaining: 0 }
+  }
+  const elapsed = hoursDiff(new Date(v.submitted), new Date())
+  if (elapsed > 72) return { badgeStatus: 'late', label: 'En retard', remaining: 0 }
+  return { badgeStatus: 'pending', label: 'En attente', remaining: Math.max(0, 72 - elapsed) }
+}
 
 function StatusTimeline({ currentStep }: { currentStep: number }) {
   return (
@@ -95,6 +109,31 @@ export default function AdminValidations() {
         </button>
       </div>
 
+      {/* SLA 72h overview banner (only on pending tab) */}
+      {tab === 'pending' && pending.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 flex flex-wrap items-center gap-3 px-4 py-3 bg-card border border-border rounded-xl"
+        >
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-primary" />
+            <span className="text-sm font-bold text-foreground">SLA Validation Notes</span>
+          </div>
+          <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">72h max</span>
+          {(() => {
+            const late = pending.filter(v => getValidationSla(v).badgeStatus === 'late').length
+            const waiting = pending.filter(v => getValidationSla(v).badgeStatus === 'pending').length
+            return (
+              <div className="flex items-center gap-3 ml-auto text-xs font-semibold">
+                <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400"><span className="w-2 h-2 rounded-full bg-amber-500" />{waiting} en attente</span>
+                {late > 0 && <span className="flex items-center gap-1 text-red-600 dark:text-red-400"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />{late} en retard</span>}
+              </div>
+            )
+          })()}
+        </motion.div>
+      )}
+
       <AnimatePresence mode="wait">
         {tab === 'pending' ? (
           <motion.div
@@ -136,6 +175,19 @@ export default function AdminValidations() {
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <StatusTimeline currentStep={1} />
+                    {/* SLA 72h badge */}
+                    {(() => {
+                      const sla = getValidationSla(v)
+                      return (
+                        <SlaBadge
+                          slaLabel="72h"
+                          status={sla.badgeStatus}
+                          statusText={sla.label}
+                          remainingHours={sla.remaining}
+                          tooltip="Les notes doivent être validées dans les 72 heures suivant leur soumission"
+                        />
+                      )
+                    })()}
                     <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${v.slaHours <= 2 ? 'bg-red-500/15 text-red-500' : 'bg-amber-500/15 text-amber-500'}`}>
                       {v.slaHours <= 2 ? 'Urgent' : 'Standard'}
                     </span>

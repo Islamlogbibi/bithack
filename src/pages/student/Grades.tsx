@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import StatusBadge from '../../components/shared/StatusBadge'
 import { useAuth } from '../../context/AuthContext'
 import type { StudentUser } from '../../types/domain'
+import ProgresSyncPanel from '../../components/shared/ProgresSyncPanel'
 
 function GpaRing({ value, max = 20 }: { value: number; max?: number }) {
   const pct = (value / max) * 100
@@ -79,6 +80,9 @@ export default function StudentGrades() {
 
   return (
     <>
+      {/* PROGRES Integration Panel */}
+      <ProgresSyncPanel />
+
       {/* GPA Summary */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
