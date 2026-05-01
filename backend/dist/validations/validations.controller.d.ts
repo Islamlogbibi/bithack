@@ -17,5 +17,5 @@ export declare class ValidationsController {
     }): Promise<import("../entities").ValidationEntity>;
     review(id: string, body: {
         status: 'approved' | 'rejected';
-    }): Promise<import("typeorm").UpdateResult>;
+    }): Promise<import("typeorm").UpdateResult | undefined>;
 }

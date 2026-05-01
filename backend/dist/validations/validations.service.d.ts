@@ -1,9 +1,10 @@
 import { OnModuleInit } from '@nestjs/common';
-import { ValidationEntity } from '../entities';
+import { ValidationEntity, StudentEntity } from '../entities';
 import { Repository } from 'typeorm';
 export declare class ValidationsService implements OnModuleInit {
     private readonly repo;
-    constructor(repo: Repository<ValidationEntity>);
+    private readonly studentRepo;
+    constructor(repo: Repository<ValidationEntity>, studentRepo: Repository<StudentEntity>);
     onModuleInit(): Promise<void>;
     list(): Promise<ValidationEntity[]>;
     create(data: {
@@ -18,5 +19,5 @@ export declare class ValidationsService implements OnModuleInit {
             grade: number;
         }[];
     }): Promise<ValidationEntity>;
-    review(id: number, status: 'approved' | 'rejected'): Promise<import("typeorm").UpdateResult>;
+    review(id: number, status: 'approved' | 'rejected'): Promise<import("typeorm").UpdateResult | undefined>;
 }

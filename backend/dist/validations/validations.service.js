@@ -133,8 +133,10 @@ const SEED = [
 ];
 let ValidationsService = class ValidationsService {
     repo;
-    constructor(repo) {
+    studentRepo;
+    constructor(repo, studentRepo) {
         this.repo = repo;
+        this.studentRepo = studentRepo;
     }
     async onModuleInit() {
         const count = await this.repo.count();
@@ -162,7 +164,48 @@ let ValidationsService = class ValidationsService {
             status: 'pending',
         }));
     }
-    review(id, status) {
+    async review(id, status) {
+        const validation = await this.repo.findOne({ where: { id } });
+        if (!validation)
+            return;
+        if (status === 'approved' && validation.studentGradesJson) {
+            for (const entry of validation.studentGradesJson) {
+                const student = await this.studentRepo.findOne({ where: { matricule: entry.matricule } });
+                if (student) {
+                    let grades = student.gradesJson || [];
+                    const existingIdx = grades.findIndex((g) => g.subject === validation.module);
+                    if (existingIdx > -1) {
+                        const existingGrade = grades[existingIdx];
+                        grades[existingIdx] = {
+                            ...existingGrade,
+                            exam: entry.grade,
+                            final: Math.round((existingGrade.td * 0.4 + entry.grade * 0.6) * 100) / 100,
+                            status: entry.grade >= 10 ? 'Validé' : 'Rattrapage'
+                        };
+                    }
+                    else {
+                        grades.push({
+                            subject: validation.module,
+                            td: 10,
+                            exam: entry.grade,
+                            final: entry.grade,
+                            status: entry.grade >= 10 ? 'Validé' : 'Rattrapage',
+                            credits: 4
+                        });
+                    }
+                    student.gradesJson = grades;
+                    const gradedSubjects = grades.filter((g) => g.final !== null);
+                    if (gradedSubjects.length > 0) {
+                        let sum = 0;
+                        for (const g of gradedSubjects) {
+                            sum += g.final || 0;
+                        }
+                        student.average = Math.round((sum / gradedSubjects.length) * 100) / 100;
+                    }
+                    await this.studentRepo.save(student);
+                }
+            }
+        }
         return this.repo.update({ id }, { status });
     }
 };
@@ -170,6 +213,8 @@ exports.ValidationsService = ValidationsService;
 exports.ValidationsService = ValidationsService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.ValidationEntity)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(entities_1.StudentEntity)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], ValidationsService);
 //# sourceMappingURL=validations.service.js.map
