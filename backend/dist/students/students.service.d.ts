@@ -7,6 +7,7 @@ export declare class StudentsService implements OnModuleInit {
     constructor(studentsRepo: Repository<StudentEntity>, usersRepo: Repository<UserEntity>);
     onModuleInit(): Promise<void>;
     list(filters: Record<string, string | undefined>): Promise<StudentEntity[]>;
+    findByUserId(userId: number): Promise<StudentEntity | null>;
     create(payload: {
         name: string;
         email: string;

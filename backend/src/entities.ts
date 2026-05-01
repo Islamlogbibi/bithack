@@ -30,10 +30,10 @@ export class UserEntity {
   @Column()
   role: UserRole;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   department: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   faculty: string | null;
 
   @Column({ type: 'jsonb', nullable: true })
@@ -91,13 +91,13 @@ export class StudentEntity {
   @Column({ type: 'jsonb', nullable: true })
   gpaByPeriodJson: { year: string; semester: string; gpa: number }[] | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   displayFaculty: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   displayDepartment: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   displayModule: string | null;
 }
 
@@ -127,6 +127,13 @@ export class TeacherEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   pendingGradesJson: unknown[] | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  academicCvJson: { 
+    orcid?: string; 
+    scopus?: string; 
+    publications: { title: string; year: number; journal: string }[] 
+  } | null;
 }
 
 @Entity('resources')
@@ -149,11 +156,17 @@ export class ResourceEntity {
   @Column()
   teacherName: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   sizeLabel: string | null;
 
   @Column({ default: false })
   isNew: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  fileContent: string | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  groupsJson: string[] | null;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -170,6 +183,15 @@ export class JustificationEntity {
   @Column()
   module: string;
 
+  @Column({ nullable: true })
+  absenceDate: string;
+
+  @Column({ nullable: true })
+  absenceDay: string;
+
+  @Column({ nullable: true })
+  absenceTime: string;
+
   @Column()
   fileName: string;
 
@@ -178,6 +200,9 @@ export class JustificationEntity {
 
   @Column({ type: 'varchar', nullable: true })
   reviewComment: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  fileContent: string | null;
 
   @CreateDateColumn()
   submittedAt: Date;
@@ -200,13 +225,13 @@ export class ValidationEntity {
   @Column({ type: 'int' })
   count: number;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   speciality: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   level: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   section: string | null;
 
   @Column({ type: 'int', default: 0 })

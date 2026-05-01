@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, FileText, Trash2, Eye, X, Check, Users, BookOpen } from 'lucide-react'
-import { apiGet, apiDelete } from '../../lib/api'
+import { apiGet, apiDelete, apiPost } from '../../lib/api'
 import { mapApiResource } from '../../lib/mappers'
 import type { ResourceItem } from '../../types/domain'
+import { useAuth } from '../../context/AuthContext'
+import type { TeacherUser } from '../../types/domain'
 
 const SUBJECTS = ['Algorithmique', 'Structures de Données', 'Analyse Numérique', 'Probabilités']
 const GROUPS = ['G1', 'G2', 'G3']
@@ -18,7 +20,44 @@ interface ResourceForm {
 }
 
 export default function TeacherResources() {
+  const { user } = useAuth()
+  const teacher = user as TeacherUser
   const [resources, setResources] = useState<ResourceItem[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  
+  const handleDownload = (resource: ResourceItem) => {
+    // If we have real content, use it. Otherwise fallback to simulation.
+    let blob: Blob
+    
+    if (resource.fileContent) {
+      // Decode base64
+      const byteCharacters = atob(resource.fileContent.split(',')[1] || resource.fileContent)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      blob = new Blob([byteArray], { type: resource.fileType === 'PDF' ? 'application/pdf' : 'application/octet-stream' })
+    } else {
+      const isPdf = resource.fileType.toLowerCase() === 'pdf'
+      if (isPdf) {
+        const pdfData = `%PDF-1.4\n1 0 obj\n<< /Title (${resource.title}) /Creator (OSCA Hackathon) >>\nendobj\n2 0 obj\n<< /Type /Catalog /Pages 3 0 R >>\nendobj\n3 0 obj\n<< /Type /Pages /Count 1 /Kids [4 0 R] >>\nendobj\n4 0 obj\n<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents 5 0 R >>\nendobj\n5 0 obj\n<< /Length 44 >>\nstream\nBT /F1 24 Tf 100 700 Td (${resource.title}) Tj ET\nendstream\nendobj\nxref\n0 6\n0000000000 65535 f\n0000000010 00000 n\n0000000079 00000 n\n0000000128 00000 n\n0000000188 00000 n\n0000000282 00000 n\ntrailer\n<< /Size 6 /Root 2 0 R >>\nstartxref\n377\n%%EOF`
+        blob = new Blob([pdfData], { type: 'application/pdf' })
+      } else {
+        const content = `Simulation of resource: ${resource.title}\nSubject: ${resource.subject}\nTeacher: ${resource.teacher}`
+        blob = new Blob([content], { type: 'text/plain' })
+      }
+    }
+
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${resource.title.replace(/\s+/g, '_')}.${resource.fileType.toLowerCase()}`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -64,11 +103,42 @@ export default function TeacherResources() {
     }))
   }
 
-  const handleSubmit = () => {
-    if (!form.title || !form.subject || form.groups.length === 0) return
-    // In real app, would upload file here
-    setShowUploadModal(false)
-    setForm({ title: '', subject: '', type: 'Cours', groups: [], file: null })
+  const handleSubmit = async () => {
+    if (!form.title || !form.subject || form.groups.length === 0 || !form.file) return
+    setIsSubmitting(true)
+    
+    try {
+      // Convert file to base64
+      const reader = new FileReader()
+      const base64Promise = new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(form.file!)
+      })
+      const base64 = await base64Promise
+
+      await apiPost('/resources', {
+        title: form.title,
+        subject: form.subject,
+        type: form.type,
+        fileType: form.file.name.split('.').pop()?.toUpperCase() ?? 'PDF',
+        teacherName: teacher.name,
+        sizeLabel: `${(form.file.size / 1024 / 1024).toFixed(1)} MB`,
+        isNew: true,
+        fileContent: base64,
+        groupsJson: form.groups
+      })
+      
+      setShowUploadModal(false)
+      setForm({ title: '', subject: '', type: 'Cours', groups: [], file: null })
+      
+      // Refresh list
+      const raw = await apiGet<Parameters<typeof mapApiResource>[0][]>('/resources')
+      setResources(raw.map(mapApiResource).filter(r => r.teacher === teacher.name))
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -130,7 +200,10 @@ export default function TeacherResources() {
                 <span className="text-xs font-bold px-2 py-0.5 bg-blue-500/15 text-blue-500 rounded-full flex-shrink-0">Nouveau</span>
               )}
               <div className="flex items-center gap-1 flex-shrink-0">
-                <button className="p-1.5 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary">
+                <button 
+                  onClick={() => handleDownload(r)}
+                  className="p-1.5 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-secondary"
+                >
                   <Eye size={15} />
                 </button>
                 <button
@@ -177,15 +250,28 @@ export default function TeacherResources() {
                       id="teacher-resource-upload"
                       accept=".pdf,.ppt,.pptx,.doc,.docx"
                       className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null
+                        setForm(prev => ({ ...prev, file }))
+                      }}
                     />
                     <label htmlFor="teacher-resource-upload" className="cursor-pointer">
-                      <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Cliquez pour télécharger un fichier
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        PDF, PPT, DOC (max 50MB)
-                      </p>
+                      {form.file ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <FileText className="w-5 h-5 text-primary" />
+                          <span className="text-sm text-foreground font-medium">{form.file.name}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                          <p className="text-sm text-muted-foreground">
+                            Cliquez pour télécharger un fichier
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            PDF, PPT, DOC (max 50MB)
+                          </p>
+                        </>
+                      )}
                     </label>
                   </div>
                 </div>
@@ -278,10 +364,11 @@ export default function TeacherResources() {
                 {/* Submit */}
                 <button
                   onClick={handleSubmit}
-                  disabled={!form.title || !form.subject || form.groups.length === 0}
-                  className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSubmitting || !form.title || !form.subject || form.groups.length === 0 || !form.file}
+                  className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Publier la ressource
+                  {isSubmitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}
+                  {isSubmitting ? 'Publication en cours...' : 'Publier la ressource'}
                 </button>
               </div>
             </motion.div>

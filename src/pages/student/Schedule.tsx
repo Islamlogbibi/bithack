@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Calendar, List, Download } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
 
 const DAYS = ['Samedi','Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi']
 const TIME_SLOTS = ['08:00', '9:45', '11:30', '14:00', '15:45', '17:15']

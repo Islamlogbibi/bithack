@@ -1,14 +1,36 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, UserRound } from 'lucide-react'
-import { PROFESSORS } from '../../data/users'
+import { getTeachers } from '../../lib/api'
+import { useEffect } from 'react'
 
 export default function AdminProfessors() {
   const [query, setQuery] = useState('')
+  const [professors, setProfessors] = useState<any[]>([])
+
+  useEffect(() => {
+    getTeachers()
+      .then(data => {
+        if (Array.isArray(data)) {
+          setProfessors(data.map(t => ({
+            id: t.id,
+            name: t.user.fullName,
+            department: t.department,
+            profile: t.user.email,
+            cv: 'Non défini',
+            completedHours: t.hoursCompleted,
+            plannedHours: t.hoursPlanned,
+            email: t.user.email,
+            phone: '—'
+          })))
+        }
+      })
+      .catch(console.error)
+  }, [])
 
   const filtered = useMemo(
-    () => PROFESSORS.filter((prof) => prof.name.toLowerCase().includes(query.toLowerCase())),
-    [query]
+    () => professors.filter((prof) => prof.name.toLowerCase().includes(query.toLowerCase())),
+    [query, professors]
   )
 
   return (

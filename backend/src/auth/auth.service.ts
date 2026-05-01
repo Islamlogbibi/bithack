@@ -88,6 +88,8 @@ export class AuthService {
         matricule: student.matricule,
         group: student.groupName,
         year: student.yearLabel ?? `${student.level} ${student.speciality}`,
+        level: student.level,
+        displayDepartment: student.displayDepartment,
         gpa: student.average,
         absences: student.absencesByModuleJson ?? {},
         grades: student.gradesJson ?? [],

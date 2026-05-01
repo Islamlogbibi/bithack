@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Bot, User, BarChart2, Calendar, BookOpen, AlertTriangle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
 
 interface Message {
   id: number

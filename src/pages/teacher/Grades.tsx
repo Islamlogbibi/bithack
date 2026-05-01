@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, CheckCircle, X } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { TeacherUser, PendingGrade } from '../../data/users'
+import type { TeacherUser, PendingGrade } from '../../types/domain'
+import { apiPost } from '../../lib/api'
 
 function getAppreciation(avg: number): string {
   if (avg >= 16) return 'Excellent'
@@ -41,9 +42,29 @@ export default function TeacherGrades() {
 
   const readyCount = grades.filter((g) => g.examInput !== '' && !isNaN(parseFloat(g.examInput))).length
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setShowConfirm(false)
-    setSubmitted(true)
+    try {
+      const studentGradesJson = grades
+        .filter(g => g.examInput !== '' && !isNaN(parseFloat(g.examInput)))
+        .map(g => ({
+          student: g.student,
+          matricule: g.matricule,
+          grade: getAvg(g.td, g.examInput) ?? 0,
+        }))
+      await apiPost('/validations', {
+        teacherName: teacher.name,
+        module: selectedModule,
+        groupName: selectedGroup,
+        count: studentGradesJson.length,
+        slaHours: 24,
+        studentGradesJson,
+        status: 'pending',
+      })
+      setSubmitted(true)
+    } catch (err) {
+      console.error('Failed to submit grades:', err)
+    }
   }
 
   return (
@@ -130,8 +151,15 @@ export default function TeacherGrades() {
                         value={g.examInput}
                         onChange={(e) => updateExam(i, e.target.value)}
                         placeholder="—"
-                        className="w-16 text-center px-2 py-1 bg-secondary border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                        className={`w-16 text-center px-2 py-1 bg-secondary border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors ${
+                          g.examInput !== '' && (parseFloat(g.examInput) < 0 || parseFloat(g.examInput) > 20) 
+                            ? 'border-red-500 animate-pulse' 
+                            : 'border-border'
+                        }`}
                       />
+                      {g.examInput !== '' && (parseFloat(g.examInput) < 0 || parseFloat(g.examInput) > 20) && (
+                        <p className="text-[10px] text-red-500 mt-1 font-bold">Invalide</p>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {avg !== null ? (

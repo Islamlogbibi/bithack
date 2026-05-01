@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
 
 const MAX_ABSENCES = 6
 

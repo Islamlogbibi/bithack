@@ -27,11 +27,14 @@ let SchedulesService = class SchedulesService {
         if (count > 0)
             return;
         await this.repo.save(this.repo.create([
-            { day: 'Dimanche', time: '08:00', subject: 'Algorithmique', room: 'A12', type: 'Cours', scope: 'group', scopeId: 'G2' },
-            { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', type: 'TP', scope: 'group', scopeId: 'G1' },
-            { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'B04', type: 'TD', scope: 'group', scopeId: 'G1' },
-            { day: 'Lundi', time: '14:00', subject: 'Mathématiques', room: 'A08', type: 'Cours', scope: 'group', scopeId: 'G2' },
+            { day: 'Dimanche', time: '08:00', subject: 'Algorithmique', room: 'Salle A12', type: 'Cours', scope: 'group', scopeId: 'G2' },
+            { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', type: 'TP', scope: 'group', scopeId: 'G2' },
+            { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'Salle B04', type: 'TD', scope: 'group', scopeId: 'G2' },
+            { day: 'Lundi', time: '14:00', subject: 'Mathématiques', room: 'Salle A08', type: 'Cours', scope: 'group', scopeId: 'G2' },
             { day: 'Mardi', time: '10:00', subject: 'Algorithmique', room: 'Labo Info', type: 'TP', scope: 'group', scopeId: 'G2' },
+            { day: 'Mercredi', time: '08:00', subject: 'Anglais Technique', room: 'Salle C02', type: 'TD', scope: 'group', scopeId: 'G2' },
+            { day: 'Dimanche', time: '10:00', subject: 'Réseaux', room: 'Labo R3', type: 'TP', scope: 'group', scopeId: 'G1' },
+            { day: 'Lundi', time: '08:00', subject: 'Base de Données', room: 'Salle B04', type: 'TD', scope: 'group', scopeId: 'G1' },
             { day: 'Samedi', time: '10:00', subject: 'Projet tutoré', room: 'Labo P2', type: 'TP', scope: 'group', scopeId: 'G1' },
         ]));
     }

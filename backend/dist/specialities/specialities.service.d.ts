@@ -6,4 +6,5 @@ export declare class SpecialitiesService implements OnModuleInit {
     constructor(repo: Repository<SpecialityEntity>);
     onModuleInit(): Promise<void>;
     list(): Promise<SpecialityEntity[]>;
+    getTree(): Promise<any[]>;
 }

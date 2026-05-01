@@ -25,6 +25,9 @@ let ValidationsController = class ValidationsController {
     list() {
         return this.validationsService.list();
     }
+    create(body) {
+        return this.validationsService.create(body);
+    }
     review(id, body) {
         return this.validationsService.review(Number(id), body.status);
     }
@@ -32,11 +35,19 @@ let ValidationsController = class ValidationsController {
 exports.ValidationsController = ValidationsController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('admin', 'dean'),
+    (0, roles_decorator_1.Roles)('admin', 'dean', 'teacher'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], ValidationsController.prototype, "list", null);
+__decorate([
+    (0, common_1.Post)(),
+    (0, roles_decorator_1.Roles)('teacher'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], ValidationsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)(':id/review'),
     (0, roles_decorator_1.Roles)('admin'),

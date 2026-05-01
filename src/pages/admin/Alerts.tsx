@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { AlertTriangle, Mail, Bell, CheckCircle } from 'lucide-react'
-import { ABSENCE_ALERTS } from '../../data/users'
+import { apiGet, apiPatch } from '../../lib/api'
+import { mapApiAlert } from '../../lib/mappers'
+import { AbsenceAlertRow } from '../../types/domain'
 
 const RISK_STYLE: Record<string, string> = {
   high: 'border-red-500/40 bg-red-500/5',
@@ -22,16 +24,33 @@ const RISK_LABEL: Record<string, string> = {
 }
 
 export default function AdminAlerts() {
-  const [alerts, setAlerts] = useState(ABSENCE_ALERTS)
+  const [alerts, setAlerts] = useState<AbsenceAlertRow[]>([])
   const [dismissed, setDismissed] = useState<string[]>([])
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   const [notified, setNotified] = useState<string[]>([])
 
+  useEffect(() => {
+    apiGet<any[]>('/attendance/alerts')
+      .then(data => {
+        if (Array.isArray(data)) {
+          setAlerts(data.map(mapApiAlert))
+        }
+      })
+      .catch(console.error)
+  }, [])
+
   const filtered = alerts.filter((a) => filter === 'all' || a.risk === filter)
 
-  const handleDismiss = (matricule: string) => {
-    setDismissed((prev) => [...prev, matricule])
-    setAlerts((prev) => prev.filter((a) => a.matricule !== matricule))
+  const handleDismiss = async (alert: AbsenceAlertRow) => {
+    try {
+      if (alert.id) {
+        await apiPatch(`/attendance/alerts/${alert.id}/dismiss`)
+      }
+      setDismissed((prev) => [...prev, alert.matricule])
+      setAlerts((prev) => prev.filter((a) => a.matricule !== alert.matricule))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const handleNotify = (matricule: string) => {
@@ -177,7 +196,7 @@ export default function AdminAlerts() {
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
-                      onClick={() => handleDismiss(a.matricule)}
+                      onClick={() => handleDismiss(a)}
                       className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
                     >
                       ✕

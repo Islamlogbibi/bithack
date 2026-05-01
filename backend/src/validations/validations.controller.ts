@@ -8,9 +8,21 @@ import { Roles } from '../auth/roles.decorator';
 export class ValidationsController {
   constructor(private readonly validationsService: ValidationsService) {}
   @Get()
-  @Roles('admin', 'dean')
+  @Roles('admin', 'dean', 'teacher')
   list() {
     return this.validationsService.list();
+  }
+  @Post()
+  @Roles('teacher')
+  create(@Body() body: {
+    teacherName: string;
+    module: string;
+    groupName: string;
+    count: number;
+    slaHours?: number;
+    studentGradesJson?: { student: string; matricule: string; grade: number }[];
+  }) {
+    return this.validationsService.create(body);
   }
   @Post(':id/review')
   @Roles('admin')

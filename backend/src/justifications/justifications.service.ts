@@ -41,10 +41,19 @@ export class JustificationsService implements OnModuleInit {
     return this.justificationsRepo.find({ order: { submittedAt: 'DESC' } });
   }
 
-  async create(studentId: number, module: string, fileName: string) {
-    const student = await this.studentsRepo.findOneOrFail({ where: { id: studentId } });
+  async create(studentId: number, module: string, fileName: string, fileContent?: string, metadata?: { absenceDate: string; absenceDay: string; absenceTime: string }) {
+    const student = await this.studentsRepo.findOneOrFail({ where: { user: { id: studentId } } });
     return this.justificationsRepo.save(
-      this.justificationsRepo.create({ student, module, fileName, status: 'pending' }),
+      this.justificationsRepo.create({ 
+        student, 
+        module, 
+        fileName, 
+        fileContent, 
+        absenceDate: metadata?.absenceDate,
+        absenceDay: metadata?.absenceDay,
+        absenceTime: metadata?.absenceTime,
+        status: 'pending' 
+      }),
     );
   }
 

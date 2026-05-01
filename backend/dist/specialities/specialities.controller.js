@@ -19,8 +19,8 @@ let SpecialitiesController = class SpecialitiesController {
     constructor(specialitiesService) {
         this.specialitiesService = specialitiesService;
     }
-    list() {
-        return this.specialitiesService.list();
+    getTree() {
+        return this.specialitiesService.getTree();
     }
 };
 exports.SpecialitiesController = SpecialitiesController;
@@ -30,7 +30,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
-], SpecialitiesController.prototype, "list", null);
+], SpecialitiesController.prototype, "getTree", null);
 exports.SpecialitiesController = SpecialitiesController = __decorate([
     (0, common_1.Controller)('specialities'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

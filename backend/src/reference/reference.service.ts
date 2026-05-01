@@ -108,4 +108,15 @@ export class ReferenceService implements OnModuleInit {
     const row = await this.repo.findOne({ where: { key } });
     return row?.data ?? null;
   }
+
+  async save(key: string, data: any) {
+    let row = await this.repo.findOne({ where: { key } });
+    if (row) {
+      row.data = data;
+    } else {
+      row = this.repo.create({ key, data });
+    }
+    await this.repo.save(row);
+    return row.data;
+  }
 }

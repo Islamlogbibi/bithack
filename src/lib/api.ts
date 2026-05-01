@@ -10,8 +10,6 @@ function authHeaders(): HeadersInit {
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { headers: authHeaders() })
   if (res.status === 401) {
-    localStorage.removeItem('pui_token')
-    localStorage.removeItem('pui_user')
     throw new Error('Unauthorized')
   }
   if (!res.ok) throw new Error(await res.text())
@@ -25,8 +23,6 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   if (res.status === 401) {
-    localStorage.removeItem('pui_token')
-    localStorage.removeItem('pui_user')
     throw new Error('Unauthorized')
   }
   if (!res.ok) throw new Error(await res.text())
@@ -40,8 +36,6 @@ export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
     body: body !== undefined ? JSON.stringify(body) : undefined,
   })
   if (res.status === 401) {
-    localStorage.removeItem('pui_token')
-    localStorage.removeItem('pui_user')
     throw new Error('Unauthorized')
   }
   if (!res.ok) throw new Error(await res.text())
@@ -54,8 +48,6 @@ export async function apiDelete(path: string): Promise<void> {
     headers: authHeaders(),
   })
   if (res.status === 401) {
-    localStorage.removeItem('pui_token')
-    localStorage.removeItem('pui_user')
     throw new Error('Unauthorized')
   }
   if (!res.ok) throw new Error(await res.text())
@@ -75,4 +67,104 @@ export function loginRequest(email: string, password: string) {
     if (!res.ok) throw new Error('Invalid credentials')
     return res.json() as Promise<LoginResponse>
   })
+}
+
+// =======================
+// ATTENDANCE ALERTS
+// =======================
+export function getAttendanceAlerts() {
+  return apiGet<any[]>('/attendance/alerts')
+}
+export function dismissAttendanceAlert(id: number) {
+  return apiPatch<void>(`/attendance/alerts/${id}/dismiss`)
+}
+
+// =======================
+// JUSTIFICATIONS
+// =======================
+export function getJustifications() {
+  return apiGet<any[]>('/justifications')
+}
+export function createJustification(data: { 
+  studentId: number; 
+  module: string; 
+  fileName: string;
+  fileContent?: string | null;
+  absenceDate?: string;
+  absenceDay?: string;
+  absenceTime?: string;
+}) {
+  return apiPost<void>('/justifications', data)
+}
+export function reviewJustification(id: number, data: { status: 'approved' | 'rejected'; reviewComment?: string }) {
+  return apiPost<void>(`/justifications/${id}/review`, data)
+}
+
+// =======================
+// VALIDATIONS
+// =======================
+export function getValidations() {
+  return apiGet<any[]>('/validations')
+}
+export function reviewValidation(id: number, status: 'approved' | 'rejected') {
+  return apiPost<void>(`/validations/${id}/review`, { status })
+}
+
+// =======================
+// MESSAGES
+// =======================
+export function getMessages(conversationId: string) {
+  return apiGet<any[]>(`/messages?conversationId=${encodeURIComponent(conversationId)}`)
+}
+export function sendMessage(data: { conversationId: string; senderId: number; content: string }) {
+  return apiPost<void>('/messages', data)
+}
+
+// =======================
+// RESOURCES
+// =======================
+export function getResources() {
+  return apiGet<any[]>('/resources')
+}
+export function createResource(data: Record<string, unknown>) {
+  return apiPost<void>('/resources', data)
+}
+export function deleteResource(id: number) {
+  return apiDelete(`/resources/${id}`)
+}
+
+// =======================
+// ADMIN & DEAN
+// =======================
+export function getSpecialitiesTree() {
+  return apiGet<any[]>('/specialities/tree')
+}
+export function getStudents(query: string = '') {
+  return apiGet<any[]>(`/students${query}`)
+}
+export function createStudent(data: any) {
+  return apiPost<void>('/students', data)
+}
+export function deleteStudent(id: number) {
+  return apiDelete(`/students/${id}`)
+}
+export function getTeachers() {
+  return apiGet<any[]>('/teachers')
+}
+
+// =======================
+// SCHEDULES
+// =======================
+export function getScheduleByScope(scope: string, scopeId: string) {
+  return apiGet<any[]>(`/schedules/${scope}/${scopeId}`)
+}
+
+// =======================
+// REFERENCE
+// =======================
+export function getReference<T>(key: string) {
+  return apiGet<T>(`/reference/${key}`)
+}
+export function saveReference<T>(key: string, data: T) {
+  return apiPost<T>(`/reference/${key}`, data)
 }

@@ -24,12 +24,47 @@ let JustificationsService = class JustificationsService {
         this.justificationsRepo = justificationsRepo;
         this.studentsRepo = studentsRepo;
     }
+    async onModuleInit() {
+        const count = await this.justificationsRepo.count();
+        if (count > 0)
+            return;
+        const s1 = await this.studentsRepo.findOne({ where: { matricule: '202012345' } });
+        const s2 = await this.studentsRepo.findOne({ where: { matricule: '202012202' } });
+        const rows = [];
+        if (s1) {
+            rows.push({
+                student: s1,
+                module: 'Algorithmique',
+                fileName: 'justification-medicale.pdf',
+                status: 'pending',
+            });
+        }
+        if (s2) {
+            rows.push({
+                student: s2,
+                module: 'Réseaux',
+                fileName: 'attestation.png',
+                status: 'approved',
+            });
+        }
+        if (rows.length)
+            await this.justificationsRepo.save(this.justificationsRepo.create(rows));
+    }
     list() {
         return this.justificationsRepo.find({ order: { submittedAt: 'DESC' } });
     }
-    async create(studentId, module, fileName) {
-        const student = await this.studentsRepo.findOneOrFail({ where: { id: studentId } });
-        return this.justificationsRepo.save(this.justificationsRepo.create({ student, module, fileName, status: 'pending' }));
+    async create(studentId, module, fileName, fileContent, metadata) {
+        const student = await this.studentsRepo.findOneOrFail({ where: { user: { id: studentId } } });
+        return this.justificationsRepo.save(this.justificationsRepo.create({
+            student,
+            module,
+            fileName,
+            fileContent,
+            absenceDate: metadata?.absenceDate,
+            absenceDay: metadata?.absenceDay,
+            absenceTime: metadata?.absenceTime,
+            status: 'pending'
+        }));
     }
     async review(id, status, reviewComment) {
         const item = await this.justificationsRepo.findOneOrFail({ where: { id } });

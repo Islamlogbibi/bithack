@@ -6,7 +6,8 @@ import {
   BookOpen, User, Circle, ArrowLeft
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
+import { getMessages, sendMessage } from '../../lib/api'
 
 interface Message {
   id: string
@@ -113,41 +114,67 @@ export default function StudentMessages() {
     scrollToBottom()
   }, [selectedConversation?.messages])
 
+  useEffect(() => {
+    if (selectedConversation) {
+      getMessages(selectedConversation.id)
+        .then(data => {
+          if (data && Array.isArray(data)) {
+            const mappedMessages = data.map((m: any) => ({
+              id: String(m.id),
+              senderId: m.sender.id === student.id ? 'me' : String(m.sender.id),
+              content: m.content,
+              timestamp: m.sentAt,
+              status: 'delivered' as const,
+            }))
+            setSelectedConversation(prev => prev ? { ...prev, messages: mappedMessages } : null)
+          }
+        })
+        .catch(console.error)
+    }
+  }, [selectedConversation?.id, student.id])
+
   const filteredConversations = conversations.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return
 
-    const message: Message = {
-      id: Date.now().toString(),
-      senderId: 'me',
-      content: newMessage.trim(),
-      timestamp: new Date().toISOString(),
-      status: 'sent',
-    }
-
-    setConversations(prev => prev.map(conv => {
-      if (conv.id === selectedConversation.id) {
-        return {
-          ...conv,
-          messages: [...conv.messages, message],
-          lastMessage: message.content,
-          lastMessageTime: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-        }
-      }
-      return conv
-    }))
-
-    setSelectedConversation(prev => prev ? {
-      ...prev,
-      messages: [...prev.messages, message],
-      lastMessage: message.content,
-      lastMessageTime: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-    } : null)
-
+    const content = newMessage.trim()
     setNewMessage('')
+
+    try {
+      await sendMessage({ conversationId: selectedConversation.id, senderId: student.id, content })
+      
+      const message: Message = {
+        id: Date.now().toString(),
+        senderId: 'me',
+        content,
+        timestamp: new Date().toISOString(),
+        status: 'sent',
+      }
+
+      setConversations(prev => prev.map(conv => {
+        if (conv.id === selectedConversation.id) {
+          return {
+            ...conv,
+            messages: [...conv.messages, message],
+            lastMessage: message.content,
+            lastMessageTime: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+          }
+        }
+        return conv
+      }))
+
+      setSelectedConversation(prev => prev ? {
+        ...prev,
+        messages: [...prev.messages, message],
+        lastMessage: message.content,
+        lastMessageTime: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+      } : null)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   const handleSelectConversation = (conv: Conversation) => {

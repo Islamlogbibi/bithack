@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import { Clock, TrendingUp } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { useAuth } from '../../context/AuthContext'
-import { TeacherUser, WORKLOAD_DATA } from '../../data/users'
+import type { TeacherUser } from '../../types/domain'
 
 const MONTHLY_DATA = [
   { month: 'Sep', hours: 12 },

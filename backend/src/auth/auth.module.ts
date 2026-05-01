@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleEntity } from '../entities';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -17,9 +18,13 @@ import { ScheduleEntity } from '../entities';
     TeachersModule,
     TypeOrmModule.forFeature([ScheduleEntity]),
     PassportModule,
-    JwtModule.register({
-      secret: process.env.JWT_SECRET ?? 'dev-secret-change-me',
-      signOptions: { expiresIn: '12h' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET', 'dev-secret-change-me'),
+        signOptions: { expiresIn: '12h' },
+      }),
     }),
   ],
   controllers: [AuthController],

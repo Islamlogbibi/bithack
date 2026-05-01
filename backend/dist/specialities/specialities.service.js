@@ -36,8 +36,34 @@ let SpecialitiesService = class SpecialitiesService {
                 await this.repo.save(this.repo.create(row));
         }
     }
-    list() {
+    async list() {
         return this.repo.find();
+    }
+    async getTree() {
+        const specialities = await this.repo.find();
+        const treeMap = {};
+        specialities.forEach(s => {
+            if (!treeMap[s.name]) {
+                treeMap[s.name] = { speciality: s.name, levels: [] };
+            }
+            let levelObj = treeMap[s.name].levels.find((l) => l.level === s.level);
+            if (!levelObj) {
+                levelObj = { level: s.level, sections: [] };
+                treeMap[s.name].levels.push(levelObj);
+            }
+            let sectionObj = levelObj.sections.find((sec) => sec.section === s.section);
+            if (!sectionObj) {
+                sectionObj = { section: s.section, groups: [] };
+                levelObj.sections.push(sectionObj);
+            }
+            sectionObj.groups.push({
+                group: s.groupName,
+                students: [],
+                modules: ['Algorithmique', 'Bases de Données', 'Réseaux'],
+                teachers: ['Dr. Meziani', 'Dr. Bakri', 'Mme. Sarah']
+            });
+        });
+        return Object.values(treeMap);
     }
 };
 exports.SpecialitiesService = SpecialitiesService;

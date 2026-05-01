@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import StatCard from '../../components/shared/StatCard'
 import StatusBadge from '../../components/shared/StatusBadge'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
 
 const TYPE_COLORS: Record<string, string> = {
   Cours: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',

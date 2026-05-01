@@ -34,6 +34,8 @@ export interface StudentUser {
   matricule: string
   group: string
   year: string
+  level: string
+  displayDepartment: string
   gpa: number
   absences: Record<string, number>
   grades: Grade[]
@@ -102,6 +104,8 @@ export interface ResourceItem {
   size: string
   date: string
   isNew: boolean
+  fileContent?: string
+  targetGroups?: string[]
 }
 
 export interface AbsenceAlertRow {

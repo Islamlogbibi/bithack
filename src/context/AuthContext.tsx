@@ -4,6 +4,7 @@ import { apiGet, loginRequest } from '../lib/api'
 
 interface AuthContextType {
   user: AppUser | null
+  isReady: boolean
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   refreshProfile: () => Promise<void>
@@ -20,11 +21,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return null
     }
   })
+  // isReady = true once we've verified (or cleared) the stored token on mount
+  const [isReady, setIsReady] = useState(false)
 
   const refreshProfile = useCallback(async () => {
     const token = localStorage.getItem('pui_token')
     if (!token) {
       setUser(null)
+      setIsReady(true)
       return
     }
     try {
@@ -34,6 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null)
       localStorage.removeItem('pui_token')
       localStorage.removeItem('pui_user')
+    } finally {
+      setIsReady(true)
     }
   }, [])
 
@@ -47,16 +53,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem('pui_token')
-    if (token && !user) {
+    if (token) {
+      // Always re-validate token on mount
       void refreshProfile()
+    } else {
+      setIsReady(true)
     }
-  }, [refreshProfile, user])
+  }, [refreshProfile])
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const { accessToken, profile } = await loginRequest(email, password)
       localStorage.setItem('pui_token', accessToken)
       setUser(profile)
+      setIsReady(true)
       return true
     } catch {
       return false
@@ -65,11 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('pui_token')
+    localStorage.removeItem('pui_user')
     setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, isReady, login, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

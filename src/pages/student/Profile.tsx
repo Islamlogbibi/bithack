@@ -6,7 +6,9 @@ import {
   GraduationCap, FileText
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
+import { getReference, saveReference } from '../../lib/api'
+import { useEffect } from 'react'
 
 // Extended student info (in real app, this would come from API)
 interface ExtendedStudentInfo {
@@ -31,6 +33,17 @@ export default function StudentProfile() {
   const [extendedInfo, setExtendedInfo] = useState<ExtendedStudentInfo>(MOCK_EXTENDED_INFO)
   const [editedInfo, setEditedInfo] = useState<ExtendedStudentInfo>(MOCK_EXTENDED_INFO)
 
+  useEffect(() => {
+    getReference<ExtendedStudentInfo>(`extendedInfo_${student.id}`)
+      .then(data => {
+        if (data) {
+          setExtendedInfo(data)
+          setEditedInfo(data)
+        }
+      })
+      .catch(console.error)
+  }, [student.id])
+
   const handleEdit = () => {
     setEditedInfo(extendedInfo)
     setIsEditing(true)
@@ -41,9 +54,10 @@ export default function StudentProfile() {
     setEditedInfo(extendedInfo)
   }
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setExtendedInfo(editedInfo)
     setIsEditing(false)
+    await saveReference(`extendedInfo_${student.id}`, editedInfo).catch(console.error)
   }
 
   const handleChange = (field: keyof ExtendedStudentInfo, value: string) => {

@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle, XCircle, Clock, ShieldCheck } from 'lucide-react'
-import { ADMIN_PENDING_VALIDATIONS } from '../../data/users'
+import { AdminPendingValidation } from '../../types/domain'
+import { apiGet, apiPost } from '../../lib/api'
+import { mapApiValidation } from '../../lib/mappers'
+import { useEffect } from 'react'
 
 type Tab = 'pending' | 'history'
 
@@ -33,22 +36,42 @@ function StatusTimeline({ currentStep }: { currentStep: number }) {
 
 export default function AdminValidations() {
   const [tab, setTab] = useState<Tab>('pending')
-  const [pending, setPending] = useState(
-    [...ADMIN_PENDING_VALIDATIONS].sort((a, b) => a.slaHours - b.slaHours)
-  )
-  const [validated, setValidated] = useState<typeof ADMIN_PENDING_VALIDATIONS[0][]>([])
-  const [selectedValidation, setSelectedValidation] = useState<typeof ADMIN_PENDING_VALIDATIONS[number] | null>(null)
+  const [pending, setPending] = useState<AdminPendingValidation[]>([])
+  const [validated, setValidated] = useState<AdminPendingValidation[]>([])
+  const [selectedValidation, setSelectedValidation] = useState<AdminPendingValidation | null>(null)
 
-  const handleValidate = (id: number) => {
-    const item = pending.find((v) => v.id === id)
-    if (item) {
-      setPending((p) => p.filter((v) => v.id !== id))
-      setValidated((v) => [...v, item])
+  useEffect(() => {
+    apiGet<Record<string, unknown>[]>('/validations')
+      .then(data => {
+        if (Array.isArray(data)) {
+          const mapped = data.map(v => mapApiValidation(v as any))
+          setPending(mapped.filter(v => v.status === 'pending').sort((a, b) => a.slaHours - b.slaHours))
+          setValidated(mapped.filter(v => v.status === 'approved' || v.status === 'rejected'))
+        }
+      })
+      .catch(console.error)
+  }, [])
+
+  const handleValidate = async (id: number) => {
+    try {
+      await apiPost(`/validations/${id}/review`, { status: 'approved' })
+      const item = pending.find((v) => v.id === id)
+      if (item) {
+        setPending((p) => p.filter((v) => v.id !== id))
+        setValidated((v) => [...v, item])
+      }
+    } catch (err) {
+      console.error(err)
     }
   }
 
-  const handleReject = (id: number) => {
-    setPending((p) => p.filter((v) => v.id !== id))
+  const handleReject = async (id: number) => {
+    try {
+      await apiPost(`/validations/${id}/review`, { status: 'rejected' })
+      setPending((p) => p.filter((v) => v.id !== id))
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return (

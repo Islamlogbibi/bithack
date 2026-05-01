@@ -30,7 +30,7 @@ export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get()
-  @Roles('admin', 'dean')
+  @Roles('admin', 'dean', 'teacher')
   list(@Query() query: Record<string, string | undefined>) {
     return this.studentsService.list(query);
   }

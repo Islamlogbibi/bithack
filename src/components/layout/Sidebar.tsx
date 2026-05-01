@@ -38,6 +38,7 @@ const teacherNav: NavItem[] = [
   { label: 'Saisie Notes', path: '/teacher/grades', icon: <ClipboardList size={20} /> },
   { label: 'Ressources', path: '/teacher/resources', icon: <FileText size={20} /> },
   { label: 'Charge Horaire', path: '/teacher/workload', icon: <Clock size={20} /> },
+  { label: 'CV Académique', path: '/teacher/academic-cv', icon: <GraduationCap size={20} /> },
 ]
 
 const adminNav: NavItem[] = [

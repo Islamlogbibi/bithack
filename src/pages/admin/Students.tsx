@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search } from 'lucide-react'
-import { STUDENTS_DIRECTORY } from '../../data/users'
+import { getStudents } from '../../lib/api'
+import { useEffect } from 'react'
 
 export default function AdminStudents() {
   const [query, setQuery] = useState('')
@@ -10,10 +11,32 @@ export default function AdminStudents() {
   const [selectedLevel, setSelectedLevel] = useState('all')
   const [selectedSection, setSelectedSection] = useState('all')
   const [selectedGroup, setSelectedGroup] = useState('all')
-  const [selectedStudent, setSelectedStudent] = useState<typeof STUDENTS_DIRECTORY[number] | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null)
   const [selectedYear, setSelectedYear] = useState('2024-2025')
   const [selectedSemester, setSelectedSemester] = useState('S1')
-  const [students, setStudents] = useState(STUDENTS_DIRECTORY)
+  const [students, setStudents] = useState<any[]>([])
+
+  useEffect(() => {
+    getStudents()
+      .then(data => {
+        if (Array.isArray(data)) {
+          setStudents(data.map(s => ({
+            id: s.id,
+            name: s.user?.fullName || 'Inconnu',
+            matricule: s.matricule,
+            speciality: s.speciality,
+            module: 'N/A',
+            level: s.level,
+            section: s.section,
+            group: s.groupName,
+            average: s.average,
+            absences: s.absences || 0,
+            gpaByPeriod: s.gpaByPeriodJson || []
+          })))
+        }
+      })
+      .catch(console.error)
+  }, [])
 
   const filtered = useMemo(
     () => students.filter((student) =>
@@ -27,7 +50,7 @@ export default function AdminStudents() {
     [query, selectedSpeciality, selectedModule, selectedLevel, selectedSection, selectedGroup, students]
   )
 
-  const gpaValue = selectedStudent?.gpaByPeriod.find((entry) => entry.year === selectedYear && entry.semester === selectedSemester)?.gpa
+  const gpaValue = selectedStudent?.gpaByPeriod?.find((entry: any) => entry.year === selectedYear && entry.semester === selectedSemester)?.gpa
 
   const addStudent = () => {
     const newId = students.length ? Math.max(...students.map((item) => item.id)) + 1 : 1

@@ -2,23 +2,11 @@ import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { QrCode, Zap, CheckCircle, Users } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
-const TOTAL_STUDENTS = 28
-const COURSES = ['Algorithmique', 'Structures de Données', 'Analyse Numérique', 'Probabilités']
-const GROUPS = ['G1', 'G2', 'G3']
-const SESSION_TYPES = ['Cours', 'TD', 'TP']
+// Fake students removed in favor of state
 
-const FAKE_STUDENTS = [
-  { name: 'Ahmed Bouali', mat: '202012301' },
-  { name: 'Sara Mansouri', mat: '202012302' },
-  { name: 'Yacine Ferhat', mat: '202012303' },
-  { name: 'Nadia Cherif', mat: '202012304' },
-  { name: 'Omar Bensalem', mat: '202012305' },
-  { name: 'Lina Hadj', mat: '202012306' },
-  { name: 'Bilal Saoudi', mat: '202012307' },
-  { name: 'Amira Touati', mat: '202012308' },
-  { name: 'Karim Zerrouki', mat: '202012309' },
-  { name: 'Fatima Benali', mat: '202012310' },
-]
+import { getStudents } from '../../lib/api'
+import { useAuth } from '../../context/AuthContext'
+import type { TeacherUser } from '../../types/domain'
 
 interface ScannedStudent {
   name: string
@@ -27,13 +15,35 @@ interface ScannedStudent {
 }
 
 export default function QRAttendance() {
+  const { user } = useAuth()
+  const teacher = user as TeacherUser
+  
+  const COURSES = teacher.subjects && teacher.subjects.length > 0 ? teacher.subjects : ['Algorithmique']
+  const GROUPS = teacher.groups && teacher.groups.length > 0 ? teacher.groups : ['G1', 'G2', 'G3']
+  const SESSION_TYPES = ['Cours', 'TD', 'TP']
+
   const [course, setCourse] = useState(COURSES[0])
   const [group, setGroup] = useState(GROUPS[0])
   const [sessionType, setSessionType] = useState(SESSION_TYPES[0])
   const [qrGenerated, setQrGenerated] = useState(false)
   const [timeLeft, setTimeLeft] = useState(900) // 15 min
   const [scanned, setScanned] = useState<ScannedStudent[]>([])
+  const [realStudents, setRealStudents] = useState<{name: string, mat: string}[]>([])
+  const [TOTAL_STUDENTS, setTotalStudents] = useState(28)
+  const [threshold, setThreshold] = useState(3)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    getStudents(`?group=${group}`)
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          const mapped = data.map((s: any) => ({ name: s.user.fullName, mat: s.matricule }))
+          setRealStudents(mapped)
+          setTotalStudents(mapped.length || 28)
+        }
+      })
+      .catch(console.error)
+  }, [group])
 
   const qrValue = `PUI|${course}|${group}|${sessionType}|${Date.now()}`
 
@@ -58,7 +68,8 @@ export default function QRAttendance() {
   }
 
   const simulateScan = () => {
-    const remaining = FAKE_STUDENTS.filter((s) => !scanned.find((sc) => sc.mat === s.mat))
+    const studentsSource = realStudents.length > 0 ? realStudents : [{ name: 'Test Student', mat: '2020000' }]
+    const remaining = studentsSource.filter((s) => !scanned.find((sc) => sc.mat === s.mat))
     if (remaining.length === 0) return
     const pick = remaining[Math.floor(Math.random() * remaining.length)]
     setScanned((prev) => [
@@ -120,6 +131,16 @@ export default function QRAttendance() {
                     </button>
                   ))}
                 </div>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1 block">4. Seuil d'alerte (absences)</label>
+                <input
+                  type="number"
+                  value={threshold}
+                  onChange={(e) => setThreshold(parseInt(e.target.value))}
+                  disabled={qrGenerated}
+                  className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60"
+                />
               </div>
             </div>
 

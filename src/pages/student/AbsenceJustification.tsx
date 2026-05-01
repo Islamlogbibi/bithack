@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, Clock, FileText, Upload, Send, AlertCircle, FileDown, Eye, X } from 'lucide-react'
+import { Calendar, Clock, FileText, Upload, Send, AlertCircle, FileDown, Eye, X, Download } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
+import { getJustifications, createJustification } from '../../lib/api'
+import { useEffect } from 'react'
 
 const DAYS = ['Samedi', 'Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi']
 const TIME_SLOTS = ['08:00', '9:45', '11:30', '14:00', '15:45', '17:15']
@@ -46,63 +48,10 @@ interface JustificationHistory {
   submittedAt: string
   reviewedAt?: string
   reviewComment?: string
+  fileContent?: string
 }
 
-const MOCK_HISTORY: JustificationHistory[] = [
-  {
-    id: '1',
-    date: '2025-01-15',
-    day: 'Mercredi',
-    time: '08:00',
-    subject: 'algo',
-    reason: 'medical',
-    description: 'Grippe saisonnière',
-    fileName: 'certificat_medical.pdf',
-    status: 'approved',
-    submittedAt: '2025-01-15T10:30:00',
-    reviewedAt: '2025-01-16T09:00:00',
-    reviewComment: 'Justification acceptée',
-  },
-  {
-    id: '2',
-    date: '2025-01-20',
-    day: 'Lundi',
-    time: '14:00',
-    subject: 'networks',
-    reason: 'transport',
-    description: 'Problème de transport en commun',
-    fileName: 'attestation_stc.pdf',
-    status: 'pending',
-    submittedAt: '2025-01-20T15:00:00',
-  },
-  {
-    id: '3',
-    date: '2025-01-10',
-    day: 'Vendredi',
-    time: '09:45',
-    subject: 'db',
-    reason: 'family',
-    description: 'Déménagement familial urgent',
-    fileName: 'demande_famille.pdf',
-    status: 'rejected',
-    submittedAt: '2025-01-10T08:00:00',
-    reviewedAt: '2025-01-11T14:00:00',
-    reviewComment: 'Document insuffisant - merci de fournir un certificat officiel',
-  },
-  {
-    id: '4',
-    date: '2025-01-08',
-    day: 'Mercredi',
-    time: '11:30',
-    subject: 'web',
-    reason: 'medical',
-    description: 'Rendez-vous médical',
-    fileName: 'rdv_medical.pdf',
-    status: 'approved',
-    submittedAt: '2025-01-08T07:30:00',
-    reviewedAt: '2025-01-08T16:00:00',
-  },
-]
+  // Mock history removed in favor of state
 
 const REASON_OPTIONS = [
   { value: 'medical', label: 'Motif médical' },
@@ -131,12 +80,14 @@ function StatusBadge({ status }: { status: JustificationHistory['status'] }) {
 }
 
 export default function AbsenceJustification() {
-  const { user } = useAuth()
+  const { user, isReady } = useAuth()
   const student = user as StudentUser
 
   const [view, setView] = useState<'form' | 'history'>('form')
   const [selectedItem, setSelectedItem] = useState<JustificationHistory | null>(null)
-
+  const [history, setHistory] = useState<JustificationHistory[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const [form, setForm] = useState<JustificationForm>({
     date: '',
     day: '',
@@ -146,8 +97,59 @@ export default function AbsenceJustification() {
     file: null,
     description: '',
   })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    if (!isReady || !student?.id) return
+    getJustifications().then(data => {
+      // Filter for current student and map to match interface
+      const studentData = data
+        .filter((j: any) => j.student?.user?.id === student.id)
+        .map((j: any) => ({
+          id: String(j.id),
+          date: j.absenceDate || new Date(j.submittedAt).toISOString().split('T')[0],
+          day: j.absenceDay || '-',
+          time: j.absenceTime || '-',
+          subject: j.module,
+          reason: j.reason || 'other',
+          description: j.description || '',
+          fileName: j.fileName,
+          status: j.status,
+          submittedAt: j.submittedAt,
+          reviewComment: j.reviewComment,
+          fileContent: j.fileContent
+        }))
+      setHistory(studentData)
+    }).catch(console.error)
+  }, [isReady, student?.id])
+
+  const handleDownload = (item: JustificationHistory | string) => {
+    const fileName = typeof item === 'string' ? item : item.fileName
+    const content = typeof item === 'string' ? null : item.fileContent
+
+    let blob: Blob
+    if (content) {
+      const byteCharacters = atob(content.split(',')[1] || content)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
+      }
+      const byteArray = new Uint8Array(byteNumbers)
+      blob = new Blob([byteArray], { type: fileName.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg' })
+    } else {
+      // Fallback to simulated PDF if no content
+      const pdfData = `%PDF-1.4\n1 0 obj\n<< /Title (${fileName}) /Creator (OSCA Hackathon) >>\nendobj\n2 0 obj\n<< /Type /Catalog /Pages 3 0 R >>\nendobj\n3 0 obj\n<< /Type /Pages /Count 1 /Kids [4 0 R] >>\nendobj\n4 0 obj\n<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents 5 0 R >>\nendobj\n5 0 obj\n<< /Length 44 >>\nstream\nBT /F1 24 Tf 100 700 Td (${fileName}) Tj ET\nendstream\nendobj\nxref\n0 6\n0000000000 65535 f\n0000000010 00000 n\n0000000079 00000 n\n0000000128 00000 n\n0000000188 00000 n\n0000000282 00000 n\ntrailer\n<< /Size 6 /Root 2 0 R >>\nstartxref\n377\n%%EOF`
+      blob = new Blob([pdfData], { type: 'application/pdf' })
+    }
+
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
 
   const getSession = (day: string, time: string) => {
     return student.schedule.find((s) => s.day === day && s.time === time)
@@ -177,11 +179,33 @@ export default function AbsenceJustification() {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    try {
+      let base64 = null
+      if (form.file) {
+        const reader = new FileReader()
+        const base64Promise = new Promise<string>((resolve) => {
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(form.file!)
+        })
+        base64 = await base64Promise
+      }
 
-    setIsSubmitting(false)
-    setSubmitted(true)
+      await createJustification({
+        studentId: student.id,
+        module: form.subject,
+        fileName: form.file ? form.file.name : 'justificatif.pdf',
+        fileContent: base64,
+        absenceDate: form.date,
+        absenceDay: form.day,
+        absenceTime: form.time
+      })
+      setSubmitted(true)
+    } catch (err) {
+      console.error(err)
+      alert('Erreur lors de la soumission. Veuillez réessayer.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleNewSubmission = () => {
@@ -226,9 +250,9 @@ export default function AbsenceJustification() {
 
   // History View
   if (view === 'history') {
-    const pendingCount = MOCK_HISTORY.filter(h => h.status === 'pending').length
-    const approvedCount = MOCK_HISTORY.filter(h => h.status === 'approved').length
-    const rejectedCount = MOCK_HISTORY.filter(h => h.status === 'rejected').length
+    const pendingCount = history.filter(h => h.status === 'pending').length
+    const approvedCount = history.filter(h => h.status === 'approved').length
+    const rejectedCount = history.filter(h => h.status === 'rejected').length
 
     return (
       <>
@@ -288,7 +312,7 @@ export default function AbsenceJustification() {
                 </tr>
               </thead>
               <tbody>
-                {MOCK_HISTORY.map((item) => (
+                {history.map((item) => (
                   <tr key={item.id} className="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
                     <td className="px-4 py-3">
                       <div>
@@ -321,10 +345,11 @@ export default function AbsenceJustification() {
                           <Eye className="w-4 h-4 text-muted-foreground" />
                         </button>
                         <button
-                          className="p-1.5 hover:bg-secondary rounded-lg transition-colors"
+                          onClick={() => handleDownload(item)}
+                          className="p-1.5 hover:bg-primary/10 text-primary rounded-lg transition-colors"
                           title="Télécharger"
                         >
-                          <FileDown className="w-4 h-4 text-muted-foreground" />
+                          <Download className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -384,7 +409,10 @@ export default function AbsenceJustification() {
                   <div className="flex items-center gap-2 mt-1 p-2 bg-secondary rounded-lg">
                     <FileText className="w-4 h-4 text-primary" />
                     <span className="text-sm text-foreground">{selectedItem.fileName}</span>
-                    <button className="ml-auto p-1 hover:bg-primary/10 rounded transition-colors">
+                    <button 
+                      onClick={() => handleDownload(selectedItem)}
+                      className="ml-auto p-1 hover:bg-primary/10 rounded transition-colors"
+                    >
                       <FileDown className="w-4 h-4 text-primary" />
                     </button>
                   </div>
@@ -654,7 +682,7 @@ export default function AbsenceJustification() {
               </button>
             </div>
             <div className="space-y-3">
-              {MOCK_HISTORY.slice(0, 2).map((item) => (
+              {history.slice(0, 2).map((item) => (
                 <div key={item.id} className="flex items-center justify-between p-3 bg-secondary rounded-lg">
                   <div>
                     <p className="text-sm font-medium text-foreground">{SUBJECT_NAMES[item.subject] || item.subject}</p>

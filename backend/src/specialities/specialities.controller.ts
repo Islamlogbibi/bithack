@@ -9,7 +9,7 @@ export class SpecialitiesController {
   constructor(private readonly specialitiesService: SpecialitiesService) {}
   @Get('tree')
   @Roles('admin', 'dean')
-  list() {
-    return this.specialitiesService.list();
+  getTree() {
+    return this.specialitiesService.getTree();
   }
 }

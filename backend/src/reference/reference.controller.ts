@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ReferenceService } from './reference.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -12,5 +12,11 @@ export class ReferenceController {
   @Roles('admin', 'dean', 'student', 'teacher')
   async one(@Param('key') key: string) {
     return this.referenceService.get(key);
+  }
+
+  @Post(':key')
+  @Roles('admin', 'dean', 'student', 'teacher')
+  async save(@Param('key') key: string, @Body() body: any) {
+    return this.referenceService.save(key, body);
   }
 }

@@ -79,7 +79,7 @@ let StudentsController = class StudentsController {
 exports.StudentsController = StudentsController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)('admin', 'dean'),
+    (0, roles_decorator_1.Roles)('admin', 'dean', 'teacher'),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

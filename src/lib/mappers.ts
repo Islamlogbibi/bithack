@@ -42,6 +42,8 @@ export function mapApiResource(r: {
   createdAt: string
   sizeLabel?: string | null
   isNew?: boolean
+  fileContent?: string | null
+  groupsJson?: string[] | null
 }): ResourceItem {
   return {
     id: r.id,
@@ -53,6 +55,8 @@ export function mapApiResource(r: {
     size: r.sizeLabel ?? '—',
     date: (r.createdAt || '').slice(0, 10),
     isNew: !!r.isNew,
+    fileContent: r.fileContent || undefined,
+    targetGroups: r.groupsJson || undefined
   }
 }
 

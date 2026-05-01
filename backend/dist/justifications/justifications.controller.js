@@ -26,7 +26,11 @@ let JustificationsController = class JustificationsController {
         return this.justificationsService.list();
     }
     create(body) {
-        return this.justificationsService.create(body.studentId, body.module, body.fileName);
+        return this.justificationsService.create(body.studentId, body.module, body.fileName, body.fileContent, {
+            absenceDate: body.absenceDate,
+            absenceDay: body.absenceDay,
+            absenceTime: body.absenceTime,
+        });
     }
     review(id, body) {
         return this.justificationsService.review(Number(id), body.status, body.reviewComment);

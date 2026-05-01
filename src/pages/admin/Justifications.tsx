@@ -1,18 +1,69 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { CheckCircle2, FileText, MessageSquare, X, XCircle } from 'lucide-react'
-import { ABSENCE_JUSTIFICATIONS } from '../../data/users'
-
+import { CheckCircle2, FileText, MessageSquare, X, XCircle, Download } from 'lucide-react'
+import { getJustifications, reviewJustification } from '../../lib/api'
+import { useEffect } from 'react'
 type Status = 'all' | 'En attente' | 'Validée' | 'Rejetée'
 type ReviewDecision = 'Validée' | 'Rejetée'
-type JustificationItem = (typeof ABSENCE_JUSTIFICATIONS)[number] & { reviewComment?: string }
+
+interface JustificationItem {
+  id: string
+  student: string
+  matricule: string
+  speciality: string
+  module: string
+  level: string
+  section: string
+  group: string
+  file: string
+  status: string
+  reviewComment?: string
+}
 
 export default function AdminJustifications() {
   const [status, setStatus] = useState<Status>('all')
-  const [items, setItems] = useState<JustificationItem[]>(ABSENCE_JUSTIFICATIONS)
+  const [items, setItems] = useState<JustificationItem[]>([])
   const [selectedItem, setSelectedItem] = useState<JustificationItem | null>(null)
   const [decision, setDecision] = useState<ReviewDecision>('Validée')
   const [reviewComment, setReviewComment] = useState('')
+
+  const handleDownload = (file: string) => {
+    // Simulated download logic
+    const pdfData = `%PDF-1.4\n1 0 obj\n<< /Title (${file}) /Creator (OSCA Hackathon) >>\nendobj\n2 0 obj\n<< /Type /Catalog /Pages 3 0 R >>\nendobj\n3 0 obj\n<< /Type /Pages /Count 1 /Kids [4 0 R] >>\nendobj\n4 0 obj\n<< /Type /Page /Parent 3 0 R /MediaBox [0 0 612 792] /Contents 5 0 R >>\nendobj\n5 0 obj\n<< /Length 44 >>\nstream\nBT /F1 24 Tf 100 700 Td (${file}) Tj ET\nendstream\nendobj\nxref\n0 6\n0000000000 65535 f\n0000000010 00000 n\n0000000079 00000 n\n0000000128 00000 n\n0000000188 00000 n\n0000000282 00000 n\ntrailer\n<< /Size 6 /Root 2 0 R >>\nstartxref\n377\n%%EOF`
+    const blob = new Blob([pdfData], { type: 'application/pdf' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = file
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  useEffect(() => {
+    getJustifications()
+      .then(data => {
+        if (Array.isArray(data)) {
+          // Map backend entities to JustificationItem format
+          const mapped = data.map(j => ({
+            id: j.id.toString(),
+            student: j.student.user.fullName,
+            matricule: j.student.matricule,
+            speciality: j.student.speciality,
+            module: j.module,
+            level: j.student.level,
+            section: j.student.section,
+            group: j.student.groupName,
+            file: j.fileName,
+            status: j.status === 'pending' ? 'En attente' : j.status === 'approved' ? 'Validée' : 'Rejetée',
+            reviewComment: j.reviewComment
+          }))
+          setItems(mapped as JustificationItem[])
+        }
+      })
+      .catch(console.error)
+  }, [])
 
   const filtered = useMemo(
     () => items.filter((item) => status === 'all' || item.status === status),
@@ -31,19 +82,27 @@ export default function AdminJustifications() {
     setReviewComment('')
   }
 
-  const submitReview = () => {
+  const submitReview = async () => {
     if (!selectedItem) return
-    setItems((prev) =>
-      prev.map((item) =>
-        item.id === selectedItem.id
-          ? {
-              ...item,
-              status: decision,
-              reviewComment: reviewComment.trim(),
-            }
-          : item
+    try {
+      await reviewJustification(parseInt(selectedItem.id), {
+        status: decision === 'Validée' ? 'approved' : 'rejected',
+        comment: reviewComment.trim()
+      })
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === selectedItem.id
+            ? {
+                ...item,
+                status: decision,
+                reviewComment: reviewComment.trim(),
+              }
+            : item
+        )
       )
-    )
+    } catch (err) {
+      console.error(err)
+    }
     closeReviewModal()
   }
 
@@ -125,9 +184,18 @@ export default function AdminJustifications() {
                 </div>
               </div>
 
-              <div className="p-3 bg-secondary rounded-lg flex items-center gap-2">
-                <FileText className="w-4 h-4 text-primary" />
-                <span className="text-sm text-foreground">{selectedItem.file}</span>
+              <div className="p-3 bg-secondary rounded-lg flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  <span className="text-sm text-foreground">{selectedItem.file}</span>
+                </div>
+                <button 
+                  onClick={() => handleDownload(selectedItem.file)}
+                  className="p-1.5 hover:bg-primary/10 text-primary rounded-lg transition-colors"
+                  title="Télécharger"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
               </div>
 
               <div>

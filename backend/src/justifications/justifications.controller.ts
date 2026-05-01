@@ -14,8 +14,12 @@ export class JustificationsController {
   }
   @Post()
   @Roles('student')
-  create(@Body() body: { studentId: number; module: string; fileName: string }) {
-    return this.justificationsService.create(body.studentId, body.module, body.fileName);
+  create(@Body() body: { studentId: number; module: string; fileName: string; fileContent?: string; absenceDate: string; absenceDay: string; absenceTime: string }) {
+    return this.justificationsService.create(body.studentId, body.module, body.fileName, body.fileContent, {
+      absenceDate: body.absenceDate,
+      absenceDay: body.absenceDay,
+      absenceTime: body.absenceTime,
+    });
   }
   @Post(':id/review')
   @Roles('admin', 'dean')

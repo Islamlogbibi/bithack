@@ -1,15 +1,49 @@
 import { useMemo, useState } from 'react'
 import { Building2, GraduationCap, UserRound } from 'lucide-react'
-import { PROFESSORS, STUDENTS_DIRECTORY } from '../../data/users'
+import { getTeachers, getStudents } from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
+import { useEffect } from 'react'
 
-type StudentRow = typeof STUDENTS_DIRECTORY[number]
+type StudentRow = any
 
 const LEVELS = ['L1', 'L2', 'L3', 'M1', 'M2']
 
 export default function DeanDashboard() {
   const { user } = useAuth()
   const facultyName = user?.role === 'dean' ? user.faculty : ''
+
+  const [PROFESSORS, setProfessors] = useState<any[]>([])
+  const [STUDENTS_DIRECTORY, setStudentsDirectory] = useState<any[]>([])
+
+  useEffect(() => {
+    Promise.all([getTeachers(), getStudents()]).then(([teachersData, studentsData]) => {
+      if (Array.isArray(teachersData)) {
+        setProfessors(teachersData.map(t => ({
+          id: t.id,
+          name: t.user?.fullName || 'Inconnu',
+          faculty: t.user?.faculty || 'Nouvelles Technologies',
+          department: t.department,
+          courses: t.subjectsJson || [],
+          email: t.user?.email || ''
+        })))
+      }
+      if (Array.isArray(studentsData)) {
+        setStudentsDirectory(studentsData.map(s => ({
+          id: s.id,
+          name: s.user?.fullName || 'Inconnu',
+          matricule: s.matricule,
+          faculty: s.displayFaculty || 'Nouvelles Technologies',
+          department: s.displayDepartment || 'Informatique',
+          speciality: s.speciality,
+          level: s.level,
+          section: s.section,
+          group: s.groupName,
+          average: s.average,
+          absences: s.absences || 0
+        })))
+      }
+    }).catch(console.error)
+  }, [])
 
   const facultyDepartments = useMemo(() => {
     const departments = STUDENTS_DIRECTORY

@@ -150,6 +150,28 @@ export class ValidationsService implements OnModuleInit {
   list() {
     return this.repo.find({ order: { submittedAt: 'DESC' } });
   }
+
+  create(data: {
+    teacherName: string;
+    module: string;
+    groupName: string;
+    count: number;
+    slaHours?: number;
+    studentGradesJson?: { student: string; matricule: string; grade: number }[];
+  }) {
+    return this.repo.save(
+      this.repo.create({
+        teacherName: data.teacherName,
+        module: data.module,
+        groupName: data.groupName,
+        count: data.count,
+        slaHours: data.slaHours ?? 24,
+        studentGradesJson: data.studentGradesJson ?? [],
+        status: 'pending',
+      }),
+    );
+  }
+
   review(id: number, status: 'approved' | 'rejected') {
     return this.repo.update({ id }, { status });
   }

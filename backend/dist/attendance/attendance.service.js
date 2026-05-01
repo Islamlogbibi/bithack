@@ -17,27 +17,37 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const entities_1 = require("../entities");
 const typeorm_2 = require("typeorm");
+const SEED = [
+    { matricule: '202012201', subject: 'Algorithmique', risk: 'high', absenceCount: 5, maxAllowed: 6 },
+    { matricule: '202012202', subject: 'Base de Données', risk: 'high', absenceCount: 5, maxAllowed: 6 },
+    { matricule: '202012203', subject: 'Réseaux', risk: 'medium', absenceCount: 4, maxAllowed: 6 },
+    { matricule: '202012345', subject: 'Algorithmique', risk: 'medium', absenceCount: 4, maxAllowed: 6 },
+    { matricule: '202012204', subject: 'Mathématiques', risk: 'low', absenceCount: 3, maxAllowed: 6 },
+];
 let AttendanceService = class AttendanceService {
     repo;
     studentsRepo;
-    usersRepo;
-    constructor(repo, studentsRepo, usersRepo) {
+    constructor(repo, studentsRepo) {
         this.repo = repo;
         this.studentsRepo = studentsRepo;
-        this.usersRepo = usersRepo;
     }
     async onModuleInit() {
         const count = await this.repo.count();
         if (count > 0)
             return;
-        const student = await this.studentsRepo.findOne({ where: { matricule: '202012345' } });
-        if (!student)
-            return;
-        await this.repo.save(this.repo.create([
-            { student, subject: 'Algorithmique', risk: 'high', status: 'open' },
-            { student, subject: 'Base de Données', risk: 'medium', status: 'open' },
-            { student, subject: 'Réseaux', risk: 'low', status: 'open' },
-        ]));
+        for (const row of SEED) {
+            const student = await this.studentsRepo.findOne({ where: { matricule: row.matricule } });
+            if (!student)
+                continue;
+            await this.repo.save(this.repo.create({
+                student,
+                subject: row.subject,
+                risk: row.risk,
+                status: 'open',
+                absenceCount: row.absenceCount,
+                maxAllowed: row.maxAllowed,
+            }));
+        }
     }
     alerts() {
         return this.repo.find();
@@ -51,9 +61,7 @@ exports.AttendanceService = AttendanceService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.AttendanceAlertEntity)),
     __param(1, (0, typeorm_1.InjectRepository)(entities_1.StudentEntity)),
-    __param(2, (0, typeorm_1.InjectRepository)(entities_1.UserEntity)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
-        typeorm_2.Repository,
         typeorm_2.Repository])
 ], AttendanceService);
 //# sourceMappingURL=attendance.service.js.map

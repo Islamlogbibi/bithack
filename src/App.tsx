@@ -27,6 +27,7 @@ import QRAttendance from "./pages/teacher/QRAttendance";
 import TeacherGrades from "./pages/teacher/Grades";
 import TeacherWorkload from "./pages/teacher/Workload";
 import TeacherResources from "./pages/teacher/Resources";
+import AcademicCV from "./pages/teacher/AcademicCV";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -88,6 +89,7 @@ export default function App() {
               <Route path="grades" element={<TeacherGrades />} />
               <Route path="workload" element={<TeacherWorkload />} />
               <Route path="resources" element={<TeacherResources />} />
+              <Route path="academic-cv" element={<AcademicCV />} />
             </Route>
 
             {/* Admin routes */}

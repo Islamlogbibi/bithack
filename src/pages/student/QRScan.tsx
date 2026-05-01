@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Camera, QrCode, CheckCircle, XCircle, Clock, MapPin, BookOpen, AlertCircle, History } from 'lucide-react'
+import { getReference, saveReference } from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
 
 interface ScanResult {
   course: string
@@ -43,36 +44,22 @@ export default function StudentQRScan() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
 
-  // Mock previous attendance
-  const mockHistory: AttendanceRecord[] = [
-    {
-      id: '1',
-      course: 'Algorithmique',
-      group: 'G1',
-      sessionType: 'Cours',
-      scannedAt: '2025-01-20T09:15:00',
-      status: 'success',
-      message: 'Présence enregistrée',
-    },
-    {
-      id: '2',
-      course: 'Structures de Données',
-      group: 'G1',
-      sessionType: 'TD',
-      scannedAt: '2025-01-18T14:30:00',
-      status: 'success',
-      message: 'Présence enregistrée',
-    },
-    {
-      id: '3',
-      course: 'Analyse Numérique',
-      group: 'G2',
-      sessionType: 'TP',
-      scannedAt: '2025-01-15T11:00:00',
-      status: 'error',
-      message: 'Session QR expirée',
-    },
-  ]
+  useEffect(() => {
+    // Fetch real history
+    getReference<AttendanceRecord[]>(`attendanceHistory_${student.id}`)
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          setAttendanceHistory(data)
+        }
+      })
+      .catch(console.error)
+  }, [student.id])
+
+  const appendRecord = async (record: AttendanceRecord) => {
+    const newHistory = [record, ...attendanceHistory]
+    setAttendanceHistory(newHistory)
+    await saveReference(`attendanceHistory_${student.id}`, newHistory).catch(console.error)
+  }
 
   const startCamera = async () => {
     try {
@@ -120,7 +107,7 @@ export default function StudentQRScan() {
         status: 'error',
         message: 'Code QR invalide',
       }
-      setAttendanceHistory(prev => [errorRecord, ...prev])
+      appendRecord(errorRecord)
       return
     }
 
@@ -138,7 +125,7 @@ export default function StudentQRScan() {
         status: 'error',
         message: 'Session QR expirée',
       }
-      setAttendanceHistory(prev => [errorRecord, ...prev])
+      appendRecord(errorRecord)
       return
     }
 
@@ -155,7 +142,7 @@ export default function StudentQRScan() {
       status: 'success',
       message: 'Présence enregistrée',
     }
-    setAttendanceHistory(prev => [successRecord, ...prev])
+    appendRecord(successRecord)
   }
 
   useEffect(() => {
@@ -358,7 +345,7 @@ export default function StudentQRScan() {
               </button>
             </div>
             <div className="space-y-3">
-              {(attendanceHistory.length > 0 ? attendanceHistory : mockHistory).slice(0, 3).map((record) => (
+              {attendanceHistory.slice(0, 3).map((record) => (
                 <div
                   key={record.id}
                   className="flex items-center gap-3 p-3 bg-secondary rounded-lg"
@@ -422,7 +409,7 @@ export default function StudentQRScan() {
                 </button>
               </div>
               <div className="overflow-y-auto max-h-[60vh]">
-                {(attendanceHistory.length > 0 ? attendanceHistory : mockHistory).map((record) => (
+                {attendanceHistory.map((record) => (
                   <div
                     key={record.id}
                     className="flex items-center gap-4 p-4 border-b border-border last:border-0"

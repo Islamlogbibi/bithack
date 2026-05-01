@@ -1,23 +1,37 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { SPECIALITIES_TREE } from '../../data/users'
+import { getSpecialitiesTree } from '../../lib/api'
+import { useEffect } from 'react'
 
 export default function AdminSpecialities() {
-  const [specialityName, setSpecialityName] = useState(SPECIALITIES_TREE[0].speciality)
+  const [tree, setTree] = useState<any[]>([])
+  const [specialityName, setSpecialityName] = useState('')
   const speciality = useMemo(
-    () => SPECIALITIES_TREE.find((item) => item.speciality === specialityName) ?? SPECIALITIES_TREE[0],
-    [specialityName]
+    () => tree.find((item) => item.speciality === specialityName) ?? tree[0],
+    [specialityName, tree]
   )
-  const [level, setLevel] = useState('L3')
-  const [section, setSection] = useState('A')
-  const [group, setGroup] = useState('G1')
+  const [level, setLevel] = useState('')
+  const [section, setSection] = useState('')
+  const [group, setGroup] = useState('')
   const [showStudentsPopup, setShowStudentsPopup] = useState(false)
 
+  useEffect(() => {
+    getSpecialitiesTree().then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        setTree(data)
+        setSpecialityName(data[0].speciality)
+        setLevel(data[0].levels[0]?.level || '')
+        setSection(data[0].levels[0]?.sections[0]?.section || '')
+        setGroup(data[0].levels[0]?.sections[0]?.groups[0]?.group || '')
+      }
+    }).catch(console.error)
+  }, [])
+
   const selectedGroup = useMemo(() => {
-    const foundLevel = speciality.levels.find((item) => item.level === level)
-    const foundSection = foundLevel?.sections.find((item) => item.section === section)
-    return foundSection?.groups.find((item) => item.group === group)
-  }, [group, level, section, speciality.levels])
+    const foundLevel = speciality?.levels?.find((item: any) => item.level === level)
+    const foundSection = foundLevel?.sections?.find((item: any) => item.section === section)
+    return foundSection?.groups?.find((item: any) => item.group === group)
+  }, [group, level, section, speciality])
 
   const teacherModuleRows = useMemo(() => {
     if (!selectedGroup) return []
@@ -31,21 +45,21 @@ export default function AdminSpecialities() {
     <>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
         <select aria-label="Sélection spécialité" value={specialityName} onChange={(e) => setSpecialityName(e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          {SPECIALITIES_TREE.map((item) => <option key={item.speciality}>{item.speciality}</option>)}
+          {tree.map((item) => <option key={item.speciality}>{item.speciality}</option>)}
         </select>
         <select aria-label="Sélection niveau" value={level} onChange={(e) => setLevel(e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          {speciality.levels.map((item) => <option key={item.level}>{item.level}</option>)}
+          {speciality?.levels?.map((item: any) => <option key={item.level}>{item.level}</option>)}
         </select>
         <select aria-label="Sélection section" value={section} onChange={(e) => setSection(e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          {speciality.levels.find((item) => item.level === level)?.sections.map((item) => <option key={item.section}>{item.section}</option>)}
+          {speciality?.levels?.find((item: any) => item.level === level)?.sections?.map((item: any) => <option key={item.section}>{item.section}</option>)}
         </select>
         <select aria-label="Sélection groupe" value={group} onChange={(e) => setGroup(e.target.value)} className="px-3 py-2 bg-card border border-border rounded-xl text-sm">
-          {speciality.levels.find((item) => item.level === level)?.sections.find((item) => item.section === section)?.groups.map((item) => <option key={item.group}>{item.group}</option>)}
+          {speciality?.levels?.find((item: any) => item.level === level)?.sections?.find((item: any) => item.section === section)?.groups?.map((item: any) => <option key={item.group}>{item.group}</option>)}
         </select>
       </div>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-card border border-border rounded-xl p-5">
-        <h3 className="font-semibold text-foreground">{speciality.speciality} · {level} · Section {section} · {group}</h3>
+        <h3 className="font-semibold text-foreground">{speciality?.speciality} · {level} · Section {section} · {group}</h3>
         <div className="mt-4 overflow-hidden border border-border rounded-xl">
           <div className="grid grid-cols-2 bg-secondary/70 border-b border-border">
             <div className="p-3 text-xs font-semibold text-muted-foreground">Enseignant</div>
@@ -88,10 +102,10 @@ export default function AdminSpecialities() {
               </button>
             </div>
             <p className="text-xs text-muted-foreground mb-3">
-              {speciality.speciality} · {level} · Section {section} · {group}
+              {speciality?.speciality} · {level} · Section {section} · {group}
             </p>
             <div className="space-y-1">
-              {selectedGroup?.students.map((student) => (
+              {selectedGroup?.students?.map((student: any) => (
                 <p key={student} className="px-2 py-1 rounded-md bg-secondary border border-border text-xs text-foreground">
                   {student}
                 </p>

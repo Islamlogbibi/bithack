@@ -7,6 +7,10 @@ export declare class JustificationsController {
         studentId: number;
         module: string;
         fileName: string;
+        fileContent?: string;
+        absenceDate: string;
+        absenceDay: string;
+        absenceTime: string;
     }): Promise<import("../entities").JustificationEntity>;
     review(id: string, body: {
         status: 'approved' | 'rejected';

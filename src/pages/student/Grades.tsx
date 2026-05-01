@@ -3,7 +3,7 @@ import { TrendingUp, TrendingDown, Minus, Award } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import StatusBadge from '../../components/shared/StatusBadge'
 import { useAuth } from '../../context/AuthContext'
-import { StudentUser } from '../../data/users'
+import type { StudentUser } from '../../types/domain'
 
 function GpaRing({ value, max = 20 }: { value: number; max?: number }) {
   const pct = (value / max) * 100

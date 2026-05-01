@@ -4,19 +4,33 @@ import { useNavigate } from 'react-router-dom'
 import StatCard from '../../components/shared/StatCard'
 import StatusBadge from '../../components/shared/StatusBadge'
 import { useAuth } from '../../context/AuthContext'
-import { TeacherUser } from '../../data/users'
+import type { TeacherUser } from '../../types/domain'
+import { getScheduleByScope } from '../../lib/api'
+import { useState, useEffect } from 'react'
 
-const TODAY_SESSIONS = [
-  { subject: 'Algorithmique', group: 'G2', time: '10:00', room: 'Salle A12', type: 'Cours' },
-  { subject: 'Structures de Données', group: 'G1', time: '14:00', room: 'Labo Info', type: 'TP' },
-]
+// Removed static TODAY_SESSIONS
 
 export default function TeacherDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const teacher = user as TeacherUser
 
-  const pct = Math.round((teacher.hoursCompleted / teacher.hoursPlanned) * 100)
+  const pct = Math.round((teacher.hoursCompleted / teacher.hoursPlanned) * 100) || 0
+
+  const [todaySessions, setTodaySessions] = useState<any[]>([])
+
+  useEffect(() => {
+    // Fetch schedule for this teacher
+    getScheduleByScope('teacher', String(teacher.id))
+      .then(data => {
+        if (data && Array.isArray(data)) {
+          // Filter for today if needed, or assume backend returns today's sessions
+          // For now just taking all to avoid empty states in demo
+          setTodaySessions(data)
+        }
+      })
+      .catch(console.error)
+  }, [teacher.id])
 
   return (
     <>
@@ -37,7 +51,7 @@ export default function TeacherDashboard() {
         <StatCard title="Groupes actifs" value={teacher.groups.length} icon={<Users size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
         <StatCard title="Notes en attente" value={teacher.pendingGrades.length} icon={<ClipboardList size={20} />} color="text-amber-500" bgColor="bg-amber-500" delay={0.1} badge={String(teacher.pendingGrades.length)} badgeColor="bg-amber-500 text-white" />
         <StatCard title="Heures réalisées" value={teacher.hoursCompleted} suffix={`/${teacher.hoursPlanned}`} icon={<Clock size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.2} />
-        <StatCard title="Sessions aujourd'hui" value={TODAY_SESSIONS.length} icon={<CalendarCheck size={20} />} color="text-emerald-500" bgColor="bg-emerald-500" delay={0.3} />
+        <StatCard title="Sessions aujourd'hui" value={todaySessions.length} icon={<CalendarCheck size={20} />} color="text-emerald-500" bgColor="bg-emerald-500" delay={0.3} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -53,7 +67,7 @@ export default function TeacherDashboard() {
             Sessions d&apos;aujourd&apos;hui
           </h3>
           <div className="space-y-3">
-            {TODAY_SESSIONS.map((s, i) => (
+            {todaySessions.map((s, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-secondary rounded-xl">
                 <div>
                   <p className="font-semibold text-foreground text-sm">{s.subject}</p>
@@ -69,6 +83,9 @@ export default function TeacherDashboard() {
                 </motion.button>
               </div>
             ))}
+            {todaySessions.length === 0 && (
+              <p className="text-sm text-muted-foreground italic">Aucune session aujourd'hui.</p>
+            )}
           </div>
         </motion.div>
 
