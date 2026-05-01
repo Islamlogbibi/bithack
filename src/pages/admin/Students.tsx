@@ -69,21 +69,21 @@ export default function AdminStudents() {
     e.preventDefault()
     try {
       await apiPost('/students', {
-        fullName: newStudent.name,
+        name: newStudent.name,
         email: newStudent.email || `student.${newStudent.matricule}@pui.dz`,
         matricule: newStudent.matricule,
         speciality: newStudent.speciality,
         level: newStudent.level,
         section: newStudent.section,
-        groupName: newStudent.groupName,
-        password: 'password123' // default password
+        group: newStudent.groupName,
+        password: 'password123'
       })
       setIsAdding(false)
       setNewStudent({ name: '', email: '', matricule: '', speciality: 'Informatique', level: 'L3', section: 'A', groupName: 'Group A' })
       refreshStudents()
     } catch (err) {
       console.error('Error adding student:', err)
-      alert('Erreur lors de l\'ajout de l\'étudiant')
+      alert('Erreur lors de l\'ajout de l\'étudiant. Vérifiez que le matricule et l\'email sont uniques.')
     }
   }
 

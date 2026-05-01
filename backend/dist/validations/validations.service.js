@@ -176,20 +176,27 @@ let ValidationsService = class ValidationsService {
                     const existingIdx = grades.findIndex((g) => g.subject === validation.module);
                     if (existingIdx > -1) {
                         const existingGrade = grades[existingIdx];
+                        const newTd = entry.td ?? existingGrade.td ?? 10;
+                        const newExam = entry.grade;
+                        const newFinal = Math.round((newTd * 0.4 + newExam * 0.6) * 10) / 10;
                         grades[existingIdx] = {
                             ...existingGrade,
-                            exam: entry.grade,
-                            final: Math.round((existingGrade.td * 0.4 + entry.grade * 0.6) * 100) / 100,
-                            status: entry.grade >= 10 ? 'Validé' : 'Rattrapage'
+                            td: newTd,
+                            exam: newExam,
+                            final: newFinal,
+                            status: newFinal >= 10 ? 'Validé' : 'Rattrapage'
                         };
                     }
                     else {
+                        const newTd = entry.td ?? 10;
+                        const newExam = entry.grade;
+                        const newFinal = Math.round((newTd * 0.4 + newExam * 0.6) * 10) / 10;
                         grades.push({
                             subject: validation.module,
-                            td: 10,
-                            exam: entry.grade,
-                            final: entry.grade,
-                            status: entry.grade >= 10 ? 'Validé' : 'Rattrapage',
+                            td: newTd,
+                            exam: newExam,
+                            final: newFinal,
+                            status: newFinal >= 10 ? 'Validé' : 'Rattrapage',
                             credits: 4
                         });
                     }
