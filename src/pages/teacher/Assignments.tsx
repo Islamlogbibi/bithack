@@ -9,7 +9,9 @@ const ALL_GROUPS = ['L3 Info G1', 'L3 Info G2', 'L3 Info G3', 'L3 SI G1', 'L3 SI
 
 export default function TeacherAssignments() {
   const { user } = useAuth()
-  const teacher = user as TeacherUser
+  const teacher = user as TeacherUser | null
+  const subjects = teacher?.subjects ?? []
+  const teacherName = teacher?.name ?? ''
   const [assignments, setAssignments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -20,17 +22,26 @@ export default function TeacherAssignments() {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    module: teacher.subjects[0] || '',
+    module: subjects[0] || '',
     targetGroups: [] as string[],
     deadline: ''
   })
 
   useEffect(() => {
+    if (!teacherName) {
+      setLoading(false)
+      return
+    }
     refreshAssignments()
-  }, [teacher.name])
+  }, [teacherName])
 
   const refreshAssignments = () => {
-    getTeacherAssignments(teacher.name).then(setAssignments).finally(() => setLoading(false))
+    if (!teacherName) {
+      setAssignments([])
+      setLoading(false)
+      return
+    }
+    getTeacherAssignments(teacherName).then(setAssignments).finally(() => setLoading(false))
   }
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -38,12 +49,12 @@ export default function TeacherAssignments() {
     try {
       await createAssignment({
         ...form,
-        teacherName: teacher.name,
+        teacherName,
         targetGroupsJson: form.targetGroups,
         deadline: new Date(form.deadline)
       })
       setShowModal(false)
-      setForm({ title: '', description: '', module: teacher.subjects[0] || '', targetGroups: [], deadline: '' })
+      setForm({ title: '', description: '', module: subjects[0] || '', targetGroups: [], deadline: '' })
       refreshAssignments()
     } catch (err) {
       console.error(err)
@@ -182,7 +193,7 @@ export default function TeacherAssignments() {
                       onChange={e => setForm({...form, module: e.target.value})}
                       className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
                     >
-                      {teacher.subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                      {subjects.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>

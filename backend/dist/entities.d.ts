@@ -23,6 +23,10 @@ export declare class SpecialityEntity {
     id: number;
     code: string;
     libelle: string;
+    name: string;
+    level: string;
+    section: string;
+    groupName: string;
     department: any;
     levels: any[];
 }
@@ -51,6 +55,8 @@ export declare class StudentEntity {
     nom: string;
     prenom: string;
     numCarte: string;
+    matricule: string;
+    gradesJson: any;
     speciality: any;
     level: any;
     section: any;
@@ -67,7 +73,13 @@ export declare class TeacherEntity {
     prenom: string;
     orcid: string;
     scopusId: string;
+    hoursPlanned: number;
+    hoursCompleted: number;
+    academicCvJson: any;
+    subjectsJson: any;
+    groupsJson: any;
     courses: any[];
+    modules: any[];
     cv: any;
 }
 export declare class CourseEntity {
@@ -86,10 +98,17 @@ export declare class ScheduleEntity {
     heureDebut: string;
     heureFin: string;
     salle: string;
+    day: string;
+    timeSlot: string;
+    subject: string;
+    sessionType: string;
+    room: string;
     codeQr: string;
     course: any;
+    teacher: any;
     section: any;
     group: any;
+    groupName: string;
     level: any;
     speciality: any;
 }
@@ -98,6 +117,13 @@ export declare class GradeEntity {
     valeur: number;
     session: string;
     statut: string;
+    subject: string;
+    tdGrade: number;
+    examGrade: number;
+    finalGrade: number;
+    credits: number;
+    status: string;
+    semester: string;
     dateSaisie: Date;
     dateValidation: Date;
     student: any;
@@ -124,13 +150,24 @@ export declare class TeacherSpecialityEntity {
     speciality: any;
     level: any;
 }
+export declare class TeacherModuleEntity {
+    id: number;
+    teacher: any;
+    subject: string;
+    groupName: string;
+}
 export declare class ValidationEntity {
     id: number;
     teacher: any;
     course: any;
     group: any;
+    subject: string;
+    groupName: string;
+    studentGradesJson: any;
     status: 'pending' | 'approved' | 'rejected';
     submittedAt: Date;
+    reviewedAt: Date;
+    reviewedBy: any;
     grades: any[];
 }
 export declare class ResourceEntity {
@@ -142,12 +179,24 @@ export declare class ResourceEntity {
     size: string;
     url: string;
     group: any;
+    subject: string;
+    fileType: string;
+    teacherName: string;
+    sizeLabel: string;
+    isNew: boolean;
+    fileContent: string;
+    groupsJson: any;
+    specialityName: string;
+    levelName: string;
+    sectionName: string;
+    groupName: string;
     createdAt: Date;
 }
 export declare class JustificationEntity {
     id: number;
     student: any;
     course: any;
+    module: string;
     status: 'pending' | 'approved' | 'rejected';
     fileName: string;
     fileContent: string;
@@ -166,6 +215,7 @@ export declare class AttendanceAlertEntity {
     id: number;
     student: any;
     course: any;
+    module: string;
     absences: number;
     severity: 'low' | 'medium' | 'high';
     dismissed: boolean;
@@ -185,12 +235,15 @@ export declare class AssignmentEntity {
     description: string;
     groups: any[];
     teacher: any;
+    teacherName: string;
     createdAt: Date;
 }
 export declare class AssignmentSubmissionEntity {
     id: number;
     assignment: any;
     student: any;
+    studentId: number;
+    studentName: string;
     fileName: string;
     fileContent: string;
     submittedAt: Date;

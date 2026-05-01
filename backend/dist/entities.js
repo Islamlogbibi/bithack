@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AssignmentSubmissionEntity = exports.AssignmentEntity = exports.ReferenceBlobEntity = exports.AttendanceAlertEntity = exports.MessageEntity = exports.JustificationEntity = exports.ResourceEntity = exports.ValidationEntity = exports.TeacherSpecialityEntity = exports.CVAcademiqueEntity = exports.PresenceEntity = exports.GradeEntity = exports.ScheduleEntity = exports.CourseEntity = exports.TeacherEntity = exports.StudentEntity = exports.GroupEntity = exports.SectionEntity = exports.LevelEntity = exports.SpecialityEntity = exports.DepartmentEntity = exports.UserEntity = void 0;
+exports.AssignmentSubmissionEntity = exports.AssignmentEntity = exports.ReferenceBlobEntity = exports.AttendanceAlertEntity = exports.MessageEntity = exports.JustificationEntity = exports.ResourceEntity = exports.ValidationEntity = exports.TeacherModuleEntity = exports.TeacherSpecialityEntity = exports.CVAcademiqueEntity = exports.PresenceEntity = exports.GradeEntity = exports.ScheduleEntity = exports.CourseEntity = exports.TeacherEntity = exports.StudentEntity = exports.GroupEntity = exports.SectionEntity = exports.LevelEntity = exports.SpecialityEntity = exports.DepartmentEntity = exports.UserEntity = void 0;
 const typeorm_1 = require("typeorm");
 let UserEntity = class UserEntity {
     id;
@@ -108,6 +108,10 @@ let SpecialityEntity = class SpecialityEntity {
     id;
     code;
     libelle;
+    name;
+    level;
+    section;
+    groupName;
     department;
     levels;
 };
@@ -124,6 +128,22 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], SpecialityEntity.prototype, "libelle", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], SpecialityEntity.prototype, "name", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], SpecialityEntity.prototype, "level", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], SpecialityEntity.prototype, "section", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], SpecialityEntity.prototype, "groupName", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)('DepartmentEntity', 'specialities'),
     __metadata("design:type", Object)
@@ -224,6 +244,8 @@ let StudentEntity = class StudentEntity {
     nom;
     prenom;
     numCarte;
+    matricule;
+    gradesJson;
     speciality;
     level;
     section;
@@ -251,9 +273,17 @@ __decorate([
     __metadata("design:type", String)
 ], StudentEntity.prototype, "prenom", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ unique: true }),
+    (0, typeorm_1.Column)({ unique: true, nullable: true }),
     __metadata("design:type", String)
 ], StudentEntity.prototype, "numCarte", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true, unique: true }),
+    __metadata("design:type", String)
+], StudentEntity.prototype, "matricule", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Object)
+], StudentEntity.prototype, "gradesJson", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)('SpecialityEntity'),
     __metadata("design:type", Object)
@@ -293,7 +323,13 @@ let TeacherEntity = class TeacherEntity {
     prenom;
     orcid;
     scopusId;
+    hoursPlanned;
+    hoursCompleted;
+    academicCvJson;
+    subjectsJson;
+    groupsJson;
     courses;
+    modules;
     cv;
 };
 exports.TeacherEntity = TeacherEntity;
@@ -327,9 +363,33 @@ __decorate([
     __metadata("design:type", String)
 ], TeacherEntity.prototype, "scopusId", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ type: 'float', default: 0 }),
+    __metadata("design:type", Number)
+], TeacherEntity.prototype, "hoursPlanned", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'float', default: 0 }),
+    __metadata("design:type", Number)
+], TeacherEntity.prototype, "hoursCompleted", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Object)
+], TeacherEntity.prototype, "academicCvJson", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Object)
+], TeacherEntity.prototype, "subjectsJson", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Object)
+], TeacherEntity.prototype, "groupsJson", void 0);
+__decorate([
     (0, typeorm_1.OneToMany)('CourseEntity', 'teacher'),
     __metadata("design:type", Array)
 ], TeacherEntity.prototype, "courses", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)('TeacherModuleEntity', 'teacher'),
+    __metadata("design:type", Array)
+], TeacherEntity.prototype, "modules", void 0);
 __decorate([
     (0, typeorm_1.OneToOne)('CVAcademiqueEntity', 'teacher'),
     __metadata("design:type", Object)
@@ -389,10 +449,17 @@ let ScheduleEntity = class ScheduleEntity {
     heureDebut;
     heureFin;
     salle;
+    day;
+    timeSlot;
+    subject;
+    sessionType;
+    room;
     codeQr;
     course;
+    teacher;
     section;
     group;
+    groupName;
     level;
     speciality;
 };
@@ -420,11 +487,35 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
+], ScheduleEntity.prototype, "day", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ScheduleEntity.prototype, "timeSlot", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ScheduleEntity.prototype, "subject", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ScheduleEntity.prototype, "sessionType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ScheduleEntity.prototype, "room", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
 ], ScheduleEntity.prototype, "codeQr", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)('CourseEntity'),
     __metadata("design:type", Object)
 ], ScheduleEntity.prototype, "course", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)('TeacherEntity', { nullable: true }),
+    __metadata("design:type", Object)
+], ScheduleEntity.prototype, "teacher", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)('SectionEntity'),
     __metadata("design:type", Object)
@@ -433,6 +524,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)('GroupEntity'),
     __metadata("design:type", Object)
 ], ScheduleEntity.prototype, "group", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ScheduleEntity.prototype, "groupName", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)('LevelEntity'),
     __metadata("design:type", Object)
@@ -449,6 +544,13 @@ let GradeEntity = class GradeEntity {
     valeur;
     session;
     statut;
+    subject;
+    tdGrade;
+    examGrade;
+    finalGrade;
+    credits;
+    status;
+    semester;
     dateSaisie;
     dateValidation;
     student;
@@ -473,6 +575,34 @@ __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], GradeEntity.prototype, "statut", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], GradeEntity.prototype, "subject", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'float', nullable: true }),
+    __metadata("design:type", Number)
+], GradeEntity.prototype, "tdGrade", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'float', nullable: true }),
+    __metadata("design:type", Number)
+], GradeEntity.prototype, "examGrade", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'float', nullable: true }),
+    __metadata("design:type", Number)
+], GradeEntity.prototype, "finalGrade", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'int', nullable: true }),
+    __metadata("design:type", Number)
+], GradeEntity.prototype, "credits", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], GradeEntity.prototype, "status", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], GradeEntity.prototype, "semester", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
@@ -584,13 +714,45 @@ __decorate([
 exports.TeacherSpecialityEntity = TeacherSpecialityEntity = __decorate([
     (0, typeorm_1.Entity)('teacher_speciality')
 ], TeacherSpecialityEntity);
+let TeacherModuleEntity = class TeacherModuleEntity {
+    id;
+    teacher;
+    subject;
+    groupName;
+};
+exports.TeacherModuleEntity = TeacherModuleEntity;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
+], TeacherModuleEntity.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)('TeacherEntity', 'modules'),
+    __metadata("design:type", Object)
+], TeacherModuleEntity.prototype, "teacher", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], TeacherModuleEntity.prototype, "subject", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], TeacherModuleEntity.prototype, "groupName", void 0);
+exports.TeacherModuleEntity = TeacherModuleEntity = __decorate([
+    (0, typeorm_1.Entity)('teacher_modules'),
+    (0, typeorm_1.Unique)(['teacher', 'subject', 'groupName'])
+], TeacherModuleEntity);
 let ValidationEntity = class ValidationEntity {
     id;
     teacher;
     course;
     group;
+    subject;
+    groupName;
+    studentGradesJson;
     status;
     submittedAt;
+    reviewedAt;
+    reviewedBy;
     grades;
 };
 exports.ValidationEntity = ValidationEntity;
@@ -611,6 +773,18 @@ __decorate([
     __metadata("design:type", Object)
 ], ValidationEntity.prototype, "group", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ValidationEntity.prototype, "subject", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ValidationEntity.prototype, "groupName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Object)
+], ValidationEntity.prototype, "studentGradesJson", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: 'pending' }),
     __metadata("design:type", String)
 ], ValidationEntity.prototype, "status", void 0);
@@ -618,6 +792,14 @@ __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], ValidationEntity.prototype, "submittedAt", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", Date)
+], ValidationEntity.prototype, "reviewedAt", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)('UserEntity', { nullable: true }),
+    __metadata("design:type", Object)
+], ValidationEntity.prototype, "reviewedBy", void 0);
 __decorate([
     (0, typeorm_1.OneToMany)('GradeEntity', 'validation'),
     __metadata("design:type", Array)
@@ -634,6 +816,17 @@ let ResourceEntity = class ResourceEntity {
     size;
     url;
     group;
+    subject;
+    fileType;
+    teacherName;
+    sizeLabel;
+    isNew;
+    fileContent;
+    groupsJson;
+    specialityName;
+    levelName;
+    sectionName;
+    groupName;
     createdAt;
 };
 exports.ResourceEntity = ResourceEntity;
@@ -650,25 +843,69 @@ __decorate([
     __metadata("design:type", Object)
 ], ResourceEntity.prototype, "course", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], ResourceEntity.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], ResourceEntity.prototype, "date", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], ResourceEntity.prototype, "size", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ nullable: true }),
     __metadata("design:type", String)
 ], ResourceEntity.prototype, "url", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)('GroupEntity'),
     __metadata("design:type", Object)
 ], ResourceEntity.prototype, "group", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "subject", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "fileType", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "teacherName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "sizeLabel", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ default: false }),
+    __metadata("design:type", Boolean)
+], ResourceEntity.prototype, "isNew", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "fileContent", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Object)
+], ResourceEntity.prototype, "groupsJson", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "specialityName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "levelName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "sectionName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], ResourceEntity.prototype, "groupName", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
@@ -680,6 +917,7 @@ let JustificationEntity = class JustificationEntity {
     id;
     student;
     course;
+    module;
     status;
     fileName;
     fileContent;
@@ -700,6 +938,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)('CourseEntity'),
     __metadata("design:type", Object)
 ], JustificationEntity.prototype, "course", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], JustificationEntity.prototype, "module", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: 'pending' }),
     __metadata("design:type", String)
@@ -762,6 +1004,7 @@ let AttendanceAlertEntity = class AttendanceAlertEntity {
     id;
     student;
     course;
+    module;
     absences;
     severity;
     dismissed;
@@ -781,6 +1024,10 @@ __decorate([
     (0, typeorm_1.ManyToOne)('CourseEntity'),
     __metadata("design:type", Object)
 ], AttendanceAlertEntity.prototype, "course", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], AttendanceAlertEntity.prototype, "module", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", Number)
@@ -833,6 +1080,7 @@ let AssignmentEntity = class AssignmentEntity {
     description;
     groups;
     teacher;
+    teacherName;
     createdAt;
 };
 exports.AssignmentEntity = AssignmentEntity;
@@ -866,6 +1114,10 @@ __decorate([
     __metadata("design:type", Object)
 ], AssignmentEntity.prototype, "teacher", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], AssignmentEntity.prototype, "teacherName", void 0);
+__decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
 ], AssignmentEntity.prototype, "createdAt", void 0);
@@ -876,6 +1128,8 @@ let AssignmentSubmissionEntity = class AssignmentSubmissionEntity {
     id;
     assignment;
     student;
+    studentId;
+    studentName;
     fileName;
     fileContent;
     submittedAt;
@@ -893,6 +1147,14 @@ __decorate([
     (0, typeorm_1.ManyToOne)('StudentEntity'),
     __metadata("design:type", Object)
 ], AssignmentSubmissionEntity.prototype, "student", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", Number)
+], AssignmentSubmissionEntity.prototype, "studentId", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ nullable: true }),
+    __metadata("design:type", String)
+], AssignmentSubmissionEntity.prototype, "studentName", void 0);
 __decorate([
     (0, typeorm_1.Column)(),
     __metadata("design:type", String)

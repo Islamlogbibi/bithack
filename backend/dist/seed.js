@@ -48,7 +48,7 @@ const dataSource = new typeorm_1.DataSource({
     entities: [
         entities_1.UserEntity, entities_1.StudentEntity, entities_1.TeacherEntity, entities_1.GradeEntity, entities_1.PresenceEntity,
         entities_1.DepartmentEntity, entities_1.SpecialityEntity, entities_1.LevelEntity, entities_1.SectionEntity, entities_1.GroupEntity,
-        entities_1.CourseEntity, entities_1.CVAcademiqueEntity, entities_1.TeacherSpecialityEntity,
+        entities_1.CourseEntity, entities_1.CVAcademiqueEntity, entities_1.TeacherSpecialityEntity, entities_1.TeacherModuleEntity,
         entities_1.ResourceEntity, entities_1.JustificationEntity, entities_1.ValidationEntity, entities_1.AttendanceAlertEntity,
         entities_1.MessageEntity, entities_1.ScheduleEntity, entities_1.ReferenceBlobEntity, entities_1.AssignmentEntity, entities_1.AssignmentSubmissionEntity
     ],
@@ -72,6 +72,7 @@ async function bootstrap() {
     const groupRepo = dataSource.getRepository(entities_1.GroupEntity);
     const courseRepo = dataSource.getRepository(entities_1.CourseEntity);
     const teacherSpecRepo = dataSource.getRepository(entities_1.TeacherSpecialityEntity);
+    const teacherModuleRepo = dataSource.getRepository(entities_1.TeacherModuleEntity);
     const gradeRepo = dataSource.getRepository(entities_1.GradeEntity);
     const scheduleRepo = dataSource.getRepository(entities_1.ScheduleEntity);
     const deptInfo = await deptRepo.save(deptRepo.create({
@@ -111,6 +112,20 @@ async function bootstrap() {
             section
         })));
     }
+    const l2Level = await levelRepo.save(levelRepo.create({
+        libelle: 'L2',
+        code: 'L2',
+        speciality
+    }));
+    const l2SectionB = await sectionRepo.save(sectionRepo.create({
+        code: 'B',
+        level: l2Level
+    }));
+    const l2SectionBGroup1 = await groupRepo.save(groupRepo.create({
+        code: 'Group 1',
+        type: 'TD',
+        section: l2SectionB
+    }));
     await userRepo.save(userRepo.create({
         email: 'admin@pui.dz',
         passwordHash,
@@ -133,6 +148,17 @@ async function bootstrap() {
         await teacherSpecRepo.save(teacherSpecRepo.create({
             teacher, speciality, level: levels[0]
         }));
+    }
+    for (const teacher of teachers) {
+        for (const subject of ['Algorithmique', 'Bases de données']) {
+            for (const groupName of ['L3 Info G1', 'L3 Info G2']) {
+                await teacherModuleRepo.save(teacherModuleRepo.create({
+                    teacher,
+                    subject,
+                    groupName
+                }));
+            }
+        }
     }
     const subjects = ['Algorithmique', 'Bases de données', 'IA', 'Réseaux'];
     const courses = [];
@@ -164,6 +190,20 @@ async function bootstrap() {
             }));
         }
     }
+    const l2TestUser = await userRepo.save(userRepo.create({
+        email: 'student.l2b1@pui.dz',
+        passwordHash,
+        fullName: 'Etudiant Test L2 B1',
+        role: 'student'
+    }));
+    await studentRepo.save(studentRepo.create({
+        user: l2TestUser,
+        matricule: '2024L2B1001',
+        speciality,
+        level: l2Level,
+        section: l2SectionB,
+        group: l2SectionBGroup1
+    }));
     console.log('Generating schedules...');
     const today = new Date();
     await scheduleRepo.save(scheduleRepo.create({

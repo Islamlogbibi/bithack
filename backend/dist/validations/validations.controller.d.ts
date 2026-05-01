@@ -5,8 +5,8 @@ export declare class ValidationsController {
     list(): Promise<{
         id: number;
         teacherName: any;
-        module: any;
-        groupName: any;
+        module: string;
+        groupName: string;
         status: "pending" | "approved" | "rejected";
         count: number;
         submittedAt: Date;
@@ -27,7 +27,7 @@ export declare class ValidationsController {
             matricule: string;
             grade: number;
         }[];
-    }): Promise<import("../entities").ValidationEntity[]>;
+    }): Promise<import("../entities").ValidationEntity>;
     review(id: string, body: {
         status: 'approved' | 'rejected';
     }): Promise<{

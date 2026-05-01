@@ -26,7 +26,7 @@ let SpecialitiesController = class SpecialitiesController {
 exports.SpecialitiesController = SpecialitiesController;
 __decorate([
     (0, common_1.Get)('tree'),
-    (0, roles_decorator_1.Roles)('admin', 'dean'),
+    (0, roles_decorator_1.Roles)('admin', 'dean', 'teacher'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)

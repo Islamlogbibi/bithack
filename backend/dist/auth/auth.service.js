@@ -108,22 +108,28 @@ let AuthService = class AuthService {
                 email: user.email,
                 role: 'student',
                 matricule: student.matricule,
+                year: student.level?.libelle || 'N/A',
                 speciality: student.speciality?.libelle,
                 level: student.level?.libelle,
                 section: student.section?.code,
                 group: student.group?.code,
-                gpa: student.average,
+                displayDepartment: student.speciality?.department?.libelle || 'Informatique',
+                gpa: Number(student.average || 0),
+                absences: {},
                 grades: student.grades?.map(g => ({
                     subject: g.course?.intitule,
-                    value: g.valeur,
-                    status: g.statut,
-                    credits: g.course?.credits
+                    td: g.tdGrade ?? null,
+                    exam: g.examGrade ?? null,
+                    final: g.finalGrade ?? g.valeur ?? null,
+                    status: g.status || g.statut || 'En attente',
+                    credits: g.credits ?? g.course?.credits ?? 0
                 })) || [],
                 schedule: schedules.map(s => ({
                     day: s.dateSeance,
                     time: s.heureDebut,
                     subject: s.course?.intitule,
                     room: s.salle,
+                    type: s.course?.type || 'Cours',
                     teacher: s.course?.teacher?.user?.fullName
                 }))
             };
@@ -132,6 +138,8 @@ let AuthService = class AuthService {
             const teacher = await this.teachersService.findByUserId(userId);
             if (!teacher)
                 return { id: user.id, name: user.fullName, email: user.email, role: 'teacher' };
+            const subjects = [...new Set((teacher.modules || []).map(m => m.subject).filter(Boolean))];
+            const groups = [...new Set((teacher.modules || []).map(m => m.groupName).filter(Boolean))];
             return {
                 id: user.id,
                 name: user.fullName,
@@ -140,6 +148,11 @@ let AuthService = class AuthService {
                 department: teacher.department?.libelle,
                 orcid: teacher.orcid,
                 scopusId: teacher.scopusId,
+                subjects,
+                groups,
+                hoursPlanned: Number(teacher.hoursPlanned || 0),
+                hoursCompleted: Number(teacher.hoursCompleted || 0),
+                pendingGrades: [],
                 courses: teacher.courses?.map(c => ({
                     id: c.id,
                     name: c.intitule,

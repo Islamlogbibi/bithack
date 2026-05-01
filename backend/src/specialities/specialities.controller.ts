@@ -8,7 +8,7 @@ import { Roles } from '../auth/roles.decorator';
 export class SpecialitiesController {
   constructor(private readonly specialitiesService: SpecialitiesService) {}
   @Get('tree')
-  @Roles('admin', 'dean')
+  @Roles('admin', 'dean', 'teacher')
   getTree() {
     return this.specialitiesService.getTree();
   }

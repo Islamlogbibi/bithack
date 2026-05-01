@@ -15,6 +15,39 @@ const FILE_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
 const SUBJECTS = ['Tous', 'Algorithmique', 'Réseaux', 'Base de Données', 'Mathématiques', 'Anglais Technique']
 const TYPES = ['Tous', 'Cours', 'TD', 'TP', 'Exam']
 
+function normalizeText(value?: string) {
+  return (value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '')
+}
+
+function extractGroupNumber(value?: string) {
+  const text = (value ?? '').toLowerCase()
+  const match = text.match(/(?:group|groupe|g)\s*([0-9]+)/)
+  if (match?.[1]) return match[1]
+  const fallback = text.match(/([0-9]+)/)
+  return fallback?.[1] ?? ''
+}
+
+function hierarchyMatch(target?: string, actual?: string) {
+  if (!target) return true
+  if (!actual) return false
+  const targetNorm = normalizeText(target)
+  const actualNorm = normalizeText(actual)
+  return targetNorm === actualNorm || targetNorm.includes(actualNorm) || actualNorm.includes(targetNorm)
+}
+
+function groupMatch(target?: string, actual?: string) {
+  if (!target) return true
+  if (!actual) return false
+  const targetNum = extractGroupNumber(target)
+  const actualNum = extractGroupNumber(actual)
+  if (targetNum && actualNum) return targetNum === actualNum
+  return hierarchyMatch(target, actual)
+}
+
 export default function StudentResources() {
   const { user } = useAuth()
   const student = user as StudentUser
@@ -24,11 +57,18 @@ export default function StudentResources() {
   const [type, setType] = useState('Tous')
   const [resources, setResources] = useState<ResourceItem[]>([])
 
-  // Determine which resources are allowed for this student (group-based)
+  // Determine which resources are allowed for this student (hierarchy-aware)
   const allowedResources = resources.filter(r => {
+    const hasHierarchicalTarget = Boolean(r.specialityName || r.levelName || r.sectionName || r.groupName)
+    if (hasHierarchicalTarget) {
+      const specialityOk = hierarchyMatch(r.specialityName, student.speciality)
+      const levelOk = hierarchyMatch(r.levelName, student.level)
+      const sectionOk = hierarchyMatch(r.sectionName, student.section)
+      const groupOk = groupMatch(r.groupName, student.group)
+      return specialityOk && levelOk && sectionOk && groupOk
+    }
     if (!r.targetGroups || r.targetGroups.length === 0) return true
-    const studentGroupTag = student.group
-    return r.targetGroups.includes(studentGroupTag)
+    return r.targetGroups.some((group) => groupMatch(group, student.group))
   })
 
   const availableSubjects = ['Tous', ...new Set(allowedResources.map(r => r.subject))]

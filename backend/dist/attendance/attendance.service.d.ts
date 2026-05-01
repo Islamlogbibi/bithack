@@ -10,6 +10,6 @@ export declare class AttendanceService {
         module: string;
         absences: number;
         severity: 'low' | 'medium' | 'high';
-    }): Promise<AttendanceAlertEntity[]>;
+    }): Promise<AttendanceAlertEntity>;
     dismissAlert(id: number): Promise<import("typeorm").UpdateResult>;
 }

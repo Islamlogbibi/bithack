@@ -81,6 +81,19 @@ export class SpecialityEntity {
   @Column()
   libelle: string;
 
+  // Legacy flat fields kept for backward-compatible service code
+  @Column({ nullable: true })
+  name: string;
+
+  @Column({ nullable: true })
+  level: string;
+
+  @Column({ nullable: true })
+  section: string;
+
+  @Column({ nullable: true })
+  groupName: string;
+
   @ManyToOne('DepartmentEntity', 'specialities')
   department: any;
 
@@ -151,8 +164,15 @@ export class StudentEntity {
   @Column({ nullable: true })
   prenom: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   numCarte: string;
+
+  // Legacy identifier used by older service code
+  @Column({ nullable: true, unique: true })
+  matricule: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  gradesJson: any;
 
   @ManyToOne('SpecialityEntity')
   speciality: any;
@@ -200,8 +220,26 @@ export class TeacherEntity {
   @Column({ nullable: true })
   scopusId: string;
 
+  @Column({ type: 'float', default: 0 })
+  hoursPlanned: number;
+
+  @Column({ type: 'float', default: 0 })
+  hoursCompleted: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  academicCvJson: any;
+
+  @Column({ type: 'jsonb', nullable: true })
+  subjectsJson: any;
+
+  @Column({ type: 'jsonb', nullable: true })
+  groupsJson: any;
+
   @OneToMany('CourseEntity', 'teacher')
   courses: any[];
+
+  @OneToMany('TeacherModuleEntity', 'teacher')
+  modules: any[];
 
   @OneToOne('CVAcademiqueEntity', 'teacher')
   cv: any;
@@ -251,17 +289,39 @@ export class ScheduleEntity {
   @Column()
   salle: string;
 
+  // Legacy schedule shape used by older endpoints
+  @Column({ nullable: true })
+  day: string;
+
+  @Column({ nullable: true })
+  timeSlot: string;
+
+  @Column({ nullable: true })
+  subject: string;
+
+  @Column({ nullable: true })
+  sessionType: string;
+
+  @Column({ nullable: true })
+  room: string;
+
   @Column({ nullable: true })
   codeQr: string;
 
   @ManyToOne('CourseEntity')
   course: any;
 
+  @ManyToOne('TeacherEntity', { nullable: true })
+  teacher: any;
+
   @ManyToOne('SectionEntity')
   section: any;
 
   @ManyToOne('GroupEntity')
   group: any;
+
+  @Column({ nullable: true })
+  groupName: string;
 
   @ManyToOne('LevelEntity')
   level: any;
@@ -283,6 +343,28 @@ export class GradeEntity {
 
   @Column()
   statut: string; // 'Saisi', 'Valide', 'Rejete'
+
+  // Legacy grade fields used by existing services
+  @Column({ nullable: true })
+  subject: string;
+
+  @Column({ type: 'float', nullable: true })
+  tdGrade: number;
+
+  @Column({ type: 'float', nullable: true })
+  examGrade: number;
+
+  @Column({ type: 'float', nullable: true })
+  finalGrade: number;
+
+  @Column({ type: 'int', nullable: true })
+  credits: number;
+
+  @Column({ nullable: true })
+  status: string;
+
+  @Column({ nullable: true })
+  semester: string;
 
   @CreateDateColumn()
   dateSaisie: Date;
@@ -352,6 +434,22 @@ export class TeacherSpecialityEntity {
   level: any;
 }
 
+@Entity('teacher_modules')
+@Unique(['teacher', 'subject', 'groupName'])
+export class TeacherModuleEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne('TeacherEntity', 'modules')
+  teacher: any;
+
+  @Column()
+  subject: string;
+
+  @Column()
+  groupName: string;
+}
+
 @Entity('validations')
 export class ValidationEntity {
   @PrimaryGeneratedColumn()
@@ -366,11 +464,26 @@ export class ValidationEntity {
   @ManyToOne('GroupEntity')
   group: any;
 
+  @Column({ nullable: true })
+  subject: string;
+
+  @Column({ nullable: true })
+  groupName: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  studentGradesJson: any;
+
   @Column({ default: 'pending' })
   status: 'pending' | 'approved' | 'rejected';
 
   @CreateDateColumn()
   submittedAt: Date;
+
+  @Column({ nullable: true })
+  reviewedAt: Date;
+
+  @ManyToOne('UserEntity', { nullable: true })
+  reviewedBy: any;
 
   @OneToMany('GradeEntity', 'validation')
   grades: any[];
@@ -387,20 +500,54 @@ export class ResourceEntity {
   @ManyToOne('CourseEntity')
   course: any;
 
-  @Column()
+  @Column({ nullable: true })
   type: string;
 
-  @Column()
+  @Column({ nullable: true })
   date: string;
 
-  @Column()
+  @Column({ nullable: true })
   size: string;
 
-  @Column()
+  @Column({ nullable: true })
   url: string;
 
   @ManyToOne('GroupEntity')
   group: any;
+
+  // Legacy/frontend-compatible fields used by current React app
+  @Column({ nullable: true })
+  subject: string;
+
+  @Column({ nullable: true })
+  fileType: string;
+
+  @Column({ nullable: true })
+  teacherName: string;
+
+  @Column({ nullable: true })
+  sizeLabel: string;
+
+  @Column({ default: false })
+  isNew: boolean;
+
+  @Column({ type: 'text', nullable: true })
+  fileContent: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  groupsJson: any;
+
+  @Column({ nullable: true })
+  specialityName: string;
+
+  @Column({ nullable: true })
+  levelName: string;
+
+  @Column({ nullable: true })
+  sectionName: string;
+
+  @Column({ nullable: true })
+  groupName: string;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -416,6 +563,9 @@ export class JustificationEntity {
 
   @ManyToOne('CourseEntity')
   course: any;
+
+  @Column({ nullable: true })
+  module: string;
 
   @Column({ default: 'pending' })
   status: 'pending' | 'approved' | 'rejected';
@@ -464,6 +614,9 @@ export class AttendanceAlertEntity {
 
   @ManyToOne('CourseEntity')
   course: any;
+
+  @Column({ nullable: true })
+  module: string;
 
   @Column()
   absences: number;
@@ -517,6 +670,9 @@ export class AssignmentEntity {
   @ManyToOne('TeacherEntity')
   teacher: any;
 
+  @Column({ nullable: true })
+  teacherName: string;
+
   @CreateDateColumn()
   createdAt: Date;
 }
@@ -531,6 +687,12 @@ export class AssignmentSubmissionEntity {
 
   @ManyToOne('StudentEntity')
   student: any;
+
+  @Column({ nullable: true })
+  studentId: number;
+
+  @Column({ nullable: true })
+  studentName: string;
 
   @Column()
   fileName: string;

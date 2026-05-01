@@ -19,57 +19,52 @@ const entities_1 = require("../entities");
 const typeorm_2 = require("typeorm");
 let SpecialitiesService = class SpecialitiesService {
     repo;
-    constructor(repo) {
+    levelRepo;
+    constructor(repo, levelRepo) {
         this.repo = repo;
-    }
-    async onModuleInit() {
-        const rows = [
-            { name: 'Informatique', level: 'L2', section: 'A', groupName: 'G1' },
-            { name: 'Informatique', level: 'L2', section: 'A', groupName: 'G2' },
-            { name: 'Informatique', level: 'L3', section: 'A', groupName: 'G1' },
-            { name: 'Informatique', level: 'L3', section: 'A', groupName: 'G2' },
-            { name: 'Informatique', level: 'L3', section: 'B', groupName: 'G3' },
-        ];
-        for (const row of rows) {
-            const exists = await this.repo.exist({ where: row });
-            if (!exists)
-                await this.repo.save(this.repo.create(row));
-        }
+        this.levelRepo = levelRepo;
     }
     async list() {
         return this.repo.find();
     }
     async getTree() {
-        const specialities = await this.repo.find();
-        const treeMap = {};
-        specialities.forEach(s => {
-            if (!treeMap[s.name]) {
-                treeMap[s.name] = { speciality: s.name, levels: [] };
-            }
-            let levelObj = treeMap[s.name].levels.find((l) => l.level === s.level);
-            if (!levelObj) {
-                levelObj = { level: s.level, sections: [] };
-                treeMap[s.name].levels.push(levelObj);
-            }
-            let sectionObj = levelObj.sections.find((sec) => sec.section === s.section);
-            if (!sectionObj) {
-                sectionObj = { section: s.section, groups: [] };
-                levelObj.sections.push(sectionObj);
-            }
-            sectionObj.groups.push({
-                group: s.groupName,
-                students: [],
-                modules: ['Algorithmique', 'Bases de Données', 'Réseaux'],
-                teachers: ['Dr. Meziani', 'Dr. Bakri', 'Mme. Sarah']
-            });
+        const levels = await this.levelRepo.find({
+            relations: ['speciality', 'sections', 'sections.groups'],
+            order: {
+                speciality: { libelle: 'ASC' },
+                libelle: 'ASC',
+                sections: { code: 'ASC', groups: { code: 'ASC' } },
+            },
         });
-        return Object.values(treeMap);
+        const tree = new Map();
+        for (const level of levels) {
+            const specialityName = level.speciality?.libelle || level.speciality?.name || 'Unknown';
+            if (!tree.has(specialityName)) {
+                tree.set(specialityName, { speciality: specialityName, levels: [] });
+            }
+            const specialityNode = tree.get(specialityName);
+            specialityNode.levels.push({
+                level: level.libelle,
+                sections: (level.sections || []).map((section) => ({
+                    section: section.code,
+                    groups: (section.groups || []).map((group) => ({
+                        group: group.code,
+                        students: [],
+                        modules: [],
+                        teachers: [],
+                    })),
+                })),
+            });
+        }
+        return Array.from(tree.values());
     }
 };
 exports.SpecialitiesService = SpecialitiesService;
 exports.SpecialitiesService = SpecialitiesService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(entities_1.SpecialityEntity)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(entities_1.LevelEntity)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], SpecialitiesService);
 //# sourceMappingURL=specialities.service.js.map

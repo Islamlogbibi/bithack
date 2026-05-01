@@ -5,7 +5,7 @@ export declare class JustificationsService {
     private readonly studentRepo;
     constructor(repo: Repository<JustificationEntity>, studentRepo: Repository<StudentEntity>);
     list(): Promise<JustificationEntity[]>;
-    create(data: any): Promise<JustificationEntity[]>;
+    create(data: any): Promise<JustificationEntity>;
     review(id: number, data: {
         status: 'approved' | 'rejected';
         reviewComment?: string;

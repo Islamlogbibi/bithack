@@ -1,10 +1,9 @@
-import { OnModuleInit } from '@nestjs/common';
-import { SpecialityEntity } from '../entities';
+import { LevelEntity, SpecialityEntity } from '../entities';
 import { Repository } from 'typeorm';
-export declare class SpecialitiesService implements OnModuleInit {
+export declare class SpecialitiesService {
     private readonly repo;
-    constructor(repo: Repository<SpecialityEntity>);
-    onModuleInit(): Promise<void>;
+    private readonly levelRepo;
+    constructor(repo: Repository<SpecialityEntity>, levelRepo: Repository<LevelEntity>);
     list(): Promise<SpecialityEntity[]>;
     getTree(): Promise<any[]>;
 }

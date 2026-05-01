@@ -19,6 +19,7 @@ import {
   CourseEntity,
   CVAcademiqueEntity,
   TeacherSpecialityEntity,
+  TeacherModuleEntity,
   ReferenceBlobEntity,
   AssignmentEntity,
   AssignmentSubmissionEntity
@@ -38,7 +39,7 @@ const dataSource = new DataSource({
   entities: [
     UserEntity, StudentEntity, TeacherEntity, GradeEntity, PresenceEntity,
     DepartmentEntity, SpecialityEntity, LevelEntity, SectionEntity, GroupEntity,
-    CourseEntity, CVAcademiqueEntity, TeacherSpecialityEntity,
+    CourseEntity, CVAcademiqueEntity, TeacherSpecialityEntity, TeacherModuleEntity,
     ResourceEntity, JustificationEntity, ValidationEntity, AttendanceAlertEntity,
     MessageEntity, ScheduleEntity, ReferenceBlobEntity, AssignmentEntity, AssignmentSubmissionEntity
   ],
@@ -67,6 +68,7 @@ async function bootstrap() {
   const groupRepo = dataSource.getRepository(GroupEntity);
   const courseRepo = dataSource.getRepository(CourseEntity);
   const teacherSpecRepo = dataSource.getRepository(TeacherSpecialityEntity);
+  const teacherModuleRepo = dataSource.getRepository(TeacherModuleEntity);
   const gradeRepo = dataSource.getRepository(GradeEntity);
   const scheduleRepo = dataSource.getRepository(ScheduleEntity);
 
@@ -114,6 +116,22 @@ async function bootstrap() {
     })));
   }
 
+  // 2-bis. Dedicated hierarchy for a common test case: Informatique L2 / Section B / Group 1
+  const l2Level = await levelRepo.save(levelRepo.create({
+    libelle: 'L2',
+    code: 'L2',
+    speciality
+  }));
+  const l2SectionB = await sectionRepo.save(sectionRepo.create({
+    code: 'B',
+    level: l2Level
+  }));
+  const l2SectionBGroup1 = await groupRepo.save(groupRepo.create({
+    code: 'Group 1',
+    type: 'TD',
+    section: l2SectionB
+  }));
+
   // 3. Create Admins
   await userRepo.save(userRepo.create({
     email: 'admin@pui.dz',
@@ -141,6 +159,19 @@ async function bootstrap() {
     await teacherSpecRepo.save(teacherSpecRepo.create({
       teacher, speciality, level: levels[0]
     }));
+  }
+
+  // 4-bis. Create teacher module/group assignments used by teacher dashboards
+  for (const teacher of teachers) {
+    for (const subject of ['Algorithmique', 'Bases de données']) {
+      for (const groupName of ['L3 Info G1', 'L3 Info G2']) {
+        await teacherModuleRepo.save(teacherModuleRepo.create({
+          teacher,
+          subject,
+          groupName
+        }));
+      }
+    }
   }
 
   // 5. Create Courses
@@ -178,6 +209,22 @@ async function bootstrap() {
       }));
     }
   }
+
+  // 6-bis. Create a deterministic test student account for L2/B/Group 1
+  const l2TestUser = await userRepo.save(userRepo.create({
+    email: 'student.l2b1@pui.dz',
+    passwordHash,
+    fullName: 'Etudiant Test L2 B1',
+    role: 'student'
+  }));
+  await studentRepo.save(studentRepo.create({
+    user: l2TestUser,
+    matricule: '2024L2B1001',
+    speciality,
+    level: l2Level,
+    section: l2SectionB,
+    group: l2SectionBGroup1
+  }));
 
   // 7. Create Schedules
   console.log('Generating schedules...');

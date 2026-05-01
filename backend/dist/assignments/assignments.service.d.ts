@@ -7,6 +7,6 @@ export declare class AssignmentsService {
     list(groups?: string[]): Promise<AssignmentEntity[]>;
     listByTeacher(teacherName: string): Promise<AssignmentEntity[]>;
     create(data: any): Promise<AssignmentEntity[]>;
-    submit(data: any): Promise<AssignmentSubmissionEntity[]>;
+    submit(data: any): Promise<AssignmentSubmissionEntity>;
     listSubmissions(assignmentId: number): Promise<AssignmentSubmissionEntity[]>;
 }

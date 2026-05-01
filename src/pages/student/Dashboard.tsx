@@ -15,15 +15,22 @@ const TYPE_COLORS: Record<string, string> = {
 export default function StudentDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const student = user as StudentUser
+  const student = user as StudentUser | null
 
-  const totalAbsences = Object.values(student.absences).reduce((a, b) => a + b, 0)
+  if (!student || student.role !== 'student') {
+    return null
+  }
+
+  const absences = student.absences ?? {}
+  const schedule = student.schedule ?? []
+  const grades = student.grades ?? []
+  const totalAbsences = Object.values(absences).reduce((a, b) => a + b, 0)
   const today = new Date()
   const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi']
   const todayName = days[today.getDay()]
   const greeting = student.gpa >= 14 ? 'Excellent semestre, continuez ainsi !' : student.gpa >= 10 ? 'Bon semestre, ne relâchez pas vos efforts !' : 'Du travail est nécessaire, accrochez-vous !'
 
-  const weekSchedule = student.schedule.slice(0, 6)
+  const weekSchedule = schedule.slice(0, 6)
 
   return (
     <>
@@ -49,7 +56,7 @@ export default function StudentDashboard() {
       </motion.div>
 
       {/* Alert banner */}
-      {student.absences.algo >= 3 && (
+      {(absences.algo ?? 0) >= 3 && (
         <motion.div
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -59,10 +66,10 @@ export default function StudentDashboard() {
           <AlertTriangle className="text-amber-500 flex-shrink-0 mt-0.5" size={20} />
           <div>
             <p className="text-sm font-semibold text-amber-600 dark:text-amber-400">
-              Attention: Vous avez {student.absences.algo} absences en Algorithmique.
+              Attention: Vous avez {absences.algo ?? 0} absences en Algorithmique.
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Seuil d&apos;exclusion: 6. Il vous reste {6 - student.absences.algo} absence(s) avant exclusion.
+              Seuil d&apos;exclusion: 6. Il vous reste {6 - (absences.algo ?? 0)} absence(s) avant exclusion.
             </p>
           </div>
         </motion.div>
@@ -72,7 +79,7 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard title="Moyenne générale" value={student.gpa.toFixed(2)} suffix="/20" icon={<TrendingUp size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
         <StatCard title="Total absences" value={totalAbsences} icon={<Users size={20} />} color={totalAbsences >= 5 ? 'text-red-500' : totalAbsences >= 3 ? 'text-amber-500' : 'text-emerald-500'} bgColor={totalAbsences >= 5 ? 'bg-red-500' : 'bg-amber-500'} delay={0.1} />
-        <StatCard title="Cours / semaine" value={student.schedule.length} icon={<Calendar size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.2} />
+        <StatCard title="Cours / semaine" value={schedule.length} icon={<Calendar size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.2} />
         <StatCard title="Ressources" value={24} icon={<FileText size={20} />} color="text-orange-500" bgColor="bg-orange-500" delay={0.3} />
       </div>
 
@@ -122,15 +129,15 @@ export default function StudentDashboard() {
             Notes récentes
           </h3>
           <div className="space-y-2">
-            {student.grades.slice(0, 4).map((g, i) => (
+            {grades.slice(0, 4).map((g, i) => (
               <div key={i} className="flex items-center justify-between py-1.5 border-b border-border last:border-0">
                 <div>
                   <p className="text-sm font-medium text-foreground truncate max-w-[130px]">{g.subject}</p>
                   <StatusBadge status={g.status} />
                 </div>
                 <div className="text-right">
-                  <span className={`text-lg font-bold ${(g.final ?? 0) >= 14 ? 'text-emerald-500' : (g.final ?? 0) >= 10 ? 'text-amber-500' : 'text-red-500'}`}>
-                    {g.final !== null ? g.final.toFixed(2) : '—'}
+                  <span className={`text-lg font-bold ${typeof g.final === 'number' ? (g.final >= 14 ? 'text-emerald-500' : g.final >= 10 ? 'text-amber-500' : 'text-red-500') : 'text-muted-foreground'}`}>
+                    {typeof g.final === 'number' ? g.final.toFixed(2) : '—'}
                   </span>
                   <p className="text-xs text-muted-foreground">/20</p>
                 </div>

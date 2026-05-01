@@ -5,6 +5,6 @@ export declare class AssignmentsController {
     list(groups?: string): Promise<import("../entities").AssignmentEntity[]>;
     findByTeacher(name: string): Promise<import("../entities").AssignmentEntity[]>;
     create(body: any): Promise<import("../entities").AssignmentEntity[]>;
-    submit(body: any): Promise<import("../entities").AssignmentSubmissionEntity[]>;
+    submit(body: any): Promise<import("../entities").AssignmentSubmissionEntity>;
     getSubmissions(id: string): Promise<import("../entities").AssignmentSubmissionEntity[]>;
 }

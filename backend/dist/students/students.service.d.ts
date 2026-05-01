@@ -12,7 +12,7 @@ export declare class StudentsService {
     constructor(repo: Repository<StudentEntity>, usersRepo: Repository<UserEntity>, gradeRepo: Repository<GradeEntity>, presenceRepo: Repository<PresenceEntity>, specRepo: Repository<SpecialityEntity>, levelRepo: Repository<LevelEntity>, sectionRepo: Repository<SectionEntity>, groupRepo: Repository<GroupEntity>);
     list(filters: Record<string, string | undefined>): Promise<StudentEntity[]>;
     findByUserId(userId: number): Promise<StudentEntity | null>;
-    create(payload: any): Promise<StudentEntity[]>;
+    create(payload: any): Promise<StudentEntity>;
     remove(id: number): Promise<{
         success: boolean;
     }>;

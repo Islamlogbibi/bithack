@@ -9,10 +9,10 @@ export declare class TeachersService {
         name: any;
         email: any;
         department: any;
-        hoursPlanned: any;
-        hoursCompleted: any;
-        subjects: unknown[];
-        groups: unknown[];
+        hoursPlanned: number;
+        hoursCompleted: number;
+        subjects: any[];
+        groups: any[];
         academicCv: any;
     }[]>;
     findByUserId(userId: number): Promise<TeacherEntity | null>;

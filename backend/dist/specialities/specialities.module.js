@@ -17,7 +17,7 @@ let SpecialitiesModule = class SpecialitiesModule {
 exports.SpecialitiesModule = SpecialitiesModule;
 exports.SpecialitiesModule = SpecialitiesModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.SpecialityEntity])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([entities_1.SpecialityEntity, entities_1.LevelEntity])],
         controllers: [specialities_controller_1.SpecialitiesController],
         providers: [specialities_service_1.SpecialitiesService],
     })

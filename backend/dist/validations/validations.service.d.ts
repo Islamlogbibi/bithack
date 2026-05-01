@@ -10,8 +10,8 @@ export declare class ValidationsService {
     list(): Promise<{
         id: number;
         teacherName: any;
-        module: any;
-        groupName: any;
+        module: string;
+        groupName: string;
         status: "pending" | "approved" | "rejected";
         count: number;
         submittedAt: Date;
@@ -21,7 +21,7 @@ export declare class ValidationsService {
             td: any;
         }[];
     }[]>;
-    create(data: any): Promise<ValidationEntity[]>;
+    create(data: any): Promise<ValidationEntity>;
     review(id: number, status: 'approved' | 'rejected', reviewerId?: number): Promise<{
         success: boolean;
     }>;

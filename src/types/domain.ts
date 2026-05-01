@@ -35,6 +35,8 @@ export interface StudentUser {
   group: string
   year: string
   level: string
+  speciality?: string
+  section?: string
   displayDepartment: string
   gpa: number
   absences: Record<string, number>
@@ -107,6 +109,10 @@ export interface ResourceItem {
   isNew: boolean
   fileContent?: string
   targetGroups?: string[]
+  specialityName?: string
+  levelName?: string
+  sectionName?: string
+  groupName?: string
 }
 
 export interface AbsenceAlertRow {

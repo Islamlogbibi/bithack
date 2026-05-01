@@ -40,6 +40,7 @@ import {
   CourseEntity,
   CVAcademiqueEntity,
   TeacherSpecialityEntity,
+  TeacherModuleEntity,
 } from './entities';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
@@ -75,6 +76,7 @@ import { RolesGuard } from './auth/roles.guard';
           CourseEntity,
           CVAcademiqueEntity,
           TeacherSpecialityEntity,
+          TeacherModuleEntity,
           ResourceEntity,
           JustificationEntity,
           ValidationEntity,

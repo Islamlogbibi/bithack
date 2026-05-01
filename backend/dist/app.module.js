@@ -62,6 +62,7 @@ exports.AppModule = AppModule = __decorate([
                         entities_1.CourseEntity,
                         entities_1.CVAcademiqueEntity,
                         entities_1.TeacherSpecialityEntity,
+                        entities_1.TeacherModuleEntity,
                         entities_1.ResourceEntity,
                         entities_1.JustificationEntity,
                         entities_1.ValidationEntity,

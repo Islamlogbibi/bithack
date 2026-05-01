@@ -8,21 +8,35 @@ import { useAuth } from '../../context/AuthContext'
 import type { TeacherUser } from '../../types/domain'
 
 const SUBJECTS = ['Algorithmique', 'Structures de Données', 'Analyse Numérique', 'Probabilités']
-const GROUPS = ['G1', 'G2', 'G3']
-const ALL_GROUPS = ['L3 Info G1', 'L3 Info G2', 'L3 Info G3', 'L3 SI G1', 'L3 SI G2']
+
+interface SpecialityTreeNode {
+  speciality: string
+  levels: {
+    level: string
+    sections: {
+      section: string
+      groups: { group: string }[]
+    }[]
+  }[]
+}
 
 interface ResourceForm {
   title: string
   subject: string
   type: string
-  groups: string[]
+  speciality: string
+  level: string
+  section: string
+  group: string
   file: File | null
 }
 
 export default function TeacherResources() {
   const { user } = useAuth()
-  const teacher = user as TeacherUser
+  const teacher = user as TeacherUser | null
+  const teacherName = teacher?.name ?? ''
   const [resources, setResources] = useState<ResourceItem[]>([])
+  const [specialityTree, setSpecialityTree] = useState<SpecialityTreeNode[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   const handleDownload = (resource: ResourceItem) => {
@@ -65,10 +79,25 @@ export default function TeacherResources() {
       try {
         const raw = await apiGet<Parameters<typeof mapApiResource>[0][]>('/resources')
         if (cancelled) return
-        const mapped = raw.map(mapApiResource).filter((r) => r.teacher.includes('Meziani'))
+        const mapped = raw.map(mapApiResource).filter((r) => !teacherName || r.teacher === teacherName)
         setResources(mapped)
       } catch {
         setResources([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [teacherName])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const tree = await apiGet<SpecialityTreeNode[]>('/specialities/tree')
+        if (!cancelled) setSpecialityTree(Array.isArray(tree) ? tree : [])
+      } catch {
+        if (!cancelled) setSpecialityTree([])
       }
     })()
     return () => {
@@ -81,7 +110,10 @@ export default function TeacherResources() {
     title: '',
     subject: '',
     type: 'Cours',
-    groups: [],
+    speciality: '',
+    level: '',
+    section: '',
+    group: '',
     file: null,
   })
 
@@ -94,17 +126,15 @@ export default function TeacherResources() {
     }
   }
 
-  const toggleGroup = (group: string) => {
-    setForm(prev => ({
-      ...prev,
-      groups: prev.groups.includes(group)
-        ? prev.groups.filter(g => g !== group)
-        : [...prev.groups, group]
-    }))
-  }
+  const selectedSpeciality = specialityTree.find((s) => s.speciality === form.speciality)
+  const levelOptions = selectedSpeciality?.levels ?? []
+  const selectedLevel = levelOptions.find((l) => l.level === form.level)
+  const sectionOptions = selectedLevel?.sections ?? []
+  const selectedSection = sectionOptions.find((s) => s.section === form.section)
+  const groupOptions = selectedSection?.groups ?? []
 
   const handleSubmit = async () => {
-    if (!form.title || !form.subject || form.groups.length === 0 || !form.file) return
+    if (!form.title || !form.subject || !form.speciality || !form.level || !form.section || !form.group || !form.file) return
     setIsSubmitting(true)
     
     try {
@@ -121,19 +151,23 @@ export default function TeacherResources() {
         subject: form.subject,
         type: form.type,
         fileType: form.file.name.split('.').pop()?.toUpperCase() ?? 'PDF',
-        teacherName: teacher.name,
+        teacherName,
         sizeLabel: `${(form.file.size / 1024 / 1024).toFixed(1)} MB`,
         isNew: true,
         fileContent: base64,
-        groupsJson: form.groups
+        groupsJson: [form.group],
+        specialityName: form.speciality,
+        levelName: form.level,
+        sectionName: form.section,
+        groupName: form.group,
       })
       
       setShowUploadModal(false)
-      setForm({ title: '', subject: '', type: 'Cours', groups: [], file: null })
+      setForm({ title: '', subject: '', type: 'Cours', speciality: '', level: '', section: '', group: '', file: null })
       
       // Refresh list
       const raw = await apiGet<Parameters<typeof mapApiResource>[0][]>('/resources')
-      setResources(raw.map(mapApiResource).filter(r => r.teacher === teacher.name))
+      setResources(raw.map(mapApiResource).filter(r => !teacherName || r.teacher === teacherName))
     } catch (err) {
       console.error(err)
     } finally {
@@ -160,7 +194,7 @@ export default function TeacherResources() {
         </div>
         <div className="text-center">
           <p className="font-semibold text-foreground">Publier une ressource</p>
-          <p className="text-sm text-muted-foreground mt-0.5">Cliquez pour sélectionner un fichier et des groupes cibles</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Cliquez pour sélectionner un fichier et une cible pédagogique</p>
         </div>
         <button 
           onClick={(e) => { e.stopPropagation(); setShowUploadModal(true) }}
@@ -193,7 +227,9 @@ export default function TeacherResources() {
                 <p className="text-xs text-muted-foreground">{r.subject} · {r.type} · {r.size} · {r.date}</p>
                 <div className="flex items-center gap-1 mt-1">
                   <Users size={12} className="text-muted-foreground" />
-                  <span className="text-xs text-primary">G1, G2</span>
+                  <span className="text-xs text-primary">
+                    {r.groupName ? `${r.specialityName || ''} ${r.levelName || ''} ${r.sectionName || ''} ${r.groupName}`.trim() : 'Tous'}
+                  </span>
                 </div>
               </div>
               {r.isNew && (
@@ -330,41 +366,67 @@ export default function TeacherResources() {
                   </div>
                 </div>
 
-                {/* Groups Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    <Users className="w-4 h-4 inline-block mr-2" />
-                    Groupes cibles <span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {ALL_GROUPS.map((group) => (
-                      <button
-                        key={group}
-                        onClick={() => toggleGroup(group)}
-                        className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all ${
-                          form.groups.includes(group)
-                            ? 'bg-primary/15 border-primary/50 text-primary'
-                            : 'bg-secondary border-border text-muted-foreground hover:border-primary/50'
-                        }`}
-                      >
-                        {form.groups.includes(group) && (
-                          <Check size={14} className="text-primary" />
-                        )}
-                        <span className="text-sm">{group}</span>
-                      </button>
-                    ))}
+                {/* Hierarchy target */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Spécialité</label>
+                    <select
+                      value={form.speciality}
+                      onChange={(e) => setForm(prev => ({ ...prev, speciality: e.target.value, level: '', section: '', group: '' }))}
+                      className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Sélectionner</option>
+                      {specialityTree.map((s) => <option key={s.speciality} value={s.speciality}>{s.speciality}</option>)}
+                    </select>
                   </div>
-                  {form.groups.length === 0 && (
-                    <p className="text-xs text-red-500 mt-1">
-                      Veuillez sélectionner au moins un groupe
-                    </p>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Niveau</label>
+                    <select
+                      value={form.level}
+                      onChange={(e) => setForm(prev => ({ ...prev, level: e.target.value, section: '', group: '' }))}
+                      disabled={!form.speciality}
+                      className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Sélectionner</option>
+                      {levelOptions.map((l) => <option key={l.level} value={l.level}>{l.level}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">Section</label>
+                    <select
+                      value={form.section}
+                      onChange={(e) => setForm(prev => ({ ...prev, section: e.target.value, group: '' }))}
+                      disabled={!form.level}
+                      className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Sélectionner</option>
+                      {sectionOptions.map((s) => <option key={s.section} value={s.section}>{s.section}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      <Users className="w-4 h-4 inline-block mr-2" />
+                      Groupe
+                    </label>
+                    <select
+                      value={form.group}
+                      onChange={(e) => setForm(prev => ({ ...prev, group: e.target.value }))}
+                      disabled={!form.section}
+                      className="w-full px-4 py-2.5 bg-secondary border border-border rounded-lg text-foreground disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    >
+                      <option value="">Sélectionner</option>
+                      {groupOptions.map((g) => <option key={g.group} value={g.group}>{g.group}</option>)}
+                    </select>
+                  </div>
                 </div>
+                {!form.group && (
+                  <p className="text-xs text-red-500 mt-1">Veuillez sélectionner spécialité, niveau, section et groupe</p>
+                )}
 
                 {/* Submit */}
                 <button
                   onClick={handleSubmit}
-                  disabled={isSubmitting || !form.title || !form.subject || form.groups.length === 0 || !form.file}
+                  disabled={isSubmitting || !form.title || !form.subject || !form.speciality || !form.level || !form.section || !form.group || !form.file}
                   className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting && <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />}

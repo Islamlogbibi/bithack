@@ -13,9 +13,18 @@ import { useState, useEffect } from 'react'
 export default function TeacherDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const teacher = user as TeacherUser
+  const teacher = user as TeacherUser | null
 
-  const pct = Math.round((teacher.hoursCompleted / teacher.hoursPlanned) * 100) || 0
+  if (!teacher || teacher.role !== 'teacher') {
+    return null
+  }
+
+  const groups = teacher.groups ?? []
+  const pendingGrades = teacher.pendingGrades ?? []
+  const hoursCompleted = teacher.hoursCompleted ?? 0
+  const hoursPlanned = teacher.hoursPlanned ?? 0
+
+  const pct = hoursPlanned > 0 ? Math.round((hoursCompleted / hoursPlanned) * 100) : 0
 
   const [todaySessions, setTodaySessions] = useState<any[]>([])
 
@@ -48,9 +57,9 @@ export default function TeacherDashboard() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Groupes actifs" value={teacher.groups.length} icon={<Users size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
-        <StatCard title="Notes en attente" value={teacher.pendingGrades.length} icon={<ClipboardList size={20} />} color="text-amber-500" bgColor="bg-amber-500" delay={0.1} badge={String(teacher.pendingGrades.length)} badgeColor="bg-amber-500 text-white" />
-        <StatCard title="Heures réalisées" value={teacher.hoursCompleted} suffix={`/${teacher.hoursPlanned}`} icon={<Clock size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.2} />
+        <StatCard title="Groupes actifs" value={groups.length} icon={<Users size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
+        <StatCard title="Notes en attente" value={pendingGrades.length} icon={<ClipboardList size={20} />} color="text-amber-500" bgColor="bg-amber-500" delay={0.1} badge={String(pendingGrades.length)} badgeColor="bg-amber-500 text-white" />
+        <StatCard title="Heures réalisées" value={hoursCompleted} suffix={`/${hoursPlanned}`} icon={<Clock size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.2} />
         <StatCard title="Sessions aujourd'hui" value={todaySessions.length} icon={<CalendarCheck size={20} />} color="text-emerald-500" bgColor="bg-emerald-500" delay={0.3} />
       </div>
 
@@ -101,7 +110,7 @@ export default function TeacherDashboard() {
             Notes à saisir
           </h3>
           <div className="space-y-2">
-            {teacher.pendingGrades.map((g, i) => (
+            {pendingGrades.map((g, i) => (
               <div key={i} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div>
                   <p className="text-sm font-medium text-foreground">{g.student}</p>
@@ -149,8 +158,8 @@ export default function TeacherDashboard() {
           />
         </div>
         <div className="flex justify-between text-xs text-muted-foreground mt-1.5">
-          <span>{teacher.hoursCompleted}h réalisées</span>
-          <span>{teacher.hoursPlanned}h prévues</span>
+          <span>{hoursCompleted}h réalisées</span>
+          <span>{hoursPlanned}h prévues</span>
         </div>
       </motion.div>
     </>
