@@ -116,14 +116,21 @@ let AuthService = class AuthService {
                 displayDepartment: student.speciality?.department?.libelle || 'Informatique',
                 gpa: Number(student.average || 0),
                 absences: {},
-                grades: student.grades?.map(g => ({
-                    subject: g.course?.intitule,
-                    td: g.tdGrade ?? null,
-                    exam: g.examGrade ?? null,
-                    final: g.finalGrade ?? g.valeur ?? null,
-                    status: g.status || g.statut || 'En attente',
-                    credits: g.credits ?? g.course?.credits ?? 0
-                })) || [],
+                grades: student.grades?.map(g => {
+                    const td = g.tdGrade ?? null;
+                    const exam = g.examGrade ?? null;
+                    const computedFinal = typeof td === 'number' && typeof exam === 'number'
+                        ? (td + exam) / 2
+                        : null;
+                    return {
+                        subject: g.course?.intitule,
+                        td,
+                        exam,
+                        final: computedFinal,
+                        status: g.status || g.statut || 'En attente',
+                        credits: g.credits ?? g.course?.credits ?? 0
+                    };
+                }) || [],
                 schedule: schedules.map(s => ({
                     day: s.dateSeance,
                     time: s.heureDebut,

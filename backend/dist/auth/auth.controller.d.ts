@@ -52,7 +52,7 @@ export declare class AuthController {
                 subject: any;
                 td: any;
                 exam: any;
-                final: any;
+                final: number | null;
                 status: any;
                 credits: any;
             }[];
@@ -234,7 +234,7 @@ export declare class AuthController {
             subject: any;
             td: any;
             exam: any;
-            final: any;
+            final: number | null;
             status: any;
             credits: any;
         }[];

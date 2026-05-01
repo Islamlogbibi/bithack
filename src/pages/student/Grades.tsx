@@ -42,6 +42,16 @@ export default function StudentGrades() {
   const { user } = useAuth()
   const student = user as StudentUser
 
+  const getModuleAverage = (td: number | null | undefined, exam: number | null | undefined) => (
+    typeof td === 'number' && typeof exam === 'number'
+      ? (td + exam) / 2
+      : null
+  )
+
+  const formatGrade = (value: number | null | undefined, digits = 2) => (
+    typeof value === 'number' ? value.toFixed(digits) : '—'
+  )
+
   const totalCredits = student.grades.reduce((a, g) => a + g.credits, 0)
   const validatedCredits = student.gpa >= 10 ? totalCredits : student.grades.filter((g) => g.status === 'Validé').reduce((a, g) => a + g.credits, 0)
 
@@ -49,13 +59,14 @@ export default function StudentGrades() {
     name: g.subject.split(' ')[0],
     td: g.td,
     exam: g.exam ?? 0,
-    final: g.final ?? 0,
+    final: getModuleAverage(g.td, g.exam) ?? 0,
   }))
 
   const getTrend = (g: StudentUser['grades'][0]) => {
-    if (!g.final) return <Minus size={14} className="text-muted-foreground" />
-    if (g.final >= 14) return <TrendingUp size={14} className="text-emerald-500" />
-    if (g.final >= 10) return <Minus size={14} className="text-amber-500" />
+    const final = getModuleAverage(g.td, g.exam)
+    if (!final) return <Minus size={14} className="text-muted-foreground" />
+    if (final >= 14) return <TrendingUp size={14} className="text-emerald-500" />
+    if (final >= 10) return <Minus size={14} className="text-amber-500" />
     return <TrendingDown size={14} className="text-red-500" />
   }
 
@@ -137,27 +148,30 @@ export default function StudentGrades() {
               </tr>
             </thead>
             <tbody>
-              {student.grades.map((g, i) => (
+              {student.grades.map((g, i) => {
+                const final = getModuleAverage(g.td, g.exam)
+                return (
                 <motion.tr
                   key={i}
                   initial={{ opacity: 0, x: -8 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.05 * i }}
-                  className={`border-b border-border last:border-0 ${getRowColor(g.final)}`}
+                  className={`border-b border-border last:border-0 ${getRowColor(final ?? null)}`}
                 >
                   <td className="px-4 py-3 font-medium text-foreground">{g.subject}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{g.td.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{g.exam !== null ? g.exam.toFixed(2) : '—'}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground">{formatGrade(g.td)}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground">{formatGrade(g.exam)}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`font-bold text-base ${(g.final ?? 0) >= 14 ? 'text-emerald-500' : (g.final ?? 0) >= 10 ? 'text-amber-500' : 'text-red-500'}`}>
-                      {g.final !== null ? g.final.toFixed(2) : '—'}
+                    <span className={`font-bold text-base ${(final ?? 0) >= 14 ? 'text-emerald-500' : (final ?? 0) >= 10 ? 'text-amber-500' : 'text-red-500'}`}>
+                      {formatGrade(final)}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{g.credits}</td>
                   <td className="px-4 py-3 text-center"><StatusBadge status={g.status} /></td>
                   <td className="px-4 py-3 text-center flex justify-center">{getTrend(g)}</td>
                 </motion.tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>

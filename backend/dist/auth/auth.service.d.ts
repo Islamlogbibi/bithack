@@ -57,7 +57,7 @@ export declare class AuthService {
                 subject: any;
                 td: any;
                 exam: any;
-                final: any;
+                final: number | null;
                 status: any;
                 credits: any;
             }[];
@@ -233,7 +233,7 @@ export declare class AuthService {
             subject: any;
             td: any;
             exam: any;
-            final: any;
+            final: number | null;
             status: any;
             credits: any;
         }[];

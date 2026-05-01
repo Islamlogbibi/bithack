@@ -71,13 +71,16 @@ let ValidationsService = class ValidationsService {
             for (const entry of data.studentGradesJson) {
                 const student = await this.studentRepo.findOne({ where: { matricule: entry.matricule } });
                 if (student) {
+                    const tdGrade = typeof entry.td === 'number' ? entry.td : 10;
+                    const examGrade = typeof entry.grade === 'number' ? entry.grade : 10;
+                    const finalGrade = Math.round((((tdGrade + examGrade) / 2) * 10)) / 10;
                     const grade = this.gradeRepo.create({
                         student,
                         validation,
                         subject: data.module,
-                        tdGrade: entry.td || 10,
-                        examGrade: entry.grade || 10,
-                        finalGrade: Math.round(((entry.td || 10) * 0.4 + (entry.grade || 10) * 0.6) * 10) / 10,
+                        tdGrade,
+                        examGrade,
+                        finalGrade,
                         status: 'pending',
                         credits: 3
                     });
