@@ -26,6 +26,7 @@ const studentNav: NavItem[] = [
   { label: 'Justifier Absence', path: '/student/absence-justification', icon: <FileCheck2 size={20} /> },
   { label: 'Messages', path: '/student/messages', icon: <MessageSquare size={20} /> },
   { label: 'Ressources', path: '/student/resources', icon: <FileText size={20} /> },
+  { label: 'Travaux', path: '/student/assignments', icon: <ClipboardList size={20} /> },
   { label: 'Assistant IA', path: '/student/ai-assistant', icon: <Bot size={20} />, badge: 'IA' },
 
   { label: 'Justification', path: '/student/justification', icon: <FileCheck2 size={20} /> },
@@ -37,6 +38,7 @@ const teacherNav: NavItem[] = [
   { label: 'Présences QR', path: '/teacher/qr-attendance', icon: <QrCode size={20} /> },
   { label: 'Saisie Notes', path: '/teacher/grades', icon: <ClipboardList size={20} /> },
   { label: 'Ressources', path: '/teacher/resources', icon: <FileText size={20} /> },
+  { label: 'Travaux', path: '/teacher/assignments', icon: <ClipboardList size={20} /> },
   { label: 'Charge Horaire', path: '/teacher/workload', icon: <Clock size={20} /> },
   { label: 'CV Académique', path: '/teacher/academic-cv', icon: <GraduationCap size={20} /> },
 ]

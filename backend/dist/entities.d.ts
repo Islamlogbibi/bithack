@@ -134,3 +134,22 @@ export declare class ReferenceBlobEntity {
     key: string;
     data: unknown;
 }
+export declare class AssignmentEntity {
+    id: number;
+    title: string;
+    description: string;
+    module: string;
+    teacherName: string;
+    targetGroupsJson: string[];
+    deadline: Date;
+    createdAt: Date;
+}
+export declare class AssignmentSubmissionEntity {
+    id: number;
+    assignment: AssignmentEntity;
+    studentId: number;
+    studentName: string;
+    fileName: string;
+    fileContent: string;
+    submittedAt: Date;
+}

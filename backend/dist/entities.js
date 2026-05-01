@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReferenceBlobEntity = exports.ScheduleEntity = exports.SpecialityEntity = exports.MessageEntity = exports.AttendanceAlertEntity = exports.ValidationEntity = exports.JustificationEntity = exports.ResourceEntity = exports.TeacherEntity = exports.StudentEntity = exports.UserEntity = void 0;
+exports.AssignmentSubmissionEntity = exports.AssignmentEntity = exports.ReferenceBlobEntity = exports.ScheduleEntity = exports.SpecialityEntity = exports.MessageEntity = exports.AttendanceAlertEntity = exports.ValidationEntity = exports.JustificationEntity = exports.ResourceEntity = exports.TeacherEntity = exports.StudentEntity = exports.UserEntity = void 0;
 const typeorm_1 = require("typeorm");
 let UserEntity = class UserEntity {
     id;
@@ -565,4 +565,91 @@ __decorate([
 exports.ReferenceBlobEntity = ReferenceBlobEntity = __decorate([
     (0, typeorm_1.Entity)('reference_blobs')
 ], ReferenceBlobEntity);
+let AssignmentEntity = class AssignmentEntity {
+    id;
+    title;
+    description;
+    module;
+    teacherName;
+    targetGroupsJson;
+    deadline;
+    createdAt;
+};
+exports.AssignmentEntity = AssignmentEntity;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
+], AssignmentEntity.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], AssignmentEntity.prototype, "title", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], AssignmentEntity.prototype, "description", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], AssignmentEntity.prototype, "module", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], AssignmentEntity.prototype, "teacherName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb' }),
+    __metadata("design:type", Array)
+], AssignmentEntity.prototype, "targetGroupsJson", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", Date)
+], AssignmentEntity.prototype, "deadline", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], AssignmentEntity.prototype, "createdAt", void 0);
+exports.AssignmentEntity = AssignmentEntity = __decorate([
+    (0, typeorm_1.Entity)('assignments')
+], AssignmentEntity);
+let AssignmentSubmissionEntity = class AssignmentSubmissionEntity {
+    id;
+    assignment;
+    studentId;
+    studentName;
+    fileName;
+    fileContent;
+    submittedAt;
+};
+exports.AssignmentSubmissionEntity = AssignmentSubmissionEntity;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)(),
+    __metadata("design:type", Number)
+], AssignmentSubmissionEntity.prototype, "id", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => AssignmentEntity),
+    __metadata("design:type", AssignmentEntity)
+], AssignmentSubmissionEntity.prototype, "assignment", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", Number)
+], AssignmentSubmissionEntity.prototype, "studentId", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], AssignmentSubmissionEntity.prototype, "studentName", void 0);
+__decorate([
+    (0, typeorm_1.Column)(),
+    __metadata("design:type", String)
+], AssignmentSubmissionEntity.prototype, "fileName", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'text' }),
+    __metadata("design:type", String)
+], AssignmentSubmissionEntity.prototype, "fileContent", void 0);
+__decorate([
+    (0, typeorm_1.CreateDateColumn)(),
+    __metadata("design:type", Date)
+], AssignmentSubmissionEntity.prototype, "submittedAt", void 0);
+exports.AssignmentSubmissionEntity = AssignmentSubmissionEntity = __decorate([
+    (0, typeorm_1.Entity)('assignment_submissions')
+], AssignmentSubmissionEntity);
 //# sourceMappingURL=entities.js.map

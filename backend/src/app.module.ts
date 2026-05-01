@@ -14,6 +14,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { SpecialitiesModule } from './specialities/specialities.module';
 import { SchedulesModule } from './schedules/schedules.module';
 import { ReferenceModule } from './reference/reference.module';
+import { AssignmentsModule } from './assignments/assignments.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
@@ -28,6 +29,8 @@ import {
   UserEntity,
   ValidationEntity,
   ReferenceBlobEntity,
+  AssignmentEntity,
+  AssignmentSubmissionEntity,
 } from './entities';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './auth/roles.guard';
@@ -62,6 +65,8 @@ import { RolesGuard } from './auth/roles.guard';
           SpecialityEntity,
           ScheduleEntity,
           ReferenceBlobEntity,
+          AssignmentEntity,
+          AssignmentSubmissionEntity,
         ],
         synchronize: true,
       }),
@@ -79,6 +84,7 @@ import { RolesGuard } from './auth/roles.guard';
     SpecialitiesModule,
     SchedulesModule,
     ReferenceModule,
+    AssignmentsModule,
   ],
   controllers: [AppController],
   providers: [
