@@ -19,6 +19,7 @@ import AbsenceJustification from "./pages/student/AbsenceJustification";
 import StudentQRScan from "./pages/student/QRScan";
 import StudentProfile from "./pages/student/Profile";
 import StudentMessages from "./pages/student/Messages";
+import StudentAssignments from "./pages/student/Assignments";
 
 
 // Teacher pages
@@ -28,6 +29,7 @@ import TeacherGrades from "./pages/teacher/Grades";
 import TeacherWorkload from "./pages/teacher/Workload";
 import TeacherResources from "./pages/teacher/Resources";
 import AcademicCV from "./pages/teacher/AcademicCV";
+import TeacherAssignments from "./pages/teacher/Assignments";
 
 // Admin pages
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -71,6 +73,7 @@ export default function App() {
               <Route path="messages" element={<StudentMessages />} />
               <Route path="resources" element={<StudentResources />} />
               <Route path="ai-assistant" element={<AIAssistant />} />
+              <Route path="assignments" element={<StudentAssignments />} />
               <Route path="justification" element={<AbsenceJustification />} />
             </Route>
 
@@ -90,6 +93,7 @@ export default function App() {
               <Route path="workload" element={<TeacherWorkload />} />
               <Route path="resources" element={<TeacherResources />} />
               <Route path="academic-cv" element={<AcademicCV />} />
+              <Route path="assignments" element={<TeacherAssignments />} />
             </Route>
 
             {/* Admin routes */}

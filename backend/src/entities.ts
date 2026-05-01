@@ -344,3 +344,53 @@ export class ReferenceBlobEntity {
   data: unknown;
 }
 
+@Entity('assignments')
+export class AssignmentEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @Column()
+  title: string;
+
+  @Column({ type: 'text' })
+  description: string;
+
+  @Column()
+  module: string;
+
+  @Column()
+  teacherName: string;
+
+  @Column({ type: 'jsonb' })
+  targetGroupsJson: string[];
+
+  @Column()
+  deadline: Date;
+
+  @CreateDateColumn()
+  createdAt: Date;
+}
+
+@Entity('assignment_submissions')
+export class AssignmentSubmissionEntity {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => AssignmentEntity)
+  assignment: AssignmentEntity;
+
+  @Column()
+  studentId: number;
+
+  @Column()
+  studentName: string;
+
+  @Column()
+  fileName: string;
+
+  @Column({ type: 'text' })
+  fileContent: string;
+
+  @CreateDateColumn()
+  submittedAt: Date;
+}

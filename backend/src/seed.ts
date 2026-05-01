@@ -94,7 +94,7 @@ async function bootstrap() {
       hoursPlanned: 160,
       hoursCompleted: 40 + Math.floor(Math.random() * 40),
       subjectsJson: [subjectsPool[Math.floor(Math.random() * subjectsPool.length)], subjectsPool[Math.floor(Math.random() * subjectsPool.length)]],
-      groupsJson: ['G1', 'G2', 'G3'],
+      groupsJson: ['L3 Info G1', 'L3 Info G2', 'L3 SI G1', 'L3 SI G2'],
       academicCvJson: {
         orcid: '0000-0002-1825-0097',
         scopus: '57193563400',
@@ -108,8 +108,8 @@ async function bootstrap() {
   }
 
   // 4. Massive Student & Speciality Generation
-  const fields = ['Informatique (SI)', 'Génie Logiciel (GL)', 'Maths Informatique (MI)'];
-  const levels = ['L1', 'L2', 'L3', 'M1', 'M2'];
+  const fields = ['Info', 'SI'];
+  const levels = ['L3', 'L1', 'L2', 'M1', 'M2'];
   const sections = ['A', 'B'];
   const groups = ['G1', 'G2'];
 
@@ -127,7 +127,7 @@ async function bootstrap() {
             name: field,
             level: level,
             section: section,
-            groupName: `${level} ${field === 'Informatique' ? 'Info' : field} ${group}`,
+            groupName: `${level} ${field} ${group}`,
           }));
 
           // Create 5 students for this specific group
@@ -147,7 +147,7 @@ async function bootstrap() {
               speciality: field,
               level: level,
               section: section,
-              groupName: `${level} ${field === 'Informatique' ? 'Info' : field} ${group}`,
+              groupName: `${level} ${field} ${group}`,
               average: 10 + Math.random() * 8,
               absences: studentAbs,
               yearLabel: `${level} ${field}`,

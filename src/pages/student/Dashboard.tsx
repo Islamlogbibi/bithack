@@ -70,7 +70,7 @@ export default function StudentDashboard() {
 
       {/* KPI cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard title="Moyenne générale" value={student.gpa} suffix="/20" icon={<TrendingUp size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
+        <StatCard title="Moyenne générale" value={student.gpa.toFixed(2)} suffix="/20" icon={<TrendingUp size={20} />} color="text-blue-500" bgColor="bg-blue-500" delay={0} />
         <StatCard title="Total absences" value={totalAbsences} icon={<Users size={20} />} color={totalAbsences >= 5 ? 'text-red-500' : totalAbsences >= 3 ? 'text-amber-500' : 'text-emerald-500'} bgColor={totalAbsences >= 5 ? 'bg-red-500' : 'bg-amber-500'} delay={0.1} />
         <StatCard title="Cours / semaine" value={student.schedule.length} icon={<Calendar size={20} />} color="text-indigo-500" bgColor="bg-indigo-500" delay={0.2} />
         <StatCard title="Ressources" value={24} icon={<FileText size={20} />} color="text-orange-500" bgColor="bg-orange-500" delay={0.3} />
@@ -130,7 +130,7 @@ export default function StudentDashboard() {
                 </div>
                 <div className="text-right">
                   <span className={`text-lg font-bold ${(g.final ?? 0) >= 14 ? 'text-emerald-500' : (g.final ?? 0) >= 10 ? 'text-amber-500' : 'text-red-500'}`}>
-                    {g.final ?? '—'}
+                    {g.final !== null ? g.final.toFixed(2) : '—'}
                   </span>
                   <p className="text-xs text-muted-foreground">/20</p>
                 </div>

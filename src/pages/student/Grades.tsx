@@ -31,7 +31,7 @@ function GpaRing({ value, max = 20 }: { value: number; max?: number }) {
         </defs>
       </svg>
       <div className="absolute text-center">
-        <span className="text-3xl font-bold text-primary">{value}</span>
+        <span className="text-3xl font-bold text-primary">{value.toFixed(2)}</span>
         <span className="text-sm text-muted-foreground">/20</span>
       </div>
     </div>
@@ -146,11 +146,11 @@ export default function StudentGrades() {
                   className={`border-b border-border last:border-0 ${getRowColor(g.final)}`}
                 >
                   <td className="px-4 py-3 font-medium text-foreground">{g.subject}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{g.td}</td>
-                  <td className="px-4 py-3 text-center text-muted-foreground">{g.exam ?? '—'}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground">{g.td.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-center text-muted-foreground">{g.exam !== null ? g.exam.toFixed(2) : '—'}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`font-bold text-base ${(g.final ?? 0) >= 14 ? 'text-emerald-500' : (g.final ?? 0) >= 10 ? 'text-amber-500' : 'text-red-500'}`}>
-                      {g.final ?? '—'}
+                      {g.final !== null ? g.final.toFixed(2) : '—'}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center text-muted-foreground">{g.credits}</td>

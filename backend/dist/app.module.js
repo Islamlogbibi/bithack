@@ -23,6 +23,7 @@ const dashboard_module_1 = require("./dashboard/dashboard.module");
 const specialities_module_1 = require("./specialities/specialities.module");
 const schedules_module_1 = require("./schedules/schedules.module");
 const reference_module_1 = require("./reference/reference.module");
+const assignments_module_1 = require("./assignments/assignments.module");
 const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const entities_1 = require("./entities");
@@ -59,6 +60,8 @@ exports.AppModule = AppModule = __decorate([
                         entities_1.SpecialityEntity,
                         entities_1.ScheduleEntity,
                         entities_1.ReferenceBlobEntity,
+                        entities_1.AssignmentEntity,
+                        entities_1.AssignmentSubmissionEntity,
                     ],
                     synchronize: true,
                 }),
@@ -76,6 +79,7 @@ exports.AppModule = AppModule = __decorate([
             specialities_module_1.SpecialitiesModule,
             schedules_module_1.SchedulesModule,
             reference_module_1.ReferenceModule,
+            assignments_module_1.AssignmentsModule,
         ],
         controllers: [app_controller_1.AppController],
         providers: [
