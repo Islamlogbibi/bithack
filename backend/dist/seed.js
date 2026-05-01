@@ -173,6 +173,27 @@ async function bootstrap() {
             level: levels[0]
         })));
     }
+    const createMockGradesForStudent = async (student, studentIndex) => {
+        for (const [index, course] of courses.slice(0, 4).entries()) {
+            const tdGrade = 9 + ((studentIndex + index) % 8);
+            const tpGrade = 10 + ((studentIndex + index * 2) % 8);
+            const finalGrade = Math.round((((tdGrade + tpGrade) / 2) * 10)) / 10;
+            await gradeRepo.save(gradeRepo.create({
+                student,
+                course,
+                teacher: course.teacher,
+                subject: course.intitule,
+                tdGrade,
+                examGrade: tpGrade,
+                finalGrade,
+                valeur: finalGrade,
+                session: 'Normal',
+                statut: 'Valide',
+                status: 'approved',
+                credits: course.credits,
+            }));
+        }
+    };
     console.log('Generating students in the new hierarchy...');
     for (let i = 1; i <= 60; i++) {
         const group = i <= 30 ? groups[0] : groups[1];
@@ -183,12 +204,7 @@ async function bootstrap() {
             user, matricule: `2024${String(i).padStart(4, '0')}`,
             speciality, level: levels[0], section: sections[0], group
         }));
-        for (const course of courses.slice(0, 2)) {
-            await gradeRepo.save(gradeRepo.create({
-                student, course, teacher: course.teacher, valeur: 10 + (i % 10),
-                session: 'Normal', statut: 'Valide'
-            }));
-        }
+        await createMockGradesForStudent(student, i);
     }
     const l2TestUser = await userRepo.save(userRepo.create({
         email: 'student.l2b1@pui.dz',
@@ -196,7 +212,7 @@ async function bootstrap() {
         fullName: 'Etudiant Test L2 B1',
         role: 'student'
     }));
-    await studentRepo.save(studentRepo.create({
+    const l2TestStudent = await studentRepo.save(studentRepo.create({
         user: l2TestUser,
         matricule: '2024L2B1001',
         speciality,
@@ -204,6 +220,7 @@ async function bootstrap() {
         section: l2SectionB,
         group: l2SectionBGroup1
     }));
+    await createMockGradesForStudent(l2TestStudent, 61);
     console.log('Generating schedules...');
     const today = new Date();
     await scheduleRepo.save(scheduleRepo.create({

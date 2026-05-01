@@ -6,6 +6,20 @@ import type { StudentUser } from '../../types/domain'
 
 const DAYS = ['Samedi','Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi']
 const TIME_SLOTS = ['08:00', '9:45', '11:30', '14:00', '15:45', '17:15']
+const MOCK_SCHEDULE: StudentUser['schedule'] = [
+  { day: 'Samedi', time: '08:00', subject: 'Programmation Web', room: 'Lab Web', type: 'TP' },
+  { day: 'Samedi', time: '14:00', subject: 'Algorithmique', room: 'Amphi A', type: 'Cours' },
+  { day: 'Dimanche', time: '08:00', subject: 'Réseaux', room: 'Lab R2', type: 'TP' },
+  { day: 'Dimanche', time: '11:30', subject: 'Bases de données', room: 'Salle B12', type: 'TD' },
+  { day: 'Lundi', time: '9:45', subject: 'Génie logiciel', room: 'Salle C03', type: 'Cours' },
+  { day: 'Lundi', time: '15:45', subject: 'Algorithmique', room: 'Amphi A', type: 'TD' },
+  { day: 'Mardi', time: '08:00', subject: "Systèmes d'exploitation", room: 'Salle B05', type: 'Cours' },
+  { day: 'Mardi', time: '14:00', subject: 'Programmation Web', room: 'Lab Web', type: 'TP' },
+  { day: 'Mercredi', time: '11:30', subject: 'Réseaux', room: 'Lab R2', type: 'TD' },
+  { day: 'Mercredi', time: '17:15', subject: 'Génie logiciel', room: 'Salle C03', type: 'TP' },
+  { day: 'Jeudi', time: '9:45', subject: 'Bases de données', room: 'Salle B12', type: 'Cours' },
+  { day: 'Jeudi', time: '14:00', subject: "Systèmes d'exploitation", room: 'Salle B05', type: 'TP' },
+]
 
 const TYPE_STYLE: Record<string, string> = {
   Cours: 'bg-blue-500/15 border-blue-500/40 text-blue-600 dark:text-blue-300',
@@ -15,11 +29,12 @@ const TYPE_STYLE: Record<string, string> = {
 
 export default function StudentSchedule() {
   const { user } = useAuth()
-  const student = user as StudentUser
+  const _student = user as StudentUser
   const [view, setView] = useState<'grid' | 'list'>('grid')
+  const schedule = MOCK_SCHEDULE
 
   const getSession = (day: string, time: string) => {
-    return student.schedule.find((s) => s.day === day && s.time === time)
+    return schedule.find((s) => s.day === day && s.time === time)
   }
 
   return (
@@ -98,7 +113,7 @@ export default function StudentSchedule() {
           className="space-y-3"
         >
           {DAYS.map((day) => {
-            const daySessions = student.schedule.filter((s) => s.day === day)
+            const daySessions = schedule.filter((s) => s.day === day)
             if (daySessions.length === 0) return null
             return (
               <div key={day}>

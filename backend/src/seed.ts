@@ -189,6 +189,30 @@ async function bootstrap() {
     })));
   }
 
+  const createMockGradesForStudent = async (student: StudentEntity, studentIndex: number) => {
+    // Mock 4 modules with TD + TP-style marks (TP stored in examGrade for current UI).
+    for (const [index, course] of courses.slice(0, 4).entries()) {
+      const tdGrade = 9 + ((studentIndex + index) % 8);
+      const tpGrade = 10 + ((studentIndex + index * 2) % 8);
+      const finalGrade = Math.round((((tdGrade + tpGrade) / 2) * 10)) / 10;
+
+      await gradeRepo.save(gradeRepo.create({
+        student,
+        course,
+        teacher: course.teacher,
+        subject: course.intitule,
+        tdGrade,
+        examGrade: tpGrade,
+        finalGrade,
+        valeur: finalGrade,
+        session: 'Normal',
+        statut: 'Valide',
+        status: 'approved',
+        credits: course.credits,
+      }));
+    }
+  };
+
   // 6. Create Students
   console.log('Generating students in the new hierarchy...');
   for (let i = 1; i <= 60; i++) {
@@ -201,13 +225,7 @@ async function bootstrap() {
       speciality, level: levels[0], section: sections[0], group
     }));
 
-    // Initial grades
-    for (const course of courses.slice(0, 2)) {
-      await gradeRepo.save(gradeRepo.create({
-        student, course, teacher: course.teacher, valeur: 10 + (i % 10),
-        session: 'Normal', statut: 'Valide'
-      }));
-    }
+    await createMockGradesForStudent(student, i);
   }
 
   // 6-bis. Create a deterministic test student account for L2/B/Group 1
@@ -217,7 +235,7 @@ async function bootstrap() {
     fullName: 'Etudiant Test L2 B1',
     role: 'student'
   }));
-  await studentRepo.save(studentRepo.create({
+  const l2TestStudent = await studentRepo.save(studentRepo.create({
     user: l2TestUser,
     matricule: '2024L2B1001',
     speciality,
@@ -225,6 +243,7 @@ async function bootstrap() {
     section: l2SectionB,
     group: l2SectionBGroup1
   }));
+  await createMockGradesForStudent(l2TestStudent, 61);
 
   // 7. Create Schedules
   console.log('Generating schedules...');
