@@ -66,6 +66,7 @@ export function mapApiResource(r: {
     levelName: r.levelName || undefined,
     sectionName: r.sectionName || undefined,
     groupName: r.groupName || undefined,
+    createdAt: r.createdAt || new Date().toISOString(),
   }
 }
 
