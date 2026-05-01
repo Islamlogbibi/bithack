@@ -86,10 +86,18 @@ async function bootstrap() {
             hoursCompleted: 45,
             subjectsJson: subjectsPool,
             groupsJson: ['Group A', 'Group B'],
+            academicCvJson: {
+                orcid: '0000-0002-1825-0097',
+                scopus: '57193563400',
+                publications: [
+                    { title: 'Advanced Algorithms in Distributed Systems', year: 2023, journal: 'IEEE Transactions' },
+                    { title: 'Machine Learning for Educational Data Mining', year: 2022, journal: 'Journal of AI Research' },
+                ]
+            }
         }));
         teachers.push(teacher);
     }
-    console.log('Generating 60 students...');
+    console.log('Generating 60 students for Group A/B testing...');
     const allStudents = [];
     for (let i = 1; i <= 60; i++) {
         const groupName = i <= 30 ? 'Group A' : 'Group B';
@@ -121,7 +129,6 @@ async function bootstrap() {
         allStudents.push(student);
     }
     console.log('Generating timetables...');
-    const days = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi'];
     const groupASessions = [
         { day: 'Dimanche', time: '08:30', subject: 'Algorithmique', room: 'Amphi A', type: 'Cours', scope: 'group', scopeId: 'Group A' },
         { day: 'Lundi', time: '10:30', subject: 'Bases de données', room: 'Salle B1', type: 'TD', scope: 'group', scopeId: 'Group A' },
