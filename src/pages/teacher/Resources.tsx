@@ -227,7 +227,7 @@ export default function TeacherResources() {
           <span className="text-sm font-bold text-foreground">SLA Publication</span>
         </div>
         <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold border border-primary/20">48h max</span>
-        {(() => {
+        {/* {(() => {
           const late = resources.filter(r => getResourceSla(r).status === 'late').length
           const pending = resources.filter(r => getResourceSla(r).status === 'pending').length
           const published = resources.filter(r => getResourceSla(r).status === 'published').length
@@ -238,7 +238,7 @@ export default function TeacherResources() {
               {late > 0 && <span className="flex items-center gap-1 text-red-600 dark:text-red-400"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />{late} en retard</span>}
             </div>
           )
-        })()}
+        })()} */}
       </motion.div>
 
       {/* Resources list */}
@@ -263,18 +263,18 @@ export default function TeacherResources() {
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-medium text-foreground truncate">{r.title}</p>
                   {/* SLA 48h badge per resource */}
-                  {(() => {
+                  {/* {(() => {
                     const sla = getResourceSla(r)
                     return (
                       <SlaBadge
                         slaLabel="48h"
                         status={sla.badgeStatus}
                         statusText={sla.label}
-                        remainingHours={sla.remaining}
+                        
                         tooltip="Les ressources doivent être publiées dans les 48 heures suivant leur création"
                       />
                     )
-                  })()}
+                  })()} */}
                 </div>
                 <p className="text-xs text-muted-foreground">{r.subject} · {r.type} · {r.size} · {r.date}</p>
                 <div className="flex items-center gap-1 mt-1">

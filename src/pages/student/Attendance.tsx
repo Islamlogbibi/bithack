@@ -1,22 +1,22 @@
 import { motion } from 'framer-motion'
 import { AlertTriangle, CheckCircle } from 'lucide-react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
-import { useAuth } from '../../context/AuthContext'
+import { mockStudent } from '../../data/mockStudent'
 import type { StudentUser } from '../../types/domain'
 
-const MAX_ABSENCES = 6
+const MAX_ABSENCES = 5
 
 const ABSENCE_DETAILS: Record<string, { date: string; type: string }[]> = {
   algo: [
-    { date: '05 Jan 2025', type: 'Cours' },
+    { date: '05 Jan 2025', type: 'TD' },
     { date: '12 Jan 2025', type: 'TD' },
     { date: '19 Jan 2025', type: 'TP' },
-    { date: '26 Jan 2025', type: 'Cours' },
+    { date: '26 Jan 2025', type: 'TP' },
   ],
   networks: [{ date: '08 Jan 2025', type: 'TP' }],
   db: [
     { date: '06 Jan 2025', type: 'TD' },
-    { date: '13 Jan 2025', type: 'Cours' },
+    { date: '13 Jan 2025', type: 'TP' },
   ],
 }
 
@@ -55,8 +55,7 @@ function AbsenceRing({ count, max }: { count: number; max: number }) {
 }
 
 export default function StudentAttendance() {
-  const { user } = useAuth()
-  const student = user as StudentUser
+  const student = mockStudent
 
   const totalSessions = 30
   const totalAbsences = Object.values(student.absences).reduce((a, b) => a + b, 0)

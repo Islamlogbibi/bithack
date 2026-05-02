@@ -31,12 +31,13 @@ const studentNav: NavItem[] = [
   { label: 'Travaux', path: '/student/assignments', icon: <ClipboardList size={20} /> },
   { label: 'Assistant IA', path: '/student/ai-assistant', icon: <Bot size={20} />, badge: 'IA' },
 
-  { label: 'Justification', path: '/student/justification', icon: <FileCheck2 size={20} /> },
+  // { label: 'Justification', path: '/student/justification', icon: <FileCheck2 size={20} /> },
 
 ]
 
 const teacherNav: NavItem[] = [
   { label: 'Tableau de bord', path: '/teacher/dashboard', icon: <LayoutDashboard size={20} /> },
+  { label: 'Emploi du Temps', path: '/teacher/schedule', icon: <Calendar size={20} /> },
   { label: 'Présences QR', path: '/teacher/qr-attendance', icon: <QrCode size={20} /> },
   { label: 'Saisie Notes', path: '/teacher/grades', icon: <ClipboardList size={20} /> },
   { label: 'Ressources', path: '/teacher/resources', icon: <FileText size={20} /> },

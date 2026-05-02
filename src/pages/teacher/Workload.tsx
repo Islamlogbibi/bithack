@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { Clock, TrendingUp } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { useAuth } from '../../context/AuthContext'
+import { mockTeacher } from '../../data/mockTeacher'
 import type { TeacherUser } from '../../types/domain'
 
 const MONTHLY_DATA = [
@@ -13,8 +13,7 @@ const MONTHLY_DATA = [
 ]
 
 export default function TeacherWorkload() {
-  const { user } = useAuth()
-  const teacher = user as TeacherUser
+  const teacher = mockTeacher as TeacherUser
   const pct = Math.round((teacher.hoursCompleted / teacher.hoursPlanned) * 100)
 
   return (

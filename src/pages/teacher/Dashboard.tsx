@@ -3,21 +3,14 @@ import { Users, ClipboardList, Clock, CalendarCheck, QrCode } from 'lucide-react
 import { useNavigate } from 'react-router-dom'
 import StatCard from '../../components/shared/StatCard'
 import StatusBadge from '../../components/shared/StatusBadge'
-import { useAuth } from '../../context/AuthContext'
+import { mockTeacher, mockTeacherSchedule } from '../../data/mockTeacher'
 import type { TeacherUser } from '../../types/domain'
-import { getScheduleByScope } from '../../lib/api'
-import { useState, useEffect } from 'react'
 
 // Removed static TODAY_SESSIONS
 
 export default function TeacherDashboard() {
-  const { user } = useAuth()
+  const teacher = mockTeacher
   const navigate = useNavigate()
-  const teacher = user as TeacherUser | null
-
-  if (!teacher || teacher.role !== 'teacher') {
-    return null
-  }
 
   const groups = teacher.groups ?? []
   const pendingGrades = teacher.pendingGrades ?? []
@@ -25,21 +18,7 @@ export default function TeacherDashboard() {
   const hoursPlanned = teacher.hoursPlanned ?? 0
 
   const pct = hoursPlanned > 0 ? Math.round((hoursCompleted / hoursPlanned) * 100) : 0
-
-  const [todaySessions, setTodaySessions] = useState<any[]>([])
-
-  useEffect(() => {
-    // Fetch schedule for this teacher
-    getScheduleByScope('teacher', String(teacher.id))
-      .then(data => {
-        if (data && Array.isArray(data)) {
-          // Filter for today if needed, or assume backend returns today's sessions
-          // For now just taking all to avoid empty states in demo
-          setTodaySessions(data)
-        }
-      })
-      .catch(console.error)
-  }, [teacher.id])
+  const todaySessions = mockTeacherSchedule
 
   return (
     <>

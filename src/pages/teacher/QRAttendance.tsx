@@ -132,7 +132,7 @@ export default function QRAttendance() {
                   ))}
                 </div>
               </div>
-              <div>
+              {/* <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">4. Seuil d'alerte (absences)</label>
                 <input
                   type="number"
@@ -141,7 +141,7 @@ export default function QRAttendance() {
                   disabled={qrGenerated}
                   className="w-full px-3 py-2 bg-secondary border border-border rounded-xl text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-60"
                 />
-              </div>
+              </div> */}
             </div>
 
             <motion.button

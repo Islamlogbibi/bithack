@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Bot, User, BarChart2, Calendar, BookOpen, AlertTriangle } from 'lucide-react'
-import { useAuth } from '../../context/AuthContext'
+import { mockStudent } from '../../data/mockStudent'
 import type { StudentUser } from '../../types/domain'
 
 interface Message {
@@ -16,7 +16,7 @@ function getTime() {
 }
 
 function AbsenceCard({ student }: { student: StudentUser }) {
-  const algo = student.absences.algo
+  const algo = student.absences.algo ?? 0
   const risk = algo >= 5 ? 'ÉLEVÉ' : algo >= 3 ? 'MODÉRÉ' : 'FAIBLE'
   const riskColor = algo >= 5 ? 'text-red-500 bg-red-500/15' : algo >= 3 ? 'text-amber-500 bg-amber-500/15' : 'text-emerald-500 bg-emerald-500/15'
   return (
@@ -27,14 +27,14 @@ function AbsenceCard({ student }: { student: StudentUser }) {
       </div>
       <div className="flex items-center gap-2">
         <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
-          <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(algo / 6) * 100}%` }} />
+          <div className="h-full bg-amber-500 rounded-full" style={{ width: `${(algo / 5) * 100}%` }} />
         </div>
-        <span className="text-xs text-muted-foreground font-mono">{algo}/6</span>
+        <span className="text-xs text-muted-foreground font-mono">{algo}/5</span>
       </div>
       <p className="text-xs text-muted-foreground">
         {algo >= 5
-          ? "Attention! Une seule absence supplémentaire entraîne l'exclusion de l'examen."
-          : `Il vous reste ${6 - algo} absence(s) avant le seuil d'exclusion. Soyez prudent.`}
+          ? "Attention! Vous avez atteint le seuil d'exclusion."
+          : `Il vous reste ${5 - algo} absence(s) avant le seuil d'exclusion. Soyez prudent.`}
       </p>
     </div>
   )
@@ -118,8 +118,7 @@ const QUICK_SUGGESTIONS = [
 ]
 
 export default function AIAssistant() {
-  const { user } = useAuth()
-  const student = user as StudentUser
+  const student = mockStudent
   const [input, setInput] = useState('')
   const [typing, setTyping] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)

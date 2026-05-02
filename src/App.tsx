@@ -27,6 +27,7 @@ import TeacherDashboard from "./pages/teacher/Dashboard";
 import QRAttendance from "./pages/teacher/QRAttendance";
 import TeacherGrades from "./pages/teacher/Grades";
 import TeacherWorkload from "./pages/teacher/Workload";
+import TeacherSchedule from "./pages/teacher/Schedule";
 import TeacherResources from "./pages/teacher/Resources";
 import AcademicCV from "./pages/teacher/AcademicCV";
 import TeacherAssignments from "./pages/teacher/Assignments";
@@ -88,6 +89,7 @@ export default function App() {
             >
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<TeacherDashboard />} />
+              <Route path="schedule" element={<TeacherSchedule />} />
               <Route path="qr-attendance" element={<QRAttendance />} />
               <Route path="grades" element={<TeacherGrades />} />
               <Route path="workload" element={<TeacherWorkload />} />

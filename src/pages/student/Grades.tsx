@@ -2,8 +2,8 @@ import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, Award } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import StatusBadge from '../../components/shared/StatusBadge'
-import { useAuth } from '../../context/AuthContext'
 import type { StudentUser } from '../../types/domain'
+import { mockStudent } from '../../data/mockStudent'
 import ProgresSyncPanel from '../../components/shared/ProgresSyncPanel'
 
 function GpaRing({ value, max = 20 }: { value: number; max?: number }) {
@@ -40,8 +40,7 @@ function GpaRing({ value, max = 20 }: { value: number; max?: number }) {
 }
 
 export default function StudentGrades() {
-  const { user } = useAuth()
-  const student = user as StudentUser
+  const student = mockStudent
 
   const getModuleAverage = (td: number | null | undefined, exam: number | null | undefined) => (
     typeof td === 'number' && typeof exam === 'number'

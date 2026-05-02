@@ -3,7 +3,7 @@ import { TrendingUp, Users, Calendar, FileText, QrCode, BookOpen, Bot, AlertTria
 import { useNavigate } from 'react-router-dom'
 import StatCard from '../../components/shared/StatCard'
 import StatusBadge from '../../components/shared/StatusBadge'
-import { useAuth } from '../../context/AuthContext'
+import { mockStudent } from '../../data/mockStudent'
 import type { StudentUser } from '../../types/domain'
 
 const TYPE_COLORS: Record<string, string> = {
@@ -13,11 +13,10 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 export default function StudentDashboard() {
-  const { user } = useAuth()
+  const student = mockStudent
   const navigate = useNavigate()
-  const student = user as StudentUser | null
 
-  if (!student || student.role !== 'student') {
+  if (student.role !== 'student') {
     return null
   }
 
@@ -69,7 +68,7 @@ export default function StudentDashboard() {
               Attention: Vous avez {absences.algo ?? 0} absences en Algorithmique.
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Seuil d&apos;exclusion: 6. Il vous reste {6 - (absences.algo ?? 0)} absence(s) avant exclusion.
+              Seuil d&apos;exclusion: 5. Il vous reste {5 - (absences.algo ?? 0)} absence(s) avant exclusion.
             </p>
           </div>
         </motion.div>
@@ -93,7 +92,7 @@ export default function StudentDashboard() {
         >
           <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
             <Calendar size={18} className="text-primary" />
-            Emploi du temps cette semaine
+            Emploi du temps d'aujourd&apos;hui
           </h3>
           <div className="overflow-x-auto">
             <div className="flex gap-3 pb-2 min-w-max">
