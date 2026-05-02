@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext'
 import type { AdminUser, AdminPendingValidation, AbsenceAlertRow, WorkloadRow } from '../../types/domain'
 import { apiGet, apiPost } from '../../lib/api'
 import { mapApiValidation, mapApiAlert, mapWorkload } from '../../lib/mappers'
+import { mockAdmin, mockAdminAbsenceAlerts, mockAdminWorkload } from '../../data/mockAdmin'
 
 const ACTIVITY_FEED = [
   { icon: <CheckCircle size={14} className="text-emerald-500" />, text: 'Dr. Boualem a soumis les notes de Réseaux G3', time: 'il y a 15 min' },
@@ -24,15 +25,15 @@ export default function AdminDashboard() {
     stats?: Partial<AdminUser['stats']>
   })?.stats ?? (admin as any)?.adminStats ?? {}
   const safeStats = {
-    totalStudents: Number(stats.totalStudents ?? 0),
-    activeTeachers: Number(stats.activeTeachers ?? 0),
-    pendingValidations: Number(stats.pendingValidations ?? 0),
-    avgAttendance: Number(stats.avgAttendance ?? 0),
-    publishedResources: Number(stats.publishedResources ?? 0),
+    totalStudents: Number(stats.totalStudents ?? mockAdmin.stats.totalStudents),
+    activeTeachers: Number(stats.activeTeachers ?? mockAdmin.stats.activeTeachers),
+    pendingValidations: Number(stats.pendingValidations ?? mockAdmin.stats.pendingValidations),
+    avgAttendance: Number(stats.avgAttendance ?? mockAdmin.stats.avgAttendance),
+    publishedResources: Number(stats.publishedResources ?? mockAdmin.stats.publishedResources),
   }
   const [validations, setValidations] = useState<AdminPendingValidation[]>([])
-  const [absenceAlerts, setAbsenceAlerts] = useState<AbsenceAlertRow[]>([])
-  const [workloadData, setWorkloadData] = useState<WorkloadRow[]>([])
+  const [absenceAlerts, setAbsenceAlerts] = useState<AbsenceAlertRow[]>(mockAdminAbsenceAlerts)
+  const [workloadData, setWorkloadData] = useState<WorkloadRow[]>(mockAdminWorkload)
   const [selectedValidation, setSelectedValidation] = useState<AdminPendingValidation | null>(null)
 
   useEffect(() => {

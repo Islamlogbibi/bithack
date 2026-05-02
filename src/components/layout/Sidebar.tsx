@@ -52,7 +52,7 @@ const adminNav: NavItem[] = [
   { label: 'Emploi du Temps', path: '/admin/schedule', icon: <Calendar size={20} /> },
   { label: 'Alertes Absences', path: '/admin/alerts', icon: <AlertTriangle size={20} /> },
   { label: 'Professors', path: '/admin/professors', icon: <UserRound size={20} /> },
-  { label: 'Students', path: '/admin/students', icon: <Users size={20} /> },
+  // { label: 'Students', path: '/admin/students', icon: <Users size={20} /> },
   { label: 'Specialities', path: '/admin/specialities', icon: <Network size={20} /> },
   { label: 'Justifications', path: '/admin/justifications', icon: <FileUp size={20} /> },
 ]

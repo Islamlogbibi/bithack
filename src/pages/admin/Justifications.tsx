@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { CheckCircle2, FileText, MessageSquare, X, XCircle, Download } from 'lucide-react'
 import { getJustifications, reviewJustification } from '../../lib/api'
+import { mockAdminJustifications } from '../../data/mockAdmin'
 import { useEffect } from 'react'
 type Status = 'all' | 'En attente' | 'Validée' | 'Rejetée'
 type ReviewDecision = 'Validée' | 'Rejetée'
@@ -22,7 +23,7 @@ interface JustificationItem {
 
 export default function AdminJustifications() {
   const [status, setStatus] = useState<Status>('all')
-  const [items, setItems] = useState<JustificationItem[]>([])
+  const [items, setItems] = useState<JustificationItem[]>(mockAdminJustifications)
   const [selectedItem, setSelectedItem] = useState<JustificationItem | null>(null)
   const [decision, setDecision] = useState<ReviewDecision>('Validée')
   const [reviewComment, setReviewComment] = useState('')
@@ -44,7 +45,7 @@ export default function AdminJustifications() {
   useEffect(() => {
     getJustifications()
       .then(data => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           // Map backend entities to JustificationItem format
           const mapped = data.map(j => ({
             id: j.id.toString(),

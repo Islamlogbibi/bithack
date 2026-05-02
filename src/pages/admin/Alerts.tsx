@@ -4,6 +4,7 @@ import { AlertTriangle, Mail, Bell, CheckCircle } from 'lucide-react'
 import { apiGet, apiPatch } from '../../lib/api'
 import { mapApiAlert } from '../../lib/mappers'
 import { AbsenceAlertRow } from '../../types/domain'
+import { mockAdminAbsenceAlerts } from '../../data/mockAdmin'
 
 const RISK_STYLE: Record<string, string> = {
   high: 'border-red-500/40 bg-red-500/5',
@@ -24,7 +25,7 @@ const RISK_LABEL: Record<string, string> = {
 }
 
 export default function AdminAlerts() {
-  const [alerts, setAlerts] = useState<AbsenceAlertRow[]>([])
+  const [alerts, setAlerts] = useState<AbsenceAlertRow[]>(mockAdminAbsenceAlerts)
   const [dismissed, setDismissed] = useState<string[]>([])
   const [filter, setFilter] = useState<'all' | 'high' | 'medium' | 'low'>('all')
   const [notified, setNotified] = useState<string[]>([])
@@ -32,7 +33,7 @@ export default function AdminAlerts() {
   useEffect(() => {
     apiGet<any[]>('/attendance/alerts')
       .then(data => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setAlerts(data.map(mapApiAlert))
         }
       })

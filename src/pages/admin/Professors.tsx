@@ -1,13 +1,15 @@
 import { useMemo, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, UserRound, BookOpen, Users, Plus, X, CheckCircle, Save } from 'lucide-react'
+import { Search, UserRound, BookOpen, Users, Plus, X, CheckCircle, Save, Download } from 'lucide-react'
 import { getTeachers, updateTeacher } from '../../lib/api'
+import { ProfessorRow } from '../../types/domain'
+import { mockAdminProfessors } from '../../data/mockAdmin'
 
 export default function AdminProfessors() {
   const [query, setQuery] = useState('')
-  const [professors, setProfessors] = useState<any[]>([])
+  const [professors, setProfessors] = useState<ProfessorRow[]>(mockAdminProfessors)
   const [loading, setLoading] = useState(true)
-  const [selectedProf, setSelectedProf] = useState<any | null>(null)
+  const [selectedProf, setSelectedProf] = useState<ProfessorRow | null>(null)
   const [editingData, setEditingData] = useState<{ subjects: string[]; groups: string[] }>({ subjects: [], groups: [] })
   const [isSaving, setIsSaving] = useState(false)
 
@@ -41,7 +43,7 @@ export default function AdminProfessors() {
     [query, professors]
   )
 
-  const handleOpenEdit = (prof: any) => {
+  const handleOpenEdit = (prof: ProfessorRow) => {
     setSelectedProf(prof)
     setEditingData({
       subjects: [...prof.subjects],
@@ -152,6 +154,17 @@ export default function AdminProfessors() {
                       style={{ width: `${Math.min(100, (prof.completedHours / prof.plannedHours) * 100)}%` }} 
                     />
                   </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="text-[10px] text-muted-foreground">Télécharger le CV académique</div>
+                  <a
+                    href={prof.cv}
+                    download
+                    className="inline-flex items-center gap-2 px-3 py-2 bg-secondary border border-border rounded-full text-xs font-semibold text-foreground hover:bg-primary/10 transition-colors"
+                  >
+                    <Download size={14} /> CV
+                  </a>
                 </div>
               </div>
             </motion.div>

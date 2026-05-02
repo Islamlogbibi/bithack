@@ -140,7 +140,8 @@ export interface ProfessorRow {
   name: string
   faculty: string
   department: string
-  courses: string[]
+  subjects: string[]
+  groups: string[]
   email: string
   phone: string
   profile: string
