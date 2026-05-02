@@ -20,6 +20,7 @@ import StudentQRScan from "./pages/student/QRScan";
 import StudentProfile from "./pages/student/Profile";
 import StudentMessages from "./pages/student/Messages";
 import StudentAssignments from "./pages/student/Assignments";
+import WorkspacePage2 from "./pages/student/WorkspacePage2";
 
 
 // Teacher pages
@@ -75,6 +76,7 @@ export default function App() {
               <Route path="resources" element={<StudentResources />} />
               <Route path="ai-assistant" element={<AIAssistant />} />
               <Route path="assignments" element={<StudentAssignments />} />
+              <Route path="workspace" element={<WorkspacePage2 />} />
               <Route path="justification" element={<AbsenceJustification />} />
             </Route>
 
