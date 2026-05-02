@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import type { StudentUser } from '../../types/domain'
 import { getMessages, sendMessage } from '../../lib/api'
+import { useNavigate } from 'react-router-dom'
 
 interface Message {
   id: string
@@ -97,6 +98,7 @@ const INITIAL_CONVERSATIONS: Conversation[] = [
 export default function StudentMessages() {
   const { user } = useAuth()
   const student = user as StudentUser
+  const navigate = useNavigate()
 
   const [conversations, setConversations] = useState<Conversation[]>(INITIAL_CONVERSATIONS)
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null)
@@ -309,6 +311,13 @@ export default function StudentMessages() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => navigate('/student/workspace')}
+                      className="p-2 hover:bg-secondary rounded-lg transition-colors"
+                      title="Ouvrir l'espace de travail"
+                    >
+                      <BookOpen size={18} className="text-muted-foreground" />
+                    </button>
                     <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
                       <MoreVertical size={18} className="text-muted-foreground" />
                     </button>
