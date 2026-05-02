@@ -52,7 +52,7 @@ async function bootstrap() {
 
   await dataSource.dropDatabase();
   console.log('Database dropped.');
-  
+
   await dataSource.synchronize(true);
   console.log('Database synchronized with new schema.');
 

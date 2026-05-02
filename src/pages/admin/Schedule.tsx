@@ -14,8 +14,12 @@ const TYPE_STYLE: Record<string, string> = {
 
 export default function AdminSchedule() {
   const [filters, setFilters] = useState({
-    group: 'Group A',
+    specialite: 'Info',
+    level: 'L1',
+    group: 'G1',
   })
+
+  const currentScopeId = `${filters.specialite} ${filters.level} ${filters.group}`
   const [schedules, setSchedules] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -42,16 +46,16 @@ export default function AdminSchedule() {
   }, [])
 
   const filteredSessions = useMemo(
-    () => schedules.filter((session) => session.scopeId === filters.group),
-    [filters.group, schedules]
+    () => schedules.filter((session) => session.groupName === currentScopeId || session.scopeId === currentScopeId),
+    [currentScopeId, schedules]
   )
 
   const getSession = (day: string, time: string) =>
-    filteredSessions.filter((s) => s.day === day && s.time === time)
+    filteredSessions.filter((s) => s.day === day && (s.time === time || s.timeSlot === time))
 
   const handleAdd = async () => {
     try {
-      await createSchedule({ ...newSession, scopeId: filters.group })
+      await createSchedule({ ...newSession, scopeId: currentScopeId, group: currentScopeId })
       setShowAddModal(false)
       fetchSchedules()
     } catch (err) {
@@ -62,16 +66,31 @@ export default function AdminSchedule() {
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <div className="flex gap-4">
+        <div className="flex gap-4 flex-wrap">
           <select 
-            value={filters.group} 
-            onChange={(e) => setFilters({ group: e.target.value })} 
+            value={filters.specialite} 
+            onChange={(e) => setFilters({ ...filters, specialite: e.target.value })} 
             className="px-4 py-2 bg-card border border-border rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
           >
-            <option>Group A</option>
-            <option>Group B</option>
-            <option>G1</option>
-            <option>G2</option>
+            <option value="Info">Info</option>
+            <option value="Auto">Auto</option>
+          </select>
+          <select 
+            value={filters.level} 
+            onChange={(e) => setFilters({ ...filters, level: e.target.value })} 
+            className="px-4 py-2 bg-card border border-border rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <option value="L1">L1</option>
+            <option value="L2">L2</option>
+            <option value="L3">L3</option>
+          </select>
+          <select 
+            value={filters.group} 
+            onChange={(e) => setFilters({ ...filters, group: e.target.value })} 
+            className="px-4 py-2 bg-card border border-border rounded-xl text-sm font-bold focus:ring-2 focus:ring-primary/20 outline-none"
+          >
+            <option value="G1">G1</option>
+            <option value="G2">G2</option>
           </select>
           <button 
             onClick={() => setShowAddModal(true)}
@@ -109,12 +128,12 @@ export default function AdminSchedule() {
                     {sessions.map((s, i) => (
                       <div
                         key={i}
-                        className={`p-2 rounded-lg border text-xs shadow-sm ${TYPE_STYLE[s.type]}`}
+                        className={`p-2 rounded-lg border text-xs shadow-sm ${TYPE_STYLE[s.type || s.sessionType]}`}
                       >
                         <p className="font-bold leading-tight">{s.subject}</p>
                         <p className="opacity-70 text-[10px] mt-0.5">{s.room}</p>
                         <div className="flex items-center justify-between mt-1 text-[9px] font-black uppercase">
-                          <span>{s.type}</span>
+                          <span>{s.type || s.sessionType}</span>
                         </div>
                       </div>
                     ))}
@@ -140,7 +159,7 @@ export default function AdminSchedule() {
               className="bg-card border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl"
             >
               <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-foreground">Nouvelle session - {filters.group}</h3>
+                <h3 className="font-bold text-foreground">Nouvelle session - {currentScopeId}</h3>
                 <button onClick={() => setShowAddModal(false)} className="p-2 hover:bg-secondary rounded-full">
                   <X size={20} />
                 </button>

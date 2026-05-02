@@ -46,6 +46,10 @@ export class SchedulesService {
       room: data.room,
       teacher: teacher,
       groupName: data.group,
+      dateSeance: new Date(),
+      heureDebut: data.time ? data.time + ':00' : '00:00:00',
+      heureFin: '00:00:00',
+      salle: data.room || 'N/A',
     });
 
     try {

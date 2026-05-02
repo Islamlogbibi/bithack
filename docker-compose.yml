@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: Mohamedaymen2005
       POSTGRES_DB: bithack
     # Host 5433 avoids conflict when another Postgres already uses 5432
     ports:
