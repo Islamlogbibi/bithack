@@ -96,8 +96,8 @@ export function createJustification(data: {
 }) {
   return apiPost<void>('/justifications', data)
 }
-export function reviewJustification(id: number, data: { status: 'approved' | 'rejected'; reviewComment?: string }) {
-  return apiPost<void>(`/justifications/${id}/review`, data)
+export function reviewJustification(id: number, data: { status: 'approved' | 'rejected'; comment?: string }) {
+  return apiPatch<void>(`/justifications/${id}/review`, data)
 }
 
 // =======================
