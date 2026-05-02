@@ -196,8 +196,20 @@ export function saveReference<T>(key: string, data: T) {
 // ASSIGNMENTS
 // =======================
 export function getAssignments(groups?: string[]) {
-  const query = groups ? `?groups=${encodeURIComponent(groups.join(','))}` : ''
-  return apiGet<any[]>(`/assignments${query}`)
+  // Mock implementation for demo
+  return new Promise<any[]>((resolve) => {
+    setTimeout(() => {
+      import('../data/mockAssignments').then(({ mockAssignments }) => {
+        let filtered = mockAssignments;
+        if (groups && groups.length > 0) {
+          filtered = mockAssignments.filter(assignment =>
+            assignment.groups?.some(group => groups.includes(group))
+          );
+        }
+        resolve(filtered);
+      });
+    }, 500); // Simulate network delay
+  });
 }
 export function getTeacherAssignments(name: string) {
   return apiGet<any[]>(`/assignments/teacher/${encodeURIComponent(name)}`)
@@ -212,8 +224,22 @@ export function submitAssignment(data: {
   fileName: string
   fileContent: string
 }) {
-  return apiPost<void>('/assignments/submit', data)
+  // Mock implementation for demo
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+      console.log('Mock submission:', data);
+      resolve();
+    }, 1000); // Simulate upload delay
+  });
 }
 export function getAssignmentSubmissions(id: number) {
-  return apiGet<any[]>(`/assignments/${id}/submissions`)
+  // Mock implementation for demo
+  return new Promise<any[]>((resolve) => {
+    setTimeout(() => {
+      import('../data/mockAssignments').then(({ mockSubmissions }) => {
+        const submissions = mockSubmissions.filter(sub => sub.assignmentId === id);
+        resolve(submissions);
+      });
+    }, 300); // Simulate network delay
+  });
 }
