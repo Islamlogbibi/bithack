@@ -8,6 +8,7 @@ export declare class JustificationsService {
     create(data: any): Promise<JustificationEntity>;
     review(id: number, data: {
         status: 'approved' | 'rejected';
+        comment?: string;
         reviewComment?: string;
     }): Promise<JustificationEntity>;
 }

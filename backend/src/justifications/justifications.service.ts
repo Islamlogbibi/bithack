@@ -34,12 +34,12 @@ export class JustificationsService {
     return this.repo.save(justification);
   }
 
-  async review(id: number, data: { status: 'approved' | 'rejected'; reviewComment?: string }) {
+  async review(id: number, data: { status: 'approved' | 'rejected'; comment?: string; reviewComment?: string }) {
     const justification = await this.repo.findOne({ where: { id } });
     if (!justification) throw new NotFoundException('Justification not found');
 
     justification.status = data.status;
-    justification.reviewComment = data.reviewComment || '';
+    justification.reviewComment = data.comment || data.reviewComment || '';
     
     return this.repo.save(justification);
   }

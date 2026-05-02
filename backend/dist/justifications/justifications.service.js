@@ -49,7 +49,7 @@ let JustificationsService = class JustificationsService {
         if (!justification)
             throw new common_1.NotFoundException('Justification not found');
         justification.status = data.status;
-        justification.reviewComment = data.reviewComment || '';
+        justification.reviewComment = data.comment || data.reviewComment || '';
         return this.repo.save(justification);
     }
 };
