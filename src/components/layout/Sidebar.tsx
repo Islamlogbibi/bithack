@@ -48,7 +48,7 @@ const teacherNav: NavItem[] = [
 
 const adminNav: NavItem[] = [
   { label: 'Vue d\'ensemble', path: '/admin/dashboard', icon: <LayoutDashboard size={20} /> },
-  { label: 'Validations', path: '/admin/validations', icon: <ShieldCheck size={20} />, badge: '7' },
+  { label: 'Validations', path: '/admin/validations', icon: <ShieldCheck size={20} /> },
   { label: 'Emploi du Temps', path: '/admin/schedule', icon: <Calendar size={20} /> },
   { label: 'Alertes Absences', path: '/admin/alerts', icon: <AlertTriangle size={20} /> },
   { label: 'Professors', path: '/admin/professors', icon: <UserRound size={20} /> },
@@ -123,10 +123,9 @@ export default function Sidebar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group relative ${
-                isActive
-                  ? 'bg-primary/15 text-primary'
-                  : 'text-sidebar-foreground hover:bg-secondary hover:text-primary'
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150 group relative ${isActive
+                ? 'bg-primary/15 text-primary'
+                : 'text-sidebar-foreground hover:bg-secondary hover:text-primary'
               }`
             }
           >
